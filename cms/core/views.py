@@ -111,3 +111,9 @@ def entry_contents(request, site, path):
                 { 'vobject': vobject,
                   'move_item_form': move_item_form,
                   'main_buttons': _main_buttons(request, 'contents')})
+
+def entry_history(request, site, path):
+    vobject = stdlib.get_vobject(site, path)
+    return render_to_response('entry_history.html',
+                { 'vobject': vobject,
+                  'main_buttons': _main_buttons(request, 'history')})
