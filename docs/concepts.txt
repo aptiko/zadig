@@ -1,0 +1,331 @@
+.. _concepts:
+
+==================
+TwistyCMS concepts
+==================
+
+Object hierarchy
+================
+
+(Here we discuss containment hierarchy, such as in a filesystem, and
+not a class hierarchy.)
+
+In TwistyCMS, objects can be contained in other objects. For example,
+you can have page ``/mypage/hobbies``, and it can contain
+``/mypage/hobbies/django``. There is no separate "folder" object;
+instead, any object can act as a container of other objects, in
+addition to having its own content.
+
+.. admonition:: Philosophy
+
+    Why don't we specifically use folders, as Plone does?  The reason is
+    that it conflicts with the URL scheme, where any resource can have
+    subresources. Because of this conflict, it is difficult for users to
+    understand the notion of a folder and a page. For example, a user
+    would normally create a page ``/mypage/hobbies``, and then they
+    typically ask: how do I now create ``/mypage/hobbies/django``? The
+    Plone reply (hobbies must be made a folder, the current hobbies page
+    must become a page inside the folder, and must be set as default, and
+    a django [page or folder?] must be created inside the folder) is
+    complicated and unintuitive. It also poses a practical problem: the
+    user needs to decide a priori whether the page he is about to create
+    will contain subpages or whether it is likely to remain a single page.
+
+    On the other hand, other CMS's, like MoinMoin, have pages and
+    subpages, and each page can have attachments. This is also
+    unintuitive, because, for example, an image does not always belong to
+    a "page"; it rather belongs to a folder. ``/myfolder/myimage`` is much
+    better and intuitive than ``/mypage?attachment=myimage``.
+
+    Also note that, in Moin, /mypage/mysubpage is a completely different
+    and unrelated page to /mypage: it's just a name that contains a slash.
+    But in TwistyCMS, /mypage/mysubpage is a page that is contained in
+    /mypage, as if the latter were a folder. Moin is even simpler and maps
+    even better on the URL scheme, but TwistyCMS makes property
+    inheritance (e.g. permissions and skins) much simpler and foolproof:
+    any object simply inherits the properties of its container objects.
+
+Entries and vobjects
+====================
+
+The end user uses the word *page* (and the more general *object*) with
+two meanings, owing to the fact that we do automatic versioning like
+that of a wiki. When we say "delete this page", we mean delete an
+entire sequence of pages; when we talk about the content of a page, we
+mean the content of a specific page version.
+
+When we need to distinguish between the two (and this is when we are
+writing code), we use the word **entry** for a sequence of versioned
+objects, and the word **vobject** for each specific version of an
+entry.  An entry can be a page entry, an image entry, etc., and a
+vobject can be a vpage, a vimage, etc.  Developers should be very
+clear about that. The end users should not be bothered, and the word
+**object** should be used for everything.
+
+Sites
+=====
+
+The Django "sites" framework uses the word "site" where it should use
+the word "domain". In TwistyCMS, we use the word **site** in a more
+general term: you could use the CMS to build three sites, for example:
+``http://www.foo.com/site1``, ``http://www.foo.com/site2``, and
+``http://site3.foo.com/``.  ``cms.core.models.Site`` is such a site,
+whereas ``django.contrib.sites.models.Site`` is a domain.
+
+Metatags
+========
+
+Each object has a **name**, which is what is shown at the URL. Each
+object has, in addition, a **long title** and a **short title**.  The
+long title shows everywhere except where there is a shortage of space,
+namely in the navigation, breadcrumbs, and possibly other applets. The
+short title can be omitted, in which case the long title is used. We
+use **title pair** to refer to both titles together.
+
+Because of multilinguality, each object can have several title pairs,
+one for each language. Although this sounds useless for pages, because
+a page is in a given language, and therefore its title pair could also
+be in that given language, multilingual title pairs are useful in the
+following cases:
+
+* For objects, such as images, that are not bound to a specific
+  language.
+* For objects that act as folders, and whose short title therefore
+  shows in the breadcrumbs when you view a contained object.
+
+As an example, consider the English pages ``/mypage`` and
+``/mypage/hobbies``, with titles "My Page" and "Hobbies". Suppose
+``/mypage/loisirs`` is the French version of ``/mypage/hobbies``, and
+has title "Loisirs". The breadcrumbs for that page would show "My Page
+-> Loisirs". However, "Mon Page -> Loisirs" would be better. For this,
+we add a French title to ``/mypage``, although the page is English.
+
+If ``/mypage/fr`` is the French version of ``/mypage``, then you don't
+want the breadcrumbs to show "Mon Page -> Mon Page"; you want simply
+"Mon Page". For this, each object has the option to not show in the
+breadcrumbs, and this is generally for pages that are a kind of
+"folder defaults" in languages different from the containing objects'
+language.
+
+Except for the name and title pairs, an object can also have a
+**description**. For pages, the description is a summary of the page,
+displayed below the title in bold.  Objects such as images may have
+the description in many languages. For uniformity, this applies to all
+kinds of object, although for some, such as pages, it is mostly
+useless.
+
+The titles and description of each object are collectively named
+**metatags**.
+
+In this section we have been talking of "objects". To be precise,
+each *entry* has a name, and each *vobject* has a set of metatags
+(i.e. a set of title pairs and a set of descriptions).
+
+Deletions
+=========
+
+There are two ways to "delete" an object: one is to **mark it as
+deleted**. In this case, the entry history is retained, and the
+"deletion" is an event recorded in the entry history. Marking an entry
+as deleted is creating a new vobject. We consider a vobject as a
+deletion mark if it has empty content and empty metatags. Since the
+entry exists, another entry with the same name cannot be created.
+
+The second way to delete is to **remove the entry**, in which case the
+entry, including the history, is permanently and irrevocably deleted.
+
+Permissions and workflows
+=========================
+
+There are **users**, and each user can belong to one or more
+**groups**. When someone has not logged on then we say that they are
+the **anonymous user**. Each user and group has certain
+**permissions** on each object. There are five kinds of permissions:
+*view*, *edit*, *admin*, *search*, and *delete*. Someone with *edit*
+permission, besides editing the entry, can also mark the entry as
+deleted and add subobjects to it; you also need *edit* permission to
+view the entry history; with *view* permission you can only view the
+current entry version (the last vobject). Someone with *admin*
+permissions can modify the object's permissions and state. Someone
+with *delete* permission can remove the entry, recursively including
+its subentries (irrespective of their permissions). Someone with
+*search* permission can see the entry in listings (e.g. the anonymous
+user has view permission on a public draft, but not search permission;
+you can view it if you know its URL, but it won't show in indexes or
+searches).  Each entry has an **owner**, and the owner has all
+permissions on the object.
+
+.. admonition:: Note
+
+   Why do you need *edit* permission to view the entry history? This
+   can be useful if old versions contain confidential information.
+   There are alternative ways of doing it, such as adding a
+   *view_history* permission, or allowing individual vobjects to have
+   separate *view* permissions. This, however, adds complication.
+   TwistyCMS is not primarily a wiki, and the possibility for
+   unprivileged users to view the history is not considered essential.
+   Therefore, we chose to keep it simple for the moment, and leave it
+   for the future to find a way around this problem.
+
+At a given time, each entry is in a **state**. A state is a collection
+of permissions. For example, these are common states:
+
+Private
+   Logged on users can view.
+
+Public draft
+   Anonymous user can view.
+
+Published
+   Anonymous user can view and search.
+
+A **workflow** is a collection of states and state-transition rules.
+A **state-transition rule** is a many-to-one relationship between
+states: it shows which are the possible states that follow a given
+state. Each site has one workflow.
+
+In the default installation, two states are created, private and
+published, two state-transition rules (from private to published and
+vice-versa), and one workflow named "Simple publication workflow"
+containing all those. The private state has the *view* and *search*
+permissions on logged on users; the published state has the *view* and
+*search* permissions on the anonymous user. There are no other
+permissions defined, which means that only the owner can edit, admin
+and delete.
+
+Applets and portlets
+====================
+
+An **applet** is essentially a Django application that provides a template
+tag. The breadcrumbs, for example, is an applet, and it provides the
+``breadcrumbs`` tag. When you include ``{% breadcrumbs %}`` in a template,
+this is replaced by the breadcrumbs.  TwistyCMS is designed so that very
+little functionality is in the core; the rest is in applets. Like all
+Django applications, applets are installed by adding them to
+``INSTALLED_APPS`` in the ``settings.py`` file. Details on the applet
+installation procedure are presented further below.
+
+.. admonition:: Note
+
+    For good code structure, a Django application can contain many
+    applets: for example, ``cms/applets/standard`` contains all the
+    standard applets. Therefore, if we want to be precise, an applet
+    is not a Django application, but a custom template tag accompanied
+    by related functionality such as configuration options (explained
+    below).
+
+A **portlet** is a special kind of applet. The only special thing
+about it is that it has a certain kind of look: it has a title and a
+body, and the body consists of items (some portlets, like navigation,
+have only one item in the body). The template tag of the portlet renders the portlet in a very specific manner::
+
+    <dl class="portlet">
+      <dt>Portlet title</dt>
+      <dd>First item</dd>
+      <dd>Second item</dd>
+      ...
+      <dd class="lastItem">Last item</dd>
+    </dl>
+
+Because portlets conform to that specification, the CSS style sheet
+can define a common look for all portlets. That is all that is
+special about them. Otherwise, they are identical to applets.
+
+Applets included with TwistyCMS, such as the breadcrumbs and the
+navigation, are in ``cms/applets/standard``.
+
+Besides a template tag, an applet can also provide several
+configuration options:
+
+* A site-wide configuration page.
+* A set of configuration options per object (entry).
+
+The left and right panes, used as portlet holders in the default
+template, are applets themselves.
+
+Installing applets
+------------------
+
+To install an applet (more precisely, a Django application containing
+one or more applets), do the following:
+
+1. Put the directory containing the application under ``cms/applets``.
+2. Add the application to ``INSTALLED_APPS`` in the ``settings.py``
+   file.
+3. If there is any additional CSS, put it in the ``static`` directory,
+   and add an ``@import`` statement in the main stylesheet (in the
+   default template it is named ``style.css``).
+4. In the ``twisty`` directory, run ``./manage.py syncdb``. This will
+   create any additional database tables needed by the applet.
+
+Creating applets
+----------------
+
+To create an applet (or a set of related applets in a Django
+application), create a directory, say ``myapplet``, inside the
+``cms/applets`` directory. Inside the ``myapplet``, create an
+empty ``__init__.py`` file, an empty ``models.py`` file, and a
+``templatetags`` directory. Inside ``templatetags``, create an empty
+``__init__.py`` and a ``myapplet.py`` file.
+
+In ``myapplet.py``, add Django code that implements a template tag
+(we'll assume ``myapplettag``). If the applet is a portlet, make sure
+that the tag output conforms to the portlet specification described
+above. That is all you have to do for a basic applet. You can then use
+it in your template like this::
+
+    {% load myapplet %}
+    ...
+    {% myapplettag %}
+    ...
+
+If needed, the template tag can accept arguments.
+
+If you want your applet to store information in the database (usually
+this is configuration options), add models in ``models.py``. You'll
+probably want to reference core models if you do this. The models you
+probably want to reference are ``cms.core.models.Site`` if you have
+configuration options per site, and ``cms.core.models.Entry`` if you
+have options per entry.
+
+If you want your applet to have configuration options, add functions
+to ``myapplet/__init__.py``, according to the following::
+
+    from django.forms import Form
+
+    class SiteOptionsForm(Form):
+        ...
+
+    def site_options(request, form=None):
+        if not form:
+            # Return a Form object that contains the configuration options.
+            form = SiteOptionsForm()
+            # Populate form with initial values (usually from the database)
+            return form
+        else:
+            # Process configuration options that have been submitted.
+
+    class EntryOptionsForm(Form):
+        ...
+
+    def entry_options(request, form=None):
+        ...
+        
+The file need not contain both functions; it can contain either
+``site_options``, or ``entry_options``, or both, depending on whether
+the applet has site options or entry options or both.
+
+When TwistyCMS starts, it looks at the ``__init__.py`` file of each
+applet directory. If the file contains ``site_options`` or
+``entry_options``, it registers these functions. Then, when the user
+goes to the site configuration page and selects to configure that
+specific applet, TwistyCMS calls ``site_options`` with ``form=None``,
+it gets a form as a response, it remembers its class, and it displays
+it to the user. When the user submits it, TwistyCMS creates a bound
+form of the remembered class with the request data and calls
+``site_options`` supplying the created form as the ``form`` argument.
+Likewise with ``entry_options``. A difference is that the entry
+options form is not treated as a whole form but as a part of a form
+that is mixed with the entry options of all other installed applets,
+resulting in one form for all applets together; but this makes no
+difference for the applet code.

@@ -1,0 +1,223 @@
+.. _api:
+
+=============
+TwistyCMS API
+=============
+
+It is important to read the :ref:`concepts` document before studying
+the APIs, otherwise you will not understand what I'm talking about.
+
+Database core models
+====================
+
+In the description of the database models below, it goes without
+saying that all models have an *id* field, which is usually not
+mentioned unless there is something unusual about it.
+
+.. class:: core.models.Language
+
+   Contains languages. It has only one field, :attr:`id`, storing the
+   language id, as a 5-character long string, in the form "en" or
+   "en_us" etc.
+
+.. class:: core.models.Permission
+
+   A lookup that lists permissions: "view", "edit", "admin", "search",
+   "delete". Has only a :attr:`descr` attribute.
+
+.. class:: core.models.Lentity
+
+   A Lentity represents either a user or a group, and is used whenever
+   any of the two can be used; for example, a certain permission can
+   be given either to a user or to a group. It has three attributes:
+   :attr:`user`, :attr:`group` and :attr:`special`.  The former two
+   are foreign keys to :class:`django.contrib.auth.models.User` and
+   :class:`django.contrib.auth.models.Group`. Either :attr:`user`, or
+   :attr:`group`, or :attr:`special`, must be not null; the other two
+   must be null. If :attr:`user` is not null, the
+   :class:`~core.models.Lentity` represents a user.  If :attr:`group`
+   is not null, the :class:`~core.models.Lentity` represents a group.
+   If :attr:`special` is 1, it represents the anonymous user, and if
+   :attr:`special` is 2, it represents all valid users (the logged on
+   user).
+
+.. class:: core.models.State
+
+   A list of states. Contains only a :attr:`descr` attribute.
+
+.. class:: core.models.StatePermission
+
+   A state is a collection of permissions. This model stores the
+   permissions that comprise the state. It has three attributes,
+   :attr:`state`, :attr:`lentity` and :attr:`permission`, which are
+   foreign keys to :class:`~core.models.State`, :class:`~core.models.Lentity`
+   and :class:`~core.models.Permission`, and designate that said lentity
+   has said permission on said state.
+
+.. class:: core.models.StateTransition
+
+   A state transition. Has two attributes, :attr:`source_state` and
+   :attr:`target_state`, both foreign keys to :class:`~core.models.State`.
+
+.. class:: core.models.Workflow
+
+   A workflow is a collection of states and state-transition rules.
+   The model has three attributes: :attr:`name`, which is a string,
+   :attr:`states`, and :attr:`state_transitions`. The last two are
+   many to many fields to :class:`~core.models.State` and
+   :class:`~core.models.StateTransition`.
+
+.. class:: core.models.Site
+
+   Stores a site. It has three attributes: :attr:`name` stores the
+   name of the site, which may also show on the URL, at the beginning
+   of the path, dependin gon configuration; :attr:`language` is a
+   foreign key to :class:`~core.models.Language` and designates the primary
+   language of the site; and :attr:`workflow` is a foreign key to
+   :class:`~core.models.Workflow` and designates the workflow of the site.
+
+.. class:: core.models.Entry
+
+   Stores an entry. It has the following attributes:
+
+   .. attribute:: core.models.Entry.site
+
+      A foreign key to :class:`~core.models.Site`. Indicates the site to
+      which the entry belongs.
+
+   .. attribute:: core.models.Entry.container
+
+      A foreign key to :class:`~core.models.Entry` (that is, to self). It
+      indicates which entry contains the entry. This attribute can be
+      null; there is one and only one entry in each site that has a
+      null :attr:`container`, and it is the root entry.
+
+      The *related_name* of this attribute is ``subentries``.
+      Therefore, if you have an entry ``myentry``, then
+      ``myentry.subentries`` is the list of entries contained in
+      ``myentry``.
+
+   .. attribute:: core.models.Entry.name
+
+      The name of the entry.
+
+   .. attribute:: core.models.Entry.seq
+
+      The sequence of the entry in its container: 1 for the first
+      entry, 2 for the second entry, and so on.
+
+   .. attribute:: core.models.Entry.owner
+
+      A foreign key to ``django.contrib.auth.models.User``, indicating
+      the owner of the entry.
+
+   .. attribute:: core.models.Entry.state
+
+      A foreign key to :class:`~core.models.State`, indicating the state of
+      the entry.
+
+.. class:: core.models.EntryPermission
+
+   Permissions assigned to the entry besides those assigned to its
+   state. Has three attributes: :attr:`entry`, :attr:`lentity` and
+   :attr:`permission`, all foreign keys to the respective model.
+
+.. class:: core.models.VObject
+
+   This model is the parent of models that inherit it using
+   multi-table inheritance, and stores a vobject. Has four attributes:
+   :attr:`entry`, foreign key to :class:`~core.models.Entry`,
+   :attr:`version_number`, an integer, :attr:`date`, the date in which
+   the vobject has been created, and :attr:`language`, a foreign key
+   to :class:`Language` designating the language of the vobject. This
+   model does not actually store the content of the vobject; this is
+   stored by the descendant model.
+
+.. class:: VObjectMetatags
+
+   Stores the metatags of a vobject. Has five attributes:
+   :attr:`vobject` and :attr:`language` are foreign keys to the
+   respective models; :attr:`title`, :attr:`short_title` and
+   :attr:`description` are strings.
+
+.. class:: core.models.ContentFormat
+
+   A lookup storing content formats, such as "text/html" or
+   "text/x-rst". Has only a :attr:`descr` field.
+
+.. class:: core.models.Page(VObject)
+
+   Inherits :class:`~core.models.VObject` and designates a page. Has
+   attributes :attr:`format`, a foreign key to
+   :class:`~core.models.ContentFormat`, and :attr:`content`, a text field.
+
+.. class:: core.models.File(VObject)
+
+   Inherits :class:`~core.models.VObject` and designates a file. Has
+   attribute :attr:`content`, a file field.
+   
+.. class:: core.models.Image(VObject)
+
+   Inherits :class:`~core.models.VObject` and designates an image. Has
+   attribute :attr:`content`, an image field.
+
+Helper functions
+================
+
+The :mod:`core.stdlib` module contains several helper functions that
+provide the most important part of the API.
+
+.. function:: core.stdlib.get_entry_by_path(site_name, path)
+
+   Return the entry at the specified site and path, or
+   :const:`None` if such an entry does not exist.
+
+.. function:: core.stdlib.create_entry(site_name, path)
+
+   Create an entry object at the specified site and path. The
+   parent entry must already exist, or an exception is raised. If
+   other entries with the same parent entry exist, the entry is
+   added as the last sibling. Returns a new
+   :class:`~core.models.Entry` object, which has not been saved to
+   the database.
+
+.. function:: core.stdlib.get_vobject(site_name, path[, version_number])
+
+   Return the vobject that corresponds to the entry at the
+   specified site and path. If *version_number* is not specified,
+   it returns the latest vobject. An exception is raised if the
+   entry does not exist.
+
+.. function:: core.stdlib.get_entry_path(entry)
+
+   Return the URL path to the specified entry. *entry* is an
+   :class:`~core.models.Entry` object.
+
+.. function:: core.stdlib.get_entry_url(entry)
+
+   Return the full URL to the specified entry. *entry* is an
+   :class:`~core.models.Entry` object.
+
+.. function:: core.stdlib.contains(entry1, entry2)
+
+   Check whether *entry2* is contained, directly or indirectly, in
+   *entry1*. Returns :const:`True` if *entry1* is the parent of
+   *entry2*, or the parent of its parent, or any ancenstor, and
+   :const:`False` otherwise.
+
+.. function:: core.stdlib.reorder(parent_entry, source_seq, target_seq)
+
+   Within *parent_entry*, move the subentry with
+   :samp:`seq={source_seq}` before subentry with
+   :samp:`seq={target_seq}`.  *parent_entry* is an
+   :class:`~core.models.Entry` object; *source_seq* and *target_seq*
+   are integers. The function changes the order of the children of
+   *parent_entry*. The child that has :samp:`seq={source_seq}` is
+   moved before the child that has :samp:`seq={target_seq}`, unless
+   *target_seq* is one more than the number of children, in which case
+   the child is moved to the end. The other children are renumbered as
+   needed (i.e.  their :attr:`~core.models.Entry.seq` is modified
+   accordingly).  Raises an exception if *source_seq* or *target_seq*
+   are inappropriate; for example, if *source_seq* is larger than the
+   number of children, or if *source_seq* and *target_seq* are both
+   the same number.

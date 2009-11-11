@@ -1,0 +1,47 @@
+body { font: 69% "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif; background-color: white; color: black; margin: 0; padding: 0; }
+a { color: #436976; }
+#portalTop { margin: 0; padding: 0; background: transparent; }
+#portalPersonaltools { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.6em; padding: 0 3em 0 3em; margin: 0; text-align: right; text-transform: none; list-style-type: none; list-style-image: none list-style-position: outside; }
+
+#portalBreadcrumbs { border-bottom: solid #8cacbb 1px; padding-left: 2em; padding-right: 2em; text-transform: none; line-height: 1.6em; }
+#portalBreadcrumbs a { text-decoration: none; }
+
+#leftColumn { vertical-align: top; padding: 2em 0 1em 2em; }
+#rightColumn { vertical-align: top; padding: 2em 2em 1em 0; }
+#mainColumn { vertical-align: top; border-collapse: collapse; padding: 1em 1em 0 1em; margin: 0 0 2em 0; width: 100%; }
+#portalFooter { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.2em; margin: 2em 0 1em 0; padding: 0.5em 0 1em 0; text-align: center; }
+#portalColophon ul { text-align: center; list-style-image: none; list-style-type: none; }
+#portalColophon ul li { display: inline; font-size: 90%; padding: 0 0.75em 0 0.75em; }
+#mainColumn h1,h2,h3,h4,h5,h6 { margin: 0.75em 0 0.25em 0; }
+#mainColumn h1,h2 { font-weight: normal; border-bottom: solid #8cacbb 1px; }
+#mainColumn h1 { font-size: 160%; }
+#mainColumn h1.title { margin-top: 0; }
+#mainColumn p.authorAndDate { font-size: 90%; font-weight: normal; margin-bottom: 0.5em; margin-top: 0; color: #76797c; }
+#mainColumn .objectDescription { font-weight: bold; margin: 0 0 0.5em 0; line-height: 1.5em; }
+.mainContent { border-left: solid #74ae0b 1px; border-right: solid #74ae0b 1px; border-bottom: solid #74ae0b 1px; padding: 1em 1em 2em 1em; font-size: 110%; }
+
+.mainButtons { background-color: transparent; padding-left: 1em; line-height: normal; margin: 0; list-style: none; border: 1px solid #74ae0b; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; }
+.mainButtons li { display: inline; padding-top: 0.5em; }
+.mainButtons li a { background-color: transparent; border: 1px solid #74ae0b; border-style: solid; color: #578308; height: auto; margin-right: 0.5em; padding: 0em 1em; line-height: normal; text-decoration: none; text-transform: none; z-index: 1; }
+.mainButtons .selected a { background-color: #cde2a7; border-bottom: #cde2a7 1px solid; color: #578308; }
+.mainButtons li a:hover { background-color: #cde2a7; color: #578308; }
+.secondaryButtons { background-color: #cde2a7; border-left: 1px solid #74ae0b; border-right: 1px solid #74ae0b; color: #578308; text-align: right; text-transform: none; padding: 0 0 0 1em; z-index: 2; position:relative; height: 1.6em; }
+.secondaryButtons ul, .secondaryButtons li { margin: 0; list-style: none; list-style-image: none; color: Black; text-align: left; line-height: 1.6em; }
+.secondaryButtons li { float: right; z-index: 4; border-left: 1px solid #74ae0b; }
+.secondaryButtons a { text-decoration: none; color: #578308; padding: 0 0.5em; cursor: pointer; }
+.secondaryButtons span.subMenuTitle { padding: 0em 0.5em; position: relative; white-space: nowrap; display: inline; }
+.secondaryButtons a span.subMenuTitle { padding: 0px; display: inline; }
+
+.portlet { margin: 1px 0 1em 0; border-bottom: solid #8cacbb 1px; }
+.portlet dt { background-color: #dee7ec; border: solid #8cacbb 1px; padding: 0 1em 0 1em; line-height: 1.6em; }
+.portlet dd { margin: 0 0 0 0; padding: 1em 1em 1em 1em; border-left: solid #8cacbb 1px; border-right: solid #8cacbb 1px; }
+.portlet a { text-decoration: none; }
+
+.navigationPortlet li { display: block; list-style: none; padding: 0 0 0 1px; margin: 0 0 2px -1px; }
+.navigationPortlet li a.statePrivate { color: red; }
+.navigationPortlet li a { border: solid white 1px; display: block; padding-top: 0.2em; padding-bottom: 0.25em; }
+.navigationPortlet a:hover { background-color: #dee7ec; color: #436976; border: solid #8cacbb 1px; }
+.navigationPortlet ul { padding: 0; }
+.navigationLevel1 { margin: 0; }
+.navigationLevel2 { margin-left: 1em; }
+.navigationPortlet a.current { background-color: #dee7ec; border: solid #8cacbb 1px; }

@@ -1,0 +1,9 @@
+{% for b in main_buttons %}
+    {% if forloop.first %}<ul class="mainButtons">{% endif %}
+    <li {% if b.selected %}class="selected"{%endif%}>
+      <a href="{{b.href}}" >{{b.name}}</a>
+    </li>
+    {% if forloop.last %}</ul>{% endif %}
+{% endfor %}
+<div class="secondaryButtons">
+</div>

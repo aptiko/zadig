@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block mainContent %}
+<div class="mainContent">
+  <h1>Contents of {{vobject.metatags.default.short_title}}</h1>
+  <form method="POST" action="">
+    <table class="objectContents">
+      <thead><tr>
+          <th></th>
+          <th>{% trans "Name" %}</th>
+          <th>{% trans "Short title" %}</th>
+          <th></th>
+      </tr></thead>
+      <tbody>
+        {% for s in vobject.entry.subentries.all %}
+          <tr><td>{{ s.seq }}</td>
+              <td><a href="../{{s.name}}">{{s.name}}</a></td>
+              <td>{{s.vobject_set.latest.metatags.default.short_title}}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <table><tbody>{{ move_item_form.as_table }}</tbody></table>
+    <input type="submit" />
+  </form>
+</div>
+{% endblock %}

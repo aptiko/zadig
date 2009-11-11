@@ -1,0 +1,7 @@
+This system is under heavy development.  Django best practices are
+followed, so if you are a Django developer you should not have difficulty
+installing it. If you are not a Django developer, nothing is going to work
+anyway, so forgive me for not giving you instructions on installation etc.
+
+More information is in the docs directory. Please read it before attempting to
+play with the code.

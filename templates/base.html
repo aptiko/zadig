@@ -1,0 +1,53 @@
+{% load standard_applets %}
+{% load i18n %}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+  <title>
+    {% block htmltitle %}
+      {{ vobject.metatags.default.title }} – {{ vobject.entry.site.name }}
+    {% endblock %}
+  </title>
+  <link rel="stylesheet" type="text/css" href="/static/style.css"
+        title="style" />
+</head>
+
+<body>
+  <div id="portalTop">
+    <h1>{{ vobject.entry.site.name }}</h1>
+    <div id="portalPersonaltools">
+    &nbsp;
+    </div>
+    <div id="portalBreadcrumbs">
+      {% trans "You are here: " %}{% breadcrumbs %}
+    </div>
+  </div>
+  <table id="portalColumns">
+    <tbody>
+    <tr>
+      <td id="leftColumn">
+        {% navigation %}
+      </td>
+      <td id="mainColumn">
+        {% include "mainbuttons.html" %}
+        {% block mainContent %}
+        {% endblock %}
+      </td>
+      <td id="rightColumn">
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <div id="portalBottom">
+    <div id="portalFooter">
+    </div>
+    <div id="portalColophon">
+      <ul>
+        <li>Powered by TwistyCMS</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

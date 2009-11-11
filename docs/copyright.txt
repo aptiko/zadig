@@ -1,0 +1,44 @@
+TwistyCMS Copyright
+===================
+
+The copyright applies to all TwistyCMS files, except those were
+something else is mentioned.
+
+Copyright (C) 2009 Antonis Christofides
+
+Permission is granted to redistribute and/or modify TwistyCMS under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3 of the License, or, at your
+option, any later version.
+
+TwistyCMS is distributed in the hope that it will be useful, but
+without any warranty; without even the implied warranty of
+merchantability or fitness for a particular purpose. See The GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program. If not, see http://www.gnu.org/licenses/.
+
+As a special exception, permission is granted to the core Django
+developers and to the core Python developers to include any portion of
+TwistyCMS in Django and/or Python and distribute it under the same
+terms as Django and/or Python itself, provided that these terms
+qualify as free software according to the `Debian Free Software
+Guidelines`_.  "Core Django developers" and "core Python developers"
+in this context means any person who has the power to decide what code
+can be included in Django and Python respectively; this, for example,
+may include a person who has been granted write access to the Django
+or Python repository.  Obviously, after TwistyCMS code is released as
+part of Django or Python, the Django or Python license is also
+irrevocably added as an option for that code, even if the code is
+subsequently removed from Django/Python. The intent of this provision
+is solely to enable the inclusion of TwistyCMS code in Django and
+Python, and it is explicitly forbidden to make such inclusion with the
+intent of circumventing the normal license (i.e. GPL 3) of TwistyCMS.
+For example, a core Django developer may not upload TwistyCMS code to
+the Django repository and then remove it, solely in order to
+circumvent the restrictions in TwistyCMS's normal licensing; a core
+Django/Python developer may include TwistyCMS code in Django/Python
+for the sole purpose of improving Django/Python.
+
+.. _Debian Free Software Guidelines: http://www.debian.org/social_contract

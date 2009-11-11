@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load markup %}
+
+{% block mainContent %}
+<div class="mainContent">
+  <h1>{{vobject.metatags.default.title}}</h1>
+  <p class="objectDescription">{{vobject.metatags.default.description}}</p>
+  {{vobject.page.content|restructuredtext}}
+</div>
+{% endblock %}

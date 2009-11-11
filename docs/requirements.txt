@@ -1,0 +1,135 @@
+.. _requirements:
+
+Rationale and requirements for TwistyCMS
+========================================
+
+Rationale
+---------
+
+Why did I write TwistyCMS when there is Plone? It is summarized well in
+this email I sent to a colleague on 27 June 2008:
+
+    You probably remember the talk we had in March 2007 about Plone.  15
+    months later, and while I maintain four Plone sites, I'm convinced
+    that Plone is unsuitable not only for development of projects such as
+    the membership management, but actually for any kind of use. I'm
+    surprised at the lack of a good open source CMS. Plone is so bad and
+    yet it is still the best out there.
+
+    One or two months after I started studying Plone I settled on Django
+    for my needs and my main rationale was that if you give me any good
+    Python programmer, in one week he will be a good Django developer.
+    For Plone, make that six months or so.
+
+    I'm currently reading Martin Aspelli's book, chapter 6 or 7. At first
+    I thought that it is a great book. But then I realized that this is
+    because it has no competitor; it has a certain amount of decency that
+    makes it be a relief when all we had was the ludicrous Plone
+    documentation and the even more ludicrous Definitive Guide.  The book
+    is very good in that it is serious and provides serious solutions for
+    serious professionals, but the presentation is difficult to follow.
+    But it's unfair to blame the book only; it's the complexity of the
+    material that is also the problem. Page after page after page, I'm
+    astonished at the astronomical amount of complexity that is added upon
+    astronomical amount of complexity without having abstraction layers
+    that hide the underlying complexity. And as if all this was not
+    enough, you get incredible amounts of memory usage plus incredibly
+    slow response times.
+
+    If you want to know why you love Python, start your Python interpreter
+    and type "import this". Read the result and then tell me what Plone
+    has to do with it.
+
+    The only good thing about Plone is its out-of-the-box functionality.
+    But try to do _anything_ nontrivial, such as adding multilinguality
+    with LinguaPlone, or using an external authentication database such as
+    LDAP, and you'll struggle with incredibly stupid bugs and incredibly
+    lacking documentation. This does not become better as you gain
+    experience. It stays the same. (The only product I've ever seen and
+    resembles that is Oracle.)
+
+    I started reading Martin's book for two reasons: one, I want to learn
+    enough of Plone to rewrite its out-of-the-box functionality with
+    Django, and be able to migrate my sites. And second, I wanted to have
+    the ability to fix stupid bugs. But I lose hope for my second
+    aspiration each day. I'll probably live with the bugs until my first
+    aspiration is done. (Incidentally, I haven't so much as glanced over
+    Grok or Turbo Gears, I'll have to check them out.)
+
+    Let me also tell you that Martin, in his story about the IT developers
+    delivering in two weeks, makes two fundamental flaws. One of them he
+    understands himself: the Plone community simply does not have a
+    tradition of writing documentation, and although writing it is
+    possible in theory, developing the tradition of writing it is next to
+    impossible. As Martin puts it: "we can, but we won't". This is in
+    sharp contrast to the Django tradition (and the Python tradition),
+    where it is inconceivable to check in a patch that does not include
+    the required modifications in the "docs" directory. And it is a huge
+    problem, because books are no substitute for official documentation:
+    Martin's book is already starting to become dated, for example.
+
+    The second flaw of Martin is that he assumes that people always work
+    at 100% of their capacity, 40 hours per week. Have Pete and Andy
+    report to their boss, participate in meetings, answer technical
+    support or administrative phone calls, have unexpected problems in
+    other projects, or simply having a slight headache or a fight with
+    their wives, and these 9 days become 90. Understading buildout, Paste,
+    Repoze, Varnish, CacheFu, WSGI, Collections, workflows, Generic Setup,
+    policy products, Deliverance, rules, etc., etc., probably seems easy
+    to Martin because he already knows them, but he seems to not know
+    that, for me, reading ONE chapter of his book per day already pushes
+    my mind beyond the limit of my learning capacity. You can say that I'm
+    too old, but a year ago I finished the Django tutorial in 1 or 2 days
+    and started being marginally productive on day 3, while making heavy
+    reading of the reference documentation.
+
+    Phew... obviously I wanted to get these things out for some time.
+    Thanks for providing the incentive.
+
+The Plone community has managed to give the only decent open source CMS out
+there, and I'm sad to have spoken like that. But I leave it like that
+because I think that what I have spoken is true.
+
+
+Requirements and principles
+---------------------------
+
+These are the requirements for Version 1.0 of TwistyCMS:
+
+* Must provide most of Plone's default objects; namely folders, pages,
+  images, files, news, and events. These objects must have all the
+  attributes that Plone gives them, in order to ease migration from Plone
+  without loss of data.
+
+* Must provide Plone's four basic portlets, namely navigation, news,
+  upcoming events, and calendar.
+
+* Must provide Plone's permissions and workflow model.
+
+* Must be truly multilingual from the ground up. LinguaPlone-like
+  functionality must be present out of the box without the need to
+  install any further plugins.
+
+* Must have Plone migration functionality out of the box.
+
+* Must be at least 5 times better than Plone in terms of memory
+  consumption, response times, and startup time.
+
+* PostgreSQL shall be well-supported. Although other RDBMS's may be supported
+  through Django's ORM, there will be no warranty and no database upgrade
+  script between versions, unless Django gets to provide that functionality.
+
+* No duplication of functionality from Django. User authentication, session
+  management, etc., all done at the Django level. Wherever Django's
+  functionality is insufficient, improvements will preferably be contributed to
+  Django rather than added.
+
+* Great documentation, faithful to the tradition of Python and Django.
+
+* End product, not a platform. Other applications shall be written on Django,
+  not on TwistyCMS. But this does not mean that TwistyCMS's APIs won't be
+  perfectly documented, or that some good practices for customizations will
+  not be provided.
+
+* Configuration through either a file or a well-documented API. Configuration
+  through the web, if present, will only be an additional, secondary accessory.
