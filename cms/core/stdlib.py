@@ -28,8 +28,9 @@ def create_entry(site_name, path):
         max_seq = siblings.order_by('-seq')[0].seq
     else:
         max_seq = 0
+    # FIXME: the owner_id=1 and state_id=1 below is totally wrong
     entry = models.Entry(site=site, container=parent_entry, name=names[-1],
-        seq = max_seq+1)
+        owner_id=1, state_id=1, seq = max_seq+1)
     return entry
 
 def get_vobject(site, path, version_number=None):

@@ -43,30 +43,20 @@ def view_object(request, site, path, version_number=None):
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
     # FIXME: Get max_lengths from the models
+    name = forms.CharField(max_length=100)
     title = forms.CharField(max_length=150)
     short_title = forms.CharField(max_length=150, required=False)
     description = forms.CharField(widget=forms.Textarea, required=False)
     content = forms.CharField(widget=forms.Textarea)
 
 def edit_entry(request, site, path):
-    entry_is_new = False
-    try:
-        vobject = stdlib.get_vobject(site, path)
-        entry = vobject.entry
-        language = vobject.language
-    except models.Entry.DoesNotExist:
-        entry_is_new = True
-        entry = stdlib.create_entry(site, path)
-        if request.method=='POST':
-            entry.save()
-            vobject = models.Page(entry=entry, version_number=0,
-                language=models.Language.objects.all()[0],
-                format=models.ContentFormat.objects.get(descr='rst'),
-                content='')
-    if request.method!='POST' and entry_is_new:
-        form = EditForm()
-    elif request.method!='POST' and not entry_is_new:
+    # FIXME: form.name ignored
+    vobject = stdlib.get_vobject(site, path)
+    entry = vobject.entry
+    language = vobject.language
+    if request.method!='POST':
         form = EditForm({
+            'name': vobject.entry.name,
             'title': vobject.metatags.default().title,
             'short_title': vobject.metatags.default().short_title,
             'description': vobject.metatags.default().description,
@@ -95,6 +85,42 @@ def edit_entry(request, site, path):
           { 'vobject': vobject, 'form': form,
             'primary_buttons': _primary_buttons(request, 'edit'),
             'secondary_buttons': _secondary_buttons(request)})
+
+def create_new_page(request, site, parent_path):
+    # FIXME: no language selection, merely gets parent
+    # FIXME: only rst, no html
+    # FIXME: no check about contents of form.name
+    parent_vobject = stdlib.get_vobject(site, parent_path)
+    if request.method != 'POST':
+        form = EditForm()
+    else:
+        form = EditForm(request.POST)
+        if form.is_valid():
+            path = parent_path + '/' + form.cleaned_data['name']
+            entry = stdlib.create_entry(site, path)
+            entry.save()
+#            vobject = models.Page(entry=entry, version_number=0,
+#                language=models.Language.objects.all()[0],
+#                format=models.ContentFormat.objects.get(descr='rst'),
+#                content='')
+            npage = models.Page(
+                entry=entry, version_number=1,
+                language=parent_vobject.language,
+                format=models.ContentFormat.objects.get(descr='rst'),
+                content=form.cleaned_data['content'])
+            npage.save()
+            nmetatags = models.VObjectMetatags(
+                vobject=npage, language=parent_vobject.language,
+                title=form.cleaned_data['title'],
+                short_title=form.cleaned_data['short_title'],
+                description=form.cleaned_data['description'])
+            nmetatags.save()
+            return HttpResponseRedirect(reverse('cms.core.views.view_object',
+                                    kwargs={'site':site, 'path': path}))
+    return render_to_response('edit_page.html',
+        { 'vobject': parent_vobject, 'form': form,
+          'primary_buttons': _primary_buttons(request, 'edit'),
+          'secondary_buttons': _secondary_buttons(request)})
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
