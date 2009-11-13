@@ -1,3 +1,4 @@
+# -*- encoding: utf-8 -*-
 import re
 
 from django.shortcuts import render_to_response
@@ -10,22 +11,33 @@ from django.utils.translation import ugettext as _
 from cms.core import models
 from cms.core import stdlib
 
-def _main_buttons(request, selected_view):
+def _primary_buttons(request, selected_view):
     href_prefix = ''
     if re.search(r'__[a-zA-Z]+__/$', request.path): href_prefix = '../'
     result = []
-    for x in ('contents', 'view', 'edit', 'history'):
+    for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
         href_suffix = '__' + x + '__/'
-        if x == 'view': href_suffix = ''
+        if x == _(u'view'): href_suffix = ''
         href = href_prefix + href_suffix
         result.append({ 'name': x, 'href': href, 'selected': x==selected_view })
+    return result
+
+def _secondary_buttons(request):
+    result = [
+          { 'name': _(u'Add new…'),
+            'items': [
+                       { 'href': '__newpage__', 'name': _(u'Page') },
+                     ]
+          },
+        ]
     return result
     
 def view_object(request, site, path, version_number=None):
     vobject = stdlib.get_vobject(site, path, version_number)
     if hasattr(vobject, 'page'):
         return render_to_response('view_page.html', { 'vobject': vobject,
-                    'main_buttons': _main_buttons(request, 'view')})
+                    'primary_buttons': _primary_buttons(request, 'view'),
+                    'secondary_buttons': _secondary_buttons(request)})
     return None
 
 class EditForm(forms.Form):
@@ -81,7 +93,8 @@ def edit_entry(request, site, path):
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
           { 'vobject': vobject, 'form': form,
-            'main_buttons': _main_buttons(request, 'edit')})
+            'primary_buttons': _primary_buttons(request, 'edit'),
+            'secondary_buttons': _secondary_buttons(request)})
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
@@ -91,9 +104,17 @@ class MoveItemForm(forms.Form):
         s = self.cleaned_data['move_object']
         t = self.cleaned_data['before_object']
         n = self.cleaned_data['num_of_objects']
-        if s<1 or s>n: raise forms.ValidationError(_("The specified object to move is incorrect"))
-        if t<1 or t>n+1: raise forms.ValidationError(_("The specified target position is incorrect; use up to one more than the existing number of objects"))
-        if s==t or t==s+1: raise forms.ValidationError(_("You can't move an object before itself or before the next one; this would leave it in the same position"))
+        if s<1 or s>n:
+            raise forms.ValidationError(
+                                _("The specified object to move is incorrect"))
+        if t<1 or t>n+1:
+            raise forms.ValidationError(
+                   _("The specified target position is incorrect; "
+                    +"use up to one more than the existing number of objects"))
+        if s==t or t==s+1:
+            raise forms.ValidationError(
+             _("You can't move an object before itself or before the next one; "
+              +"this would leave it in the same position"))
         return self.cleaned_data
 
 def entry_contents(request, site, path):
@@ -110,10 +131,12 @@ def entry_contents(request, site, path):
     return render_to_response('entry_contents.html',
                 { 'vobject': vobject,
                   'move_item_form': move_item_form,
-                  'main_buttons': _main_buttons(request, 'contents')})
+                  'primary_buttons': _primary_buttons(request, 'contents'),
+                  'secondary_buttons': _secondary_buttons(request)})
 
 def entry_history(request, site, path):
     vobject = stdlib.get_vobject(site, path)
     return render_to_response('entry_history.html',
                 { 'vobject': vobject,
-                  'main_buttons': _main_buttons(request, 'history')})
+                  'primary_buttons': _main_buttons(request, 'history'),
+                  'secondary_buttons': _secondary_buttons(request)})

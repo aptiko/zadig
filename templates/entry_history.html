@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block mainContent %}
+<div class="mainContent">
+  <h1>History of {{vobject.entry.name}}</h1>
+  <table class="objectContents">
+    <tbody>
+    {% for v in vobject.entry.vobject_set.all.reverse %}
+        <tr><td>{{ v.version_number }}.</td>
+            <td>{{ v.date|date:"Y-m-d H:i:s" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

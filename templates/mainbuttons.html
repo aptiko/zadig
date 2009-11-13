@@ -1,9 +1,25 @@
-{% for b in main_buttons %}
-    {% if forloop.first %}<ul class="mainButtons">{% endif %}
+{% for b in primary_buttons %}
+    {% if forloop.first %}<ul class="primaryButtons">{% endif %}
     <li {% if b.selected %}class="selected"{%endif%}>
       <a href="{{b.href}}" >{{b.name}}</a>
     </li>
     {% if forloop.last %}</ul>{% endif %}
 {% endfor %}
-<div class="secondaryButtons">
-</div>
+
+{% for b in secondary_buttons %}
+  {% if forloop.first %}<ul class="secondaryButtons">{% endif %}
+  <li>
+    <dl>
+      <dt>
+        <a href="" onclick="return toggleMenu(this.parentNode)">{{b.name}}
+        &#9660;</a>
+      </dt>
+      <dd>
+        {% for i in b.items %}
+          <li><a href="{{i.href}}">{{i.name}}</a></li>
+        {% endfor %}
+      </dd>
+    </dl>
+  </li>
+  {% if forloop.last %}</ul>{% endif %}
+{% endfor %}
