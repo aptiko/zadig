@@ -2,12 +2,14 @@ from django.core import urlresolvers
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from cms.core import models
+import settings
 
 class permissions:
     VIEW=1
     EDIT=2
     ADMIN=3
     DELETE=4
+    SEARCH=5
 
 def get_entry_by_path(site, path):
     entry=None
@@ -16,7 +18,7 @@ def get_entry_by_path(site, path):
                                                     container=entry)
     return entry
 
-def create_entry(site_name, path):
+def create_entry(request, site_name, path):
     names = path.split('/')
     parent_entry = None
     for name in names[:-1]:
@@ -28,9 +30,10 @@ def create_entry(site_name, path):
         max_seq = siblings.order_by('-seq')[0].seq
     else:
         max_seq = 0
-    # FIXME: the owner_id=1 and state_id=1 below is totally wrong
+    initial_state = models.Workflow.objects.get(id=settings.WORKFLOW_ID) \
+        .state_transitions.get(source_state__descr="Nonexistent").target_state
     entry = models.Entry(site=site, container=parent_entry, name=names[-1],
-        owner_id=1, state_id=1, seq = max_seq+1)
+        owner=request.user, state=initial_state, seq = max_seq+1)
     return entry
 
 def get_vobject(site, path, version_number=None):

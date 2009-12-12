@@ -87,7 +87,8 @@ class Site(models.Model):
 
 class EntryManager(models.Manager):
     def get_query_set(self):
-        return super(EntryManager, self).get_query_set() # More to follow in order to check permissions
+        # FIXME: Check permissions
+        return super(EntryManager, self).get_query_set()
 
 class Entry(models.Model):
     site = models.ForeignKey(Site)
@@ -97,6 +98,7 @@ class Entry(models.Model):
     seq = models.PositiveIntegerField()
     owner = models.ForeignKey(django.contrib.auth.models.User)
     state = models.ForeignKey(State)
+    objects = EntryManager()
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -120,6 +122,8 @@ class EntryPermission(models.Model):
     class Meta:
         unique_together = ('lentity', 'permission')
         db_table = 'cms_entrypermission'
+
+# FIXME: Change vobject manager so that it checks permissions
 
 class VObject(models.Model):
     entry = models.ForeignKey(Entry, related_name="vobject_set")

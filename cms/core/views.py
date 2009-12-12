@@ -97,7 +97,7 @@ def create_new_page(request, site, parent_path):
         form = EditForm(request.POST)
         if form.is_valid():
             path = parent_path + '/' + form.cleaned_data['name']
-            entry = stdlib.create_entry(site, path)
+            entry = stdlib.create_entry(request, site, path)
             entry.save()
 #            vobject = models.Page(entry=entry, version_number=0,
 #                language=models.Language.objects.all()[0],
@@ -164,5 +164,5 @@ def entry_history(request, site, path):
     vobject = stdlib.get_vobject(site, path)
     return render_to_response('entry_history.html',
                 { 'vobject': vobject,
-                  'primary_buttons': _main_buttons(request, 'history'),
+                  'primary_buttons': _primary_buttons(request, 'history'),
                   'secondary_buttons': _secondary_buttons(request)})

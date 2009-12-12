@@ -84,3 +84,5 @@ INSTALLED_APPS = (
     'cms.core',
     'cms.applets.standard',
 )
+
+WORKFLOW_ID = 1

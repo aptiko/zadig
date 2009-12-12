@@ -172,7 +172,7 @@ provide the most important part of the API.
    Return the entry at the specified site and path, or
    :const:`None` if such an entry does not exist.
 
-.. function:: core.stdlib.create_entry(site_name, path)
+.. function:: core.stdlib.create_entry(request, site_name, path)
 
    Create an entry object at the specified site and path. The
    parent entry must already exist, or an exception is raised. If
