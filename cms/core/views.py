@@ -33,9 +33,10 @@ def _secondary_buttons(request):
     return result
     
 def view_object(request, site, path, version_number=None):
-    vobject = stdlib.get_vobject(site, path, version_number)
+    vobject = stdlib.get_vobject(request, site, path, version_number)
     if hasattr(vobject, 'page'):
-        return render_to_response('view_page.html', { 'vobject': vobject,
+        return render_to_response('view_page.html', { 'request': request,
+                    'vobject': vobject,
                     'primary_buttons': _primary_buttons(request, 'view'),
                     'secondary_buttons': _secondary_buttons(request)})
     return None
@@ -51,7 +52,7 @@ class EditForm(forms.Form):
 
 def edit_entry(request, site, path):
     # FIXME: form.name ignored
-    vobject = stdlib.get_vobject(site, path)
+    vobject = stdlib.get_vobject(request, site, path)
     entry = vobject.entry
     language = vobject.language
     if request.method!='POST':
@@ -82,7 +83,7 @@ def edit_entry(request, site, path):
             return HttpResponseRedirect(reverse('cms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
-          { 'vobject': vobject, 'form': form,
+          { 'request': request, 'vobject': vobject, 'form': form,
             'primary_buttons': _primary_buttons(request, 'edit'),
             'secondary_buttons': _secondary_buttons(request)})
 
@@ -90,7 +91,7 @@ def create_new_page(request, site, parent_path):
     # FIXME: no language selection, merely gets parent
     # FIXME: only rst, no html
     # FIXME: no check about contents of form.name
-    parent_vobject = stdlib.get_vobject(site, parent_path)
+    parent_vobject = stdlib.get_vobject(request, site, parent_path)
     if request.method != 'POST':
         form = EditForm()
     else:
@@ -118,7 +119,7 @@ def create_new_page(request, site, parent_path):
             return HttpResponseRedirect(reverse('cms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
-        { 'vobject': parent_vobject, 'form': form,
+        { 'request': request, 'vobject': parent_vobject, 'form': form,
           'primary_buttons': _primary_buttons(request, 'edit'),
           'secondary_buttons': _secondary_buttons(request)})
 
@@ -144,7 +145,7 @@ class MoveItemForm(forms.Form):
         return self.cleaned_data
 
 def entry_contents(request, site, path):
-    vobject = stdlib.get_vobject(site, path)
+    vobject = stdlib.get_vobject(request, site, path)
     if request.method == 'POST':
         move_item_form = MoveItemForm(request.POST)
         if move_item_form.is_valid():
@@ -155,14 +156,14 @@ def entry_contents(request, site, path):
         move_item_form = MoveItemForm(initial=
                 {'num_of_objects': vobject.entry.subentries.count()})
     return render_to_response('entry_contents.html',
-                { 'vobject': vobject,
+                { 'request': request, 'vobject': vobject,
                   'move_item_form': move_item_form,
                   'primary_buttons': _primary_buttons(request, 'contents'),
                   'secondary_buttons': _secondary_buttons(request)})
 
 def entry_history(request, site, path):
-    vobject = stdlib.get_vobject(site, path)
+    vobject = stdlib.get_vobject(request, site, path)
     return render_to_response('entry_history.html',
-                { 'vobject': vobject,
+                { 'request': request, 'vobject': vobject,
                   'primary_buttons': _primary_buttons(request, 'history'),
                   'secondary_buttons': _secondary_buttons(request)})

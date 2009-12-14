@@ -95,7 +95,10 @@ mentioned unless there is something unusual about it.
       The *related_name* of this attribute is ``subentries``.
       Therefore, if you have an entry ``myentry``, then
       ``myentry.subentries`` is the list of entries contained in
-      ``myentry``.
+      ``myentry``. You should not, however, use ``subentries``, unless
+      you have a good reason to do so; instead, use the
+      :func:`~core.stdlib.get_entry_subentries` function, which checks
+      permissions.
 
    .. attribute:: core.models.Entry.name
 
@@ -167,10 +170,16 @@ Helper functions
 The :mod:`core.stdlib` module contains several helper functions that
 provide the most important part of the API.
 
-.. function:: core.stdlib.get_entry_by_path(site_name, path)
+.. function:: core.stdlib.get_entry_permissions(request, entry)
+
+   Return the permissions the logged on user has on the specified
+   entry.  Returns a set of permissions.
+
+.. function:: core.stdlib.get_entry_by_path(request, site_name, path)
 
    Return the entry at the specified site and path, or
-   :const:`None` if such an entry does not exist.
+   :const:`None` if such an entry does not exist or the user does not
+   have permissions to view it.
 
 .. function:: core.stdlib.create_entry(request, site_name, path)
 
@@ -181,12 +190,20 @@ provide the most important part of the API.
    :class:`~core.models.Entry` object, which has not been saved to
    the database.
 
-.. function:: core.stdlib.get_vobject(site_name, path[, version_number])
+.. function:: core.stdlib.get_vobject(request, site_name, path[, version_number])
 
    Return the vobject that corresponds to the entry at the
    specified site and path. If *version_number* is not specified,
    it returns the latest vobject. An exception is raised if the
-   entry does not exist.
+   entry does not exist, or if the user does not have permission to
+   view it.
+
+.. function:: core.stdlib.get_entry_vobject(request, entry[, version_number])
+
+   Return the entry's vobject.  If *version_number* is not specified,
+   it returns the latest vobject. An exception is raised if the
+   entry does not exist, or if the user does not have permission to
+   view it.
 
 .. function:: core.stdlib.get_entry_path(entry)
 
@@ -205,7 +222,13 @@ provide the most important part of the API.
    *entry2*, or the parent of its parent, or any ancenstor, and
    :const:`False` otherwise.
 
-.. function:: core.stdlib.reorder(parent_entry, source_seq, target_seq)
+.. function:: core.stdlib.get_entry_subentries(request, entry)
+
+   Return a list of :class:`~core.models.Entry` objects, which are the
+   *entry* subentries which the user has permission to search, in
+   order.
+
+.. function:: core.stdlib.reorder(request, parent_entry, source_seq, target_seq)
 
    Within *parent_entry*, move the subentry with
    :samp:`seq={source_seq}` before subentry with
@@ -220,4 +243,5 @@ provide the most important part of the API.
    accordingly).  Raises an exception if *source_seq* or *target_seq*
    are inappropriate; for example, if *source_seq* is larger than the
    number of children, or if *source_seq* and *target_seq* are both
-   the same number.
+   the same number. Also raises an exception if the user does not have
+   permission to do this.

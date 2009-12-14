@@ -143,17 +143,18 @@ the **anonymous user**. Each user and group has certain
 **permissions** on each object. There are five kinds of permissions:
 *view*, *edit*, *admin*, *search*, and *delete*. Someone with *edit*
 permission, besides editing the entry, can also mark the entry as
-deleted and add subobjects to it; you also need *edit* permission to
-view the entry history; with *view* permission you can only view the
-current entry version (the last vobject). Someone with *admin*
-permissions can modify the object's permissions and state. Someone
-with *delete* permission can remove the entry, recursively including
-its subentries (irrespective of their permissions). Someone with
-*search* permission can see the entry in listings (e.g. the anonymous
-user has view permission on a public draft, but not search permission;
-you can view it if you know its URL, but it won't show in indexes or
-searches).  Each entry has an **owner**, and the owner has all
-permissions on the object.
+deleted, view the list of all subobjects regardless of whether they
+have any permission on them, and add subobjects to the entry; you also
+need *edit* permission to view the entry history; with *view*
+permission you can only view the current entry version (the last
+vobject). Someone with *admin* permissions can modify the object's
+permissions and state. Someone with *delete* permission can remove the
+entry, recursively including its subentries (irrespective of their
+permissions). Someone with *search* permission can see the entry in
+listings; e.g. the anonymous user has view permission on a public
+draft, but not search permission; you can view it if you know its URL,
+but it won't show in indexes or searches.  Each entry has an
+**owner**, and the owner has all permissions on the object.
 
 .. admonition:: Note
 
