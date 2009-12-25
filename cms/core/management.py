@@ -1,18 +1,17 @@
 from django.dispatch import dispatcher
 from django.db.models import signals
 from cms.core import models
-from cms.core.stdlib import permissions
 from django.contrib.auth.models import User
 from sys import stderr
 
 def import_initial_data(app, created_models, verbosity, **kwargs):
     if models.Permission in created_models:
         stderr.write("Populating %s table\n" % (models.Permission._meta.db_table,))
-        for id, descr in [(permissions.VIEW,   "view"),
-                          (permissions.EDIT,   "edit"),
-                          (permissions.ADMIN,  "admin"),
-                          (permissions.DELETE, "delete"),
-                          (permissions.SEARCH, "search")]:
+        for id, descr in [(models.permissions.VIEW,   "view"),
+                          (models.permissions.EDIT,   "edit"),
+                          (models.permissions.ADMIN,  "admin"),
+                          (models.permissions.DELETE, "delete"),
+                          (models.permissions.SEARCH, "search")]:
             new_permission = models.Permission(id=id, descr=descr)
             new_permission.save()
     view   = models.Permission.objects.get(descr="view")

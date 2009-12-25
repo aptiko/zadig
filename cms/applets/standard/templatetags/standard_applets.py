@@ -2,8 +2,7 @@
 from django import template
 from django.utils.translation import ugettext as _
 
-from cms.core import stdlib
-import cms.core.models
+from cms.core import models
 
 register = template.Library()
 
@@ -19,8 +18,8 @@ class BreadcrumbsNode(template.Node):
             if result:
                 result = u'''<a href="%s">%s</a>
                     <span class="breadcrumb-separator">→</span> %s''' % (
-                    stdlib.get_entry_url(vobject.entry),
-                    vobject.metatags.default().short_title, result)
+                    vobject.entry.url, vobject.metatags.default().short_title,
+                                                                    result)
             else:
                 result = vobject.metatags.default().short_title
             container = vobject.entry.container
@@ -42,16 +41,16 @@ class NavigationNode(template.Node):
         pass
     def render_entry_contents(self, request, entry, current_entry, level):
         result = ''
-        siblings = stdlib.get_entry_subentries(request, entry)
+        siblings = entry.get_subentries(request)
         for s in siblings:
             if s==siblings[0]:
                 result += '<ul class="navigationLevel%d">' % (level,)
             result += '<li><a class="state%s %s" href="%s">%s</a>' % (
                 s.state.descr.replace(' ',''),
                 s.id==current_entry.id and 'current' or '',
-                stdlib.get_entry_url(s),
-                stdlib.get_entry_vobject(request, s).metatags.default().short_title)
-            if stdlib.contains(s, current_entry) or s.id==current_entry.id:
+                s.url,
+                s.get_vobject(request).metatags.default().short_title)
+            if s.contains(current_entry) or s.id==current_entry.id:
                 result += self.render_entry_contents(request, s, current_entry, level+1)
             result += '</li>'
         if result: result += '</ul>'
@@ -60,7 +59,7 @@ class NavigationNode(template.Node):
         vobject = context.get('vobject', None)
         request = context['request']
         result = self.render_entry_contents(request,
-            stdlib.get_entry_by_path(request, vobject.entry.site.name, ''),
+            models.Entry.objects.get_by_path(request, vobject.entry.site.name, ''),
             vobject.entry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet"><dt>%s</dt>

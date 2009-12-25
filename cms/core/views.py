@@ -9,7 +9,6 @@ from django import forms
 from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
 from cms.core import models
-from cms.core import stdlib
 
 def _primary_buttons(request, selected_view):
     href_prefix = ''
@@ -33,7 +32,8 @@ def _secondary_buttons(request):
     return result
     
 def view_object(request, site, path, version_number=None):
-    vobject = stdlib.get_vobject(request, site, path, version_number)
+    vobject = models.VObject.objects.get_by_path(request, site, path,
+                                                            version_number)
     if hasattr(vobject, 'page'):
         return render_to_response('view_page.html', { 'request': request,
                     'vobject': vobject,
@@ -52,7 +52,7 @@ class EditForm(forms.Form):
 
 def edit_entry(request, site, path):
     # FIXME: form.name ignored
-    vobject = stdlib.get_vobject(request, site, path)
+    vobject = models.VObject.objects.get_by_path(request, site, path)
     entry = vobject.entry
     language = vobject.language
     if request.method!='POST':
@@ -91,14 +91,14 @@ def create_new_page(request, site, parent_path):
     # FIXME: no language selection, merely gets parent
     # FIXME: only rst, no html
     # FIXME: no check about contents of form.name
-    parent_vobject = stdlib.get_vobject(request, site, parent_path)
+    parent_vobject = models.VObject.objects.get_by_path(request, site, parent_path)
     if request.method != 'POST':
         form = EditForm()
     else:
         form = EditForm(request.POST)
         if form.is_valid():
             path = parent_path + '/' + form.cleaned_data['name']
-            entry = stdlib.create_entry(request, site, path)
+            entry = models.Entry(request, site, path)
             entry.save()
 #            vobject = models.Page(entry=entry, version_number=0,
 #                language=models.Language.objects.all()[0],
@@ -145,13 +145,13 @@ class MoveItemForm(forms.Form):
         return self.cleaned_data
 
 def entry_contents(request, site, path):
-    vobject = stdlib.get_vobject(request, site, path)
+    vobject = models.VObject.objects.get_by_path(request, site, path)
     if request.method == 'POST':
         move_item_form = MoveItemForm(request.POST)
         if move_item_form.is_valid():
             s = move_item_form.cleaned_data['move_object']
             t = move_item_form.cleaned_data['before_object']
-            stdlib.reorder(vobject.entry, s, t)
+            vobject.entry.reorder(request, s, t)
     else:
         move_item_form = MoveItemForm(initial=
                 {'num_of_objects': vobject.entry.subentries.count()})
@@ -162,7 +162,7 @@ def entry_contents(request, site, path):
                   'secondary_buttons': _secondary_buttons(request)})
 
 def entry_history(request, site, path):
-    vobject = stdlib.get_vobject(request, site, path)
+    vobject = models.VObject.objects.get_by_path(request, site, path)
     return render_to_response('entry_history.html',
                 { 'request': request, 'vobject': vobject,
                   'primary_buttons': _primary_buttons(request, 'history'),
