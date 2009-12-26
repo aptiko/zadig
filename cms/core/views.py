@@ -89,7 +89,7 @@ def edit_entry(request, site, path):
             npage.save()
             nmetatags = models.VObjectMetatags(
                 vobject=npage,
-                language=vobject.language,
+                language=npage.language,
                 title=form.cleaned_data['title'],
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])
