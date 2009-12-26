@@ -102,8 +102,8 @@ class EntryManager(models.Manager):
         entry=None
         for name in path.split('/'):
             entry = self.get(site__name=site, name=name, container=entry)
-        if not permissions.VIEW in entry.get_permissions(request):
-            entry = None
+            if not permissions.VIEW in entry.get_permissions(request):
+                return None
         return entry
 
 class Entry(models.Model):

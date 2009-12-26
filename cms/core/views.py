@@ -51,10 +51,12 @@ def view_object(request, site, path, version_number=None):
 
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
-    # FIXME: Get max_lengths from the models
-    name = forms.CharField(max_length=100)
-    title = forms.CharField(max_length=150)
-    short_title = forms.CharField(max_length=150, required=False)
+    name = forms.CharField(
+        max_length=models.Entry._meta.get_field('name').max_length)
+    title = forms.CharField(
+        max_length=models.VObjectMetatags._meta.get_field('title').max_length)
+    short_title = forms.CharField(required=False, max_length=
+        models.VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
     content = forms.CharField(widget=forms.Textarea)
 
