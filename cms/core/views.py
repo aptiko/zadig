@@ -8,6 +8,7 @@ from django.template import RequestContext
 from django import forms
 from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
+from django.core.exceptions import ValidationError
 from cms.core import models
 
 def _primary_buttons(request, selected_view):
@@ -21,8 +22,15 @@ def _primary_buttons(request, selected_view):
         result.append({ 'name': x, 'href': href, 'selected': x==selected_view })
     return result
 
-def _secondary_buttons(request):
+def _secondary_buttons(request, vobject):
     result = [
+          { 'name': _(u'State:') + ' ' + vobject.entry.state.descr,
+            'items': [
+                       { 'href': '__state__/%d' % (x.target_state.id,),
+                         'name': x.target_state.descr }
+                            for x in vobject.entry.state.source_rules.all()
+                     ]
+          },
           { 'name': _(u'Add new…'),
             'items': [
                        { 'href': '__newpage__', 'name': _(u'Page') },
@@ -38,7 +46,7 @@ def view_object(request, site, path, version_number=None):
         return render_to_response('view_page.html', { 'request': request,
                     'vobject': vobject,
                     'primary_buttons': _primary_buttons(request, 'view'),
-                    'secondary_buttons': _secondary_buttons(request)})
+                    'secondary_buttons': _secondary_buttons(request, vobject)})
     return None
 
 class EditForm(forms.Form):
@@ -85,7 +93,7 @@ def edit_entry(request, site, path):
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
             'primary_buttons': _primary_buttons(request, 'edit'),
-            'secondary_buttons': _secondary_buttons(request)})
+            'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def create_new_page(request, site, parent_path):
     # FIXME: no language selection, merely gets parent
@@ -121,7 +129,7 @@ def create_new_page(request, site, parent_path):
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
           'primary_buttons': _primary_buttons(request, 'edit'),
-          'secondary_buttons': _secondary_buttons(request)})
+          'secondary_buttons': _secondary_buttons(request, parent_vobject)})
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
@@ -159,11 +167,23 @@ def entry_contents(request, site, path):
                 { 'request': request, 'vobject': vobject,
                   'move_item_form': move_item_form,
                   'primary_buttons': _primary_buttons(request, 'contents'),
-                  'secondary_buttons': _secondary_buttons(request)})
+                  'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def entry_history(request, site, path):
     vobject = models.VObject.objects.get_by_path(request, site, path)
     return render_to_response('entry_history.html',
                 { 'request': request, 'vobject': vobject,
                   'primary_buttons': _primary_buttons(request, 'history'),
-                  'secondary_buttons': _secondary_buttons(request)})
+                  'secondary_buttons': _secondary_buttons(request, vobject)})
+
+def change_state(request, site, path, new_state_id):
+    vobject = models.VObject.objects.get_by_path(request, site, path)
+    entry = vobject.entry
+    new_state_id = int(new_state_id)
+    if new_state_id not in [x.target_state.id
+                            for x in entry.state.source_rules.all()]:
+        raise ValidationError(_(u"Invalid target state"))
+    entry.state = models.State.objects.get(pk=new_state_id)
+    entry.save()
+    return HttpResponseRedirect(reverse('cms.core.views.view_object',
+                                    kwargs={'site':site, 'path': path}))
