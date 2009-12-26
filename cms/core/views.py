@@ -51,6 +51,8 @@ def view_object(request, site, path, version_number=None):
 
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
+    language = forms.ChoiceField(choices=
+        [(l.id, l.id) for l in models.Language.objects.all()])
     name = forms.CharField(
         max_length=models.Entry._meta.get_field('name').max_length)
     title = forms.CharField(
@@ -67,6 +69,7 @@ def edit_entry(request, site, path):
     language = vobject.language
     if request.method!='POST':
         form = EditForm({
+            'language': vobject.language.id,
             'name': vobject.entry.name,
             'title': vobject.metatags.default().title,
             'short_title': vobject.metatags.default().short_title,
@@ -79,7 +82,8 @@ def edit_entry(request, site, path):
             npage = models.Page(
                 entry=entry,
                 version_number=vobject.version_number + 1,
-                language=vobject.language,
+                language=models.Language.objects.get(
+                                            id=form.cleaned_data['language']),
                 format=models.ContentFormat.objects.get(descr='rst'),
                 content=form.cleaned_data['content'])
             npage.save()
@@ -98,12 +102,11 @@ def edit_entry(request, site, path):
             'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def create_new_page(request, site, parent_path):
-    # FIXME: no language selection, merely gets parent
     # FIXME: only rst, no html
     # FIXME: no check about contents of form.name
     parent_vobject = models.VObject.objects.get_by_path(request, site, parent_path)
     if request.method != 'POST':
-        form = EditForm()
+        form = EditForm({ 'language': parent_vobject.language.id })
     else:
         form = EditForm(request.POST)
         if form.is_valid():
@@ -116,12 +119,15 @@ def create_new_page(request, site, parent_path):
 #                content='')
             npage = models.Page(
                 entry=entry, version_number=1,
-                language=parent_vobject.language,
+                language=models.Language.objects.get(
+                                            id=form.cleaned_data['language']),
                 format=models.ContentFormat.objects.get(descr='rst'),
                 content=form.cleaned_data['content'])
             npage.save()
             nmetatags = models.VObjectMetatags(
-                vobject=npage, language=parent_vobject.language,
+                vobject=npage,
+                language=models.Language.objects.get(
+                                            id=form.cleaned_data['language']),
                 title=form.cleaned_data['title'],
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])

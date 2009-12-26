@@ -221,6 +221,11 @@ mentioned unless there is something unusual about it.
    respective models; :attr:`title`, :attr:`short_title` and
    :attr:`description` are strings.
 
+   The default manager has an additional method, :meth:`default`,
+   which returns the default set of metatags. This is normally the set
+   of metatags in the language of the vobject; but if such a set does
+   not exist, :meth:`default` returns a random set of metatags.
+
 .. class:: core.models.ContentFormat
 
    A lookup storing content formats, such as "text/html" or

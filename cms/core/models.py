@@ -273,9 +273,12 @@ class VObject(models.Model):
         permissions = (("view", "View"),)
 
 class MetatagManager(models.Manager):
-    "Adds the 'default' method that returns the default set of metatags."
     def default(self):
-        return self.get(language=self.all()[0].vobject.language)
+        first_metatags = self.all()[0]
+        vobject_language = first_metatags.vobject.language
+        a = self.filter(language=vobject_language)
+        if a: return a[0]
+        return first_metatags
 
 class VObjectMetatags(models.Model):
     vobject = models.ForeignKey(VObject, related_name="metatags")
