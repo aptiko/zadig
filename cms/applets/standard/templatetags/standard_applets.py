@@ -34,6 +34,23 @@ def do_breadcrumbs(parser, token):
 
 register.tag('breadcrumbs', do_breadcrumbs)
 
+### Login ###
+
+class LoginNode(template.Node):
+    def __init__(self):
+        pass
+    def render(self, context):
+        request = context['request']
+        if not request.user.is_authenticated():
+            return _(u'<a href="/fixme">Login</a>')
+        return _(u"Welcome %s" % (request.user,))
+
+def do_login(parser, token):
+    return LoginNode()
+
+register.tag('login', do_login)
+
+
 ### Navigation ###
 
 class NavigationNode(template.Node):

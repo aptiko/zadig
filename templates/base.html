@@ -19,7 +19,7 @@
   <div id="portalTop">
     <h1>{{ vobject.entry.site.name }}</h1>
     <div id="portalPersonaltools">
-    &nbsp;
+      {% login %}
     </div>
     <div id="portalBreadcrumbs">
       {% trans "You are here: " %}{% breadcrumbs %}
