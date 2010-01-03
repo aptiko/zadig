@@ -86,10 +86,13 @@ this email I sent to a colleague on 27 June 2008:
     Phew... obviously I wanted to get these things out for some time.
     Thanks for providing the incentive.
 
-The Plone community has managed to give the only decent open source CMS out
-there, and I'm sad to have spoken like that. But I leave it like that
-because I think that what I have spoken is true.
-
+The Plone community has managed to give the only decent open source
+CMS out there, and I'm sad to have spoken like that. I leave it as is
+because I think that what I have spoken is true. I admit, however,
+that the email above expresses my frustration over the bad sides of
+Plone, while at the same time mostly ignores my appreciation of the
+good ones, which is obvious by the fact that I've based TwistyCMS
+design on Plone and that I've copied things shamelessly.
 
 Requirements and principles
 ---------------------------
@@ -122,7 +125,7 @@ These are the requirements for Version 1.0 of TwistyCMS:
 * No duplication of functionality from Django. User authentication, session
   management, etc., all done at the Django level. Wherever Django's
   functionality is insufficient, improvements will preferably be contributed to
-  Django rather than added.
+  Django rather than to TwistyCMS.
 
 * Great documentation, faithful to the tradition of Python and Django.
 

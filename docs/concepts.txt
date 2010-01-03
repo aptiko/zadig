@@ -4,11 +4,8 @@
 TwistyCMS concepts
 ==================
 
-Object hierarchy
-================
-
-(Here we discuss containment hierarchy, such as in a filesystem, and
-not a class hierarchy.)
+Object containment
+==================
 
 In TwistyCMS, objects can be contained in other objects. For example,
 you can have page ``/mypage/hobbies``, and it can contain
@@ -22,7 +19,7 @@ addition to having its own content.
     that it conflicts with the URL scheme, where any resource can have
     subresources. Because of this conflict, it is difficult for users to
     understand the notion of a folder and a page. For example, a user
-    would normally create a page ``/mypage/hobbies``, and then they
+    would normally create a page ``/mypage/hobbies``, and then 
     typically ask: how do I now create ``/mypage/hobbies/django``? The
     Plone reply (hobbies must be made a folder, the current hobbies page
     must become a page inside the folder, and must be set as default, and
@@ -61,6 +58,10 @@ entry.  An entry can be a page entry, an image entry, etc., and a
 vobject can be a vpage, a vimage, etc.  Developers should be very
 clear about that. The end users should not be bothered, and the word
 **object** should be used for everything.
+
+.. admonition:: Not implemented yet
+
+   No type of object has yet been implemented except for pages.
 
 Sites
 =====
@@ -121,6 +122,14 @@ In this section we have been talking of "objects". To be precise,
 each *entry* has a name, and each *vobject* has a set of metatags
 (i.e. a set of title pairs and a set of descriptions).
 
+.. admonition:: Not implemented yet
+
+   The above details are not entirely implemented yet. Specifically,
+   although the database is designed so that the metatags are
+   multilingual, the user interface currently only provides a single
+   set of metatags, which is in the page's language. In addition, the
+   "don't show in the breadcrumbs" option has not been implemented.
+
 Deletions
 =========
 
@@ -133,6 +142,11 @@ entry exists, another entry with the same name cannot be created.
 
 The second way to delete is to **remove the entry**, in which case the
 entry, including the history, is permanently and irrevocably deleted.
+
+.. admonition:: Not implemented yet
+
+   Although the database is ready for all that, deleting an object (in
+   any way) has not yet been implemented in the user interface.
 
 Permissions and workflows
 =========================
@@ -235,6 +249,11 @@ special about them. Otherwise, they are identical to applets.
 Applets included with TwistyCMS, such as the breadcrumbs and the
 navigation, are in ``cms/applets/standard``.
 
+.. admonition:: Not implemented yet
+
+   The portlets for pending events, news, and calendar have not been
+   implemented yet.
+
 Besides a template tag, an applet can also provide several
 configuration options:
 
@@ -330,3 +349,7 @@ options form is not treated as a whole form but as a part of a form
 that is mixed with the entry options of all other installed applets,
 resulting in one form for all applets together; but this makes no
 difference for the applet code.
+
+.. admonition:: Not implemented yet
+
+   The thing about options above has not been implemented yet.
