@@ -3,6 +3,7 @@ from django import template
 from django.utils.translation import ugettext as _
 
 from cms.core import models
+from cms.core import utils
 
 register = template.Library()
 
@@ -42,8 +43,10 @@ class LoginNode(template.Node):
     def render(self, context):
         request = context['request']
         if not request.user.is_authenticated():
-            return _(u'<a href="/fixme">Login</a>')
-        return _(u"Welcome %s" % (request.user,))
+            return _(u'<a href="%s__login__/">Login</a>' %
+                utils.get_current_path(request),)
+        return _(u'Welcome %s. <a href="%s__logout__/">Logout</a>' %
+            (request.user, utils.get_current_path(request)))
 
 def do_login(parser, token):
     return LoginNode()

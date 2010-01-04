@@ -246,3 +246,14 @@ mentioned unless there is something unusual about it.
 
    Inherits :class:`~core.models.VObject` and designates an image. Has
    attribute :attr:`content`, an image field.
+
+Utility functions
+=================
+
+The functions below are in module core.utils.
+
+.. function:: core.utils.get_current_path(request)
+
+   Return the path to the current entry. This is something like
+   request.path, but does not include any directive like ``__edit__``
+   and so on.

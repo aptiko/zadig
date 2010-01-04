@@ -9,6 +9,7 @@ from django import forms
 from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
+import django.contrib.auth
 from cms.core import models
 
 def _primary_buttons(request, selected_view):
@@ -195,3 +196,35 @@ def change_state(request, site, path, new_state_id):
     entry.save()
     return HttpResponseRedirect(reverse('cms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
+
+def logout(request, site, path):
+    django.contrib.auth.logout(request)
+    return view_object(request, site, path)
+
+class LoginForm(forms.Form):
+    from django.contrib.auth.models import User
+    username = forms.CharField(max_length=
+        django.contrib.auth.models.User._meta.get_field('username').max_length)
+    password = forms.CharField(max_length=63, widget=forms.PasswordInput)
+
+def login(request, site, path):
+    vobject = models.VObject.objects.get_by_path(request, site, path)
+    message = ''
+    if request.method!='POST':
+        form = LoginForm({})
+    else:
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = django.contrib.auth.authenticate(
+                            username=form.cleaned_data['username'],
+                            password=form.cleaned_data['password'])
+            if user is not None:
+                if user.is_active:
+                    django.contrib.auth.login(request, user)
+                    return view_object(request, site, path)
+                else:
+                    raise Exception(_(u"Account is disabled"))
+            message = _(u"Login incorrect")
+    return render_to_response('login.html',
+          { 'request': request, 'vobject': vobject, 'form': form,
+            'message': message })
