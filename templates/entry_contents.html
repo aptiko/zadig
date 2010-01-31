@@ -13,7 +13,7 @@
           <th></th>
       </tr></thead>
       <tbody>
-        {% for s in vobject.entry.subentries.all %}
+        {% for s in subentries %}
           <tr><td>{{ s.seq }}</td>
               <td><a href="../{{s.name}}">{{s.name}}</a></td>
               <td>{{s.vobject_set.latest.metatags.default.short_title}}</td>

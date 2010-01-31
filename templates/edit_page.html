@@ -6,6 +6,9 @@
   <form class="editObject" action="" method="POST">
   <table>
   {{form.as_table}}
+  {% for o in applet_options %}
+     {{o.entry_options_form.as_table}}
+  {% endfor %}
   </table>
   <input type="submit" value="Submit" />
   </form>

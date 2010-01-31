@@ -11,6 +11,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
 from cms.core import models
+import cms.core
 
 def _primary_buttons(request, selected_view):
     href_prefix = ''
@@ -68,6 +69,7 @@ def edit_entry(request, site, path):
     vobject = models.VObject.objects.get_by_path(request, site, path)
     entry = vobject.entry
     language = vobject.language
+    applet_options = [o for o in cms.core.applet_options if o['entry_options']]
     if request.method!='POST':
         form = EditForm({
             'language': vobject.language.id,
@@ -77,9 +79,15 @@ def edit_entry(request, site, path):
             'description': vobject.metatags.default().description,
             'content': vobject.page.content
         })
+        for o in applet_options:
+            o['entry_options_form'] = o['entry_options'](request, site, path)
     else:
         form = EditForm(request.POST)
-        if form.is_valid():
+        for o in applet_options:
+            o['entry_options_form'] = o['EntryOptionsForm'](request.POST)
+        all_forms_are_valid = all((form.is_valid(),) +
+            tuple([o['entry_options_form'].is_valid() for o in applet_options]))
+        if all_forms_are_valid:
             npage = models.Page(
                 entry=entry,
                 version_number=vobject.version_number + 1,
@@ -95,10 +103,13 @@ def edit_entry(request, site, path):
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])
             nmetatags.save()
+            for o in applet_options:
+                o['entry_options'](request, site, path, o['entry_options_form'])
             return HttpResponseRedirect(reverse('cms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
+            'applet_options': applet_options,
             'primary_buttons': _primary_buttons(request, 'edit'),
             'secondary_buttons': _secondary_buttons(request, vobject)})
 
@@ -163,6 +174,7 @@ class MoveItemForm(forms.Form):
 
 def entry_contents(request, site, path):
     vobject = models.VObject.objects.get_by_path(request, site, path)
+    subentries = vobject.entry.get_subentries(request)
     if request.method == 'POST':
         move_item_form = MoveItemForm(request.POST)
         if move_item_form.is_valid():
@@ -171,10 +183,10 @@ def entry_contents(request, site, path):
             vobject.entry.reorder(request, s, t)
     else:
         move_item_form = MoveItemForm(initial=
-                {'num_of_objects': vobject.entry.subentries.count()})
+            {'num_of_objects': subentries.count()})
     return render_to_response('entry_contents.html',
                 { 'request': request, 'vobject': vobject,
-                  'move_item_form': move_item_form,
+                  'subentries': subentries, 'move_item_form': move_item_form,
                   'primary_buttons': _primary_buttons(request, 'contents'),
                   'secondary_buttons': _secondary_buttons(request, vobject)})
 

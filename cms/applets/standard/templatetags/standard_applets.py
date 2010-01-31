@@ -2,8 +2,9 @@
 from django import template
 from django.utils.translation import ugettext as _
 
-from cms.core import models
+from cms.core import models as coremodels
 from cms.core import utils
+from cms.applets.standard import models
 
 register = template.Library()
 
@@ -62,8 +63,15 @@ class NavigationNode(template.Node):
     def render_entry_contents(self, request, entry, current_entry, level):
         result = ''
         siblings = entry.get_subentries(request)
+        no_sibling_shown_yet = True
         for s in siblings:
-            if s==siblings[0]:
+            try:
+                entryoptions = models.EntryOptions.objects.get(entry=s)
+                if entryoptions.no_navigation: continue
+            except models.EntryOptions.DoesNotExist:
+                pass
+            if no_sibling_shown_yet:
+                no_sibling_shown_yet = False
                 result += '<ul class="navigationLevel%d">' % (level,)
             result += '<li><a class="state%s %s" href="%s">%s</a>' % (
                 s.state.descr.replace(' ',''),
@@ -71,7 +79,8 @@ class NavigationNode(template.Node):
                 s.url,
                 s.get_vobject(request).metatags.default().short_title)
             if s.contains(current_entry) or s.id==current_entry.id:
-                result += self.render_entry_contents(request, s, current_entry, level+1)
+                result += self.render_entry_contents(request, s, current_entry,
+                                                                    level+1)
             result += '</li>'
         if result: result += '</ul>'
         return result
@@ -79,7 +88,8 @@ class NavigationNode(template.Node):
         vobject = context.get('vobject', None)
         request = context['request']
         result = self.render_entry_contents(request,
-            models.Entry.objects.get_by_path(request, vobject.entry.site.name, ''),
+            coremodels.Entry.objects.get_by_path(request,
+                                            vobject.entry.site.name, ''),
             vobject.entry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet"><dt>%s</dt>

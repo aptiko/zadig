@@ -311,12 +311,12 @@ have options per entry.
 If you want your applet to have configuration options, add functions
 to ``myapplet/__init__.py``, according to the following::
 
-    from django.forms import Form
+    from django import forms
 
-    class SiteOptionsForm(Form):
+    class SiteOptionsForm(forms.Form):
         ...
 
-    def site_options(request, form=None):
+    def site_options(request, site, form=None):
         if not form:
             # Return a Form object that contains the configuration options.
             form = SiteOptionsForm()
@@ -325,10 +325,10 @@ to ``myapplet/__init__.py``, according to the following::
         else:
             # Process configuration options that have been submitted.
 
-    class EntryOptionsForm(Form):
+    class EntryOptionsForm(forms.Form):
         ...
 
-    def entry_options(request, form=None):
+    def entry_options(request, site, path, form=None):
         ...
         
 The file need not contain both functions; it can contain either
@@ -352,4 +352,4 @@ difference for the applet code.
 
 .. admonition:: Not implemented yet
 
-   The thing about options above has not been implemented yet.
+   Only entry_options have been implemented, not yet site_options.
