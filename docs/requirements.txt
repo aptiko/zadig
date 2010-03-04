@@ -86,8 +86,8 @@ this email I sent to a colleague on 27 June 2008:
     Phew... obviously I wanted to get these things out for some time.
     Thanks for providing the incentive.
 
-The Plone community has managed to give the only decent open source
-CMS out there, and I'm sad to have spoken like that. I leave it as is
+The Plone community has managed to give one of the very few decent
+CMS's out there, and I'm sad to have spoken like that. I leave it as is
 because I think that what I have spoken is true. I admit, however,
 that the email above expresses my frustration over the bad sides of
 Plone, while at the same time mostly ignores my appreciation of the
