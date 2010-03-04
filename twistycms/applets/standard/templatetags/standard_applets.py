@@ -2,9 +2,9 @@
 from django import template
 from django.utils.translation import ugettext as _
 
-from cms.core import models as coremodels
-from cms.core import utils
-from cms.applets.standard import models
+from twistycms.core import models as coremodels
+from twistycms.core import utils
+from twistycms.applets.standard import models
 
 register = template.Library()
 

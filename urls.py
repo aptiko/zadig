@@ -9,9 +9,9 @@ urlpatterns = patterns('',
 )
 
 # Cms
-import cms.core.urls
+import twistycms.core.urls
 urlpatterns += patterns('',
-    (r'^', include('cms.core.urls')),
+    (r'^', include('twistycms.core.urls')),
 )
 
 # Static files

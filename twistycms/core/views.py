@@ -10,8 +10,8 @@ from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
-from cms.core import models
-import cms.core
+from twistycms.core import models
+import twistycms.core
 
 def _primary_buttons(request, selected_view):
     href_prefix = ''
@@ -69,7 +69,7 @@ def edit_entry(request, site, path):
     vobject = models.VObject.objects.get_by_path(request, site, path)
     entry = vobject.entry
     language = vobject.language
-    applet_options = [o for o in cms.core.applet_options if o['entry_options']]
+    applet_options = [o for o in twistycms.core.applet_options if o['entry_options']]
     if request.method!='POST':
         form = EditForm({
             'language': vobject.language.id,
@@ -105,7 +105,7 @@ def edit_entry(request, site, path):
             nmetatags.save()
             for o in applet_options:
                 o['entry_options'](request, site, path, o['entry_options_form'])
-            return HttpResponseRedirect(reverse('cms.core.views.view_object',
+            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
@@ -144,7 +144,7 @@ def create_new_page(request, site, parent_path):
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])
             nmetatags.save()
-            return HttpResponseRedirect(reverse('cms.core.views.view_object',
+            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
@@ -183,7 +183,7 @@ def entry_contents(request, site, path):
             vobject.entry.reorder(request, s, t)
     else:
         move_item_form = MoveItemForm(initial=
-            {'num_of_objects': subentries.count()})
+            {'num_of_objects': len(subentries)})
     return render_to_response('entry_contents.html',
                 { 'request': request, 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
@@ -206,7 +206,7 @@ def change_state(request, site, path, new_state_id):
         raise ValidationError(_(u"Invalid target state"))
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
-    return HttpResponseRedirect(reverse('cms.core.views.view_object',
+    return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
                                     kwargs={'site':site, 'path': path}))
 
 def logout(request, site, path):

@@ -1,6 +1,6 @@
 from django.dispatch import dispatcher
 from django.db.models import signals
-from cms.core import models
+from twistycms.core import models
 from django.contrib.auth.models import User
 from sys import stderr
 

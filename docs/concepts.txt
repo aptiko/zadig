@@ -70,7 +70,7 @@ The Django "sites" framework uses the word "site" where it should use
 the word "domain". In TwistyCMS, we use the word **site** in a more
 general term: you could use the CMS to build three sites, for example:
 ``http://www.foo.com/site1``, ``http://www.foo.com/site2``, and
-``http://site3.foo.com/``.  ``cms.core.models.Site`` is such a site,
+``http://site3.foo.com/``.  ``twistycms.core.models.Site`` is such a site,
 whereas ``django.contrib.sites.models.Site`` is a domain.
 
 Metatags
@@ -223,7 +223,7 @@ installation procedure are presented further below.
 .. admonition:: Note
 
     For good code structure, a Django application can contain many
-    applets: for example, ``cms/applets/standard`` contains all the
+    applets: for example, ``twistycms/applets/standard`` contains all the
     standard applets. Therefore, if we want to be precise, an applet
     is not a Django application, but a custom template tag accompanied
     by related functionality such as configuration options (explained
@@ -247,7 +247,7 @@ can define a common look for all portlets. That is all that is
 special about them. Otherwise, they are identical to applets.
 
 Applets included with TwistyCMS, such as the breadcrumbs and the
-navigation, are in ``cms/applets/standard``.
+navigation, are in ``twistycms/applets/standard``.
 
 .. admonition:: Not implemented yet
 
@@ -269,7 +269,7 @@ Installing applets
 To install an applet (more precisely, a Django application containing
 one or more applets), do the following:
 
-1. Put the directory containing the application under ``cms/applets``.
+1. Put the directory containing the application under ``twistycms/applets``.
 2. Add the application to ``INSTALLED_APPS`` in the ``settings.py``
    file.
 3. If there is any additional CSS, put it in the ``static`` directory,
@@ -283,7 +283,7 @@ Creating applets
 
 To create an applet (or a set of related applets in a Django
 application), create a directory, say ``myapplet``, inside the
-``cms/applets`` directory. Inside the ``myapplet``, create an
+``twistycms/applets`` directory. Inside the ``myapplet``, create an
 empty ``__init__.py`` file, an empty ``models.py`` file, and a
 ``templatetags`` directory. Inside ``templatetags``, create an empty
 ``__init__.py`` and a ``myapplet.py`` file.
@@ -304,8 +304,8 @@ If needed, the template tag can accept arguments.
 If you want your applet to store information in the database (usually
 this is configuration options), add models in ``models.py``. You'll
 probably want to reference core models if you do this. The models you
-probably want to reference are ``cms.core.models.Site`` if you have
-configuration options per site, and ``cms.core.models.Entry`` if you
+probably want to reference are ``twistycms.core.models.Site`` if you have
+configuration options per site, and ``twistycms.core.models.Entry`` if you
 have options per entry.
 
 If you want your applet to have configuration options, add functions

@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext as _
-from cms.core import models as coremodels
-from cms.applets.standard import models
+from twistycms.core import models as coremodels
+from twistycms.applets.standard import models
 
 class EntryOptionsForm(forms.Form):
     # TODO: A problem occurs (at least in syncdb) if the label below is a

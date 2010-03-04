@@ -179,7 +179,7 @@ class Entry(models.Model):
         return result
     @property
     def url(self):
-        return urlresolvers.reverse('cms.core.views.view_object',
+        return urlresolvers.reverse('twistycms.core.views.view_object',
             kwargs = { 'site': self.site.name, 'path': self.path })
     def contains(self, entry):
         while entry:

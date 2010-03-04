@@ -81,8 +81,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.markup',
-    'cms.core',
-    'cms.applets.standard',
+    'twistycms.core',
+    'twistycms.applets.standard',
 )
 
 WORKFLOW_ID = 1
