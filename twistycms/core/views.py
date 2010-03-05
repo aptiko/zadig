@@ -13,7 +13,10 @@ import django.contrib.auth
 from twistycms.core import models
 import twistycms.core
 
-def _primary_buttons(request, selected_view):
+def _primary_buttons(request, vobject, selected_view):
+    if vobject.entry.get_permissions(request).intersection(
+            set((models.permissions.EDIT, models.permissions.ADMIN))) == set():
+        return []
     href_prefix = ''
     if re.search(r'__[a-zA-Z]+__/$', request.path): href_prefix = '../'
     result = []
@@ -25,6 +28,9 @@ def _primary_buttons(request, selected_view):
     return result
 
 def _secondary_buttons(request, vobject):
+    if vobject.entry.get_permissions(request).intersection(
+            set((models.permissions.EDIT, models.permissions.ADMIN))) == set():
+        return []
     result = [
           { 'name': _(u'State:') + ' ' + vobject.entry.state.descr,
             'items': [
@@ -46,9 +52,9 @@ def view_object(request, site, path, version_number=None):
                                                             version_number)
     if hasattr(vobject, 'page'):
         return render_to_response('view_page.html', { 'request': request,
-                    'vobject': vobject,
-                    'primary_buttons': _primary_buttons(request, 'view'),
-                    'secondary_buttons': _secondary_buttons(request, vobject)})
+                'vobject': vobject,
+                'primary_buttons': _primary_buttons(request, vobject, 'view'),
+                'secondary_buttons': _secondary_buttons(request, vobject)})
     return None
 
 class EditForm(forms.Form):
@@ -110,7 +116,7 @@ def edit_entry(request, site, path):
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
             'applet_options': applet_options,
-            'primary_buttons': _primary_buttons(request, 'edit'),
+            'primary_buttons': _primary_buttons(request, vobject, 'edit'),
             'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def create_new_page(request, site, parent_path):
@@ -148,7 +154,7 @@ def create_new_page(request, site, parent_path):
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
-          'primary_buttons': _primary_buttons(request, 'edit'),
+          'primary_buttons': _primary_buttons(request, vobject, 'edit'),
           'secondary_buttons': _secondary_buttons(request, parent_vobject)})
 
 class MoveItemForm(forms.Form):
@@ -185,17 +191,17 @@ def entry_contents(request, site, path):
         move_item_form = MoveItemForm(initial=
             {'num_of_objects': len(subentries)})
     return render_to_response('entry_contents.html',
-                { 'request': request, 'vobject': vobject,
-                  'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': _primary_buttons(request, 'contents'),
-                  'secondary_buttons': _secondary_buttons(request, vobject)})
+            { 'request': request, 'vobject': vobject,
+              'subentries': subentries, 'move_item_form': move_item_form,
+              'primary_buttons': _primary_buttons(request, vobject, 'contents'),
+              'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def entry_history(request, site, path):
     vobject = models.VObject.objects.get_by_path(request, site, path)
     return render_to_response('entry_history.html',
-                { 'request': request, 'vobject': vobject,
-                  'primary_buttons': _primary_buttons(request, 'history'),
-                  'secondary_buttons': _secondary_buttons(request, vobject)})
+            { 'request': request, 'vobject': vobject,
+              'primary_buttons': _primary_buttons(request, vobject, 'history'),
+              'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def change_state(request, site, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, site, path)

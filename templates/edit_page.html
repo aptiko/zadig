@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block mainContent %}
-<div class="mainContent">
+<div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" action="" method="POST">
   <table>

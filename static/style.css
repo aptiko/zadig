@@ -18,7 +18,9 @@ a { color: #436976; }
 #mainColumn h1.title { margin-top: 0; }
 #mainColumn p.authorAndDate { font-size: 90%; font-weight: normal; margin-bottom: 0.5em; margin-top: 0; color: #76797c; }
 #mainColumn .objectDescription { font-weight: bold; margin: 0 0 0.5em 0; line-height: 1.5em; }
-.mainContent { border: solid #74ae0b 1px; padding: 1em 1em 2em 1em; font-size: 110%; }
+
+.mainContent { padding: 1em 1em 2em 1em; font-size: 110%; }
+.mainContent.withButtons { border: solid #74ae0b 1px; }
 
 .primaryButtons { background-color: transparent; padding-left: 1em; line-height: normal; margin: 0; list-style: none; border: 1px solid #74ae0b; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; }
 .primaryButtons li { display: inline; padding-top: 0.5em; }

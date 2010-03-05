@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block mainContent %}
-<div class="mainContent">
+<div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1>History of {{vobject.entry.name}}</h1>
   <table class="objectContents">
     <tbody>
