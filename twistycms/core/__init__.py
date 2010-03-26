@@ -1,5 +1,5 @@
 if not globals().has_key('applet_options'):
-    print "Running initialization code"
+    # Run initialization code
     from django.conf import settings
     applet_options = []
     applet_groups = [x
@@ -15,5 +15,3 @@ if not globals().has_key('applet_options'):
             'EntryOptionsForm': temp.__dict__.get('EntryOptionsForm', None),
             'entry_options':    temp.__dict__.get('entry_options', None),
         })
-else:
-    print "Initialization code already run, skipped"
