@@ -61,14 +61,14 @@ class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
     language = forms.ChoiceField(choices=
         [(l.id, l.id) for l in models.Language.objects.all()])
-    name = forms.CharField(
+    name = forms.CharField(required=False,
         max_length=models.Entry._meta.get_field('name').max_length)
     title = forms.CharField(
         max_length=models.VObjectMetatags._meta.get_field('title').max_length)
     short_title = forms.CharField(required=False, max_length=
         models.VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
-    content = forms.CharField(widget=forms.Textarea)
+    content = forms.CharField(widget=forms.Textarea, required=False)
 
 def edit_entry(request, site, path):
     # FIXME: form.name ignored
