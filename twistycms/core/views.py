@@ -11,6 +11,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
 from twistycms.core import models
+from twistycms.core.utils import split_twisty_path, join_twisty_path
 import twistycms.core
 
 def _primary_buttons(request, vobject, selected_view):
@@ -47,7 +48,8 @@ def _secondary_buttons(request, vobject):
         ]
     return result
     
-def view_object(request, site, path, version_number=None):
+def view_object(request, twisty_path, version_number=None):
+    site, path = split_twisty_path(twisty_path)
     vobject = models.VObject.objects.get_by_path(request, site, path,
                                                             version_number)
     if hasattr(vobject, 'page'):
@@ -70,7 +72,8 @@ class EditForm(forms.Form):
     description = forms.CharField(widget=forms.Textarea, required=False)
     content = forms.CharField(widget=forms.Textarea, required=False)
 
-def edit_entry(request, site, path):
+def edit_entry(request, twisty_path):
+    site, path = split_twisty_path(twisty_path)
     # FIXME: form.name ignored
     vobject = models.VObject.objects.get_by_path(request, site, path)
     entry = vobject.entry
@@ -112,14 +115,15 @@ def edit_entry(request, site, path):
             for o in applet_options:
                 o['entry_options'](request, site, path, o['entry_options_form'])
             return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
-                                    kwargs={'site':site, 'path': path}))
+                        kwargs={'twisty_path':join_twisty_path(site, path)}))
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
             'applet_options': applet_options,
             'primary_buttons': _primary_buttons(request, vobject, 'edit'),
             'secondary_buttons': _secondary_buttons(request, vobject)})
 
-def create_new_page(request, site, parent_path):
+def create_new_page(request, twisty_path):
+    site, parent_path = split_twisty_path(twisty_path)
     # FIXME: only rst, no html
     # FIXME: no check about contents of form.name
     parent_vobject = models.VObject.objects.get_by_path(request, site, parent_path)
@@ -151,7 +155,7 @@ def create_new_page(request, site, parent_path):
                 description=form.cleaned_data['description'])
             nmetatags.save()
             return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
-                                    kwargs={'site':site, 'path': path}))
+                        kwargs={'twisty_path': join_twisty_path(site, path)}))
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
           'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
@@ -178,7 +182,8 @@ class MoveItemForm(forms.Form):
               +"this would leave it in the same position"))
         return self.cleaned_data
 
-def entry_contents(request, site, path):
+def entry_contents(request, twisty_path):
+    site, path = split_twisty_path(twisty_path)
     vobject = models.VObject.objects.get_by_path(request, site, path)
     subentries = vobject.entry.get_subentries(request)
     if request.method == 'POST':
@@ -196,14 +201,16 @@ def entry_contents(request, site, path):
               'primary_buttons': _primary_buttons(request, vobject, 'contents'),
               'secondary_buttons': _secondary_buttons(request, vobject)})
 
-def entry_history(request, site, path):
+def entry_history(request, twisty_path):
+    site, path = split_twisty_path(twisty_path)
     vobject = models.VObject.objects.get_by_path(request, site, path)
     return render_to_response('entry_history.html',
             { 'request': request, 'vobject': vobject,
               'primary_buttons': _primary_buttons(request, vobject, 'history'),
               'secondary_buttons': _secondary_buttons(request, vobject)})
 
-def change_state(request, site, path, new_state_id):
+def change_state(request, twisty_path, new_state_id):
+    site, path = split_twisty_path(twisty_path)
     vobject = models.VObject.objects.get_by_path(request, site, path)
     entry = vobject.entry
     new_state_id = int(new_state_id)
@@ -213,11 +220,11 @@ def change_state(request, site, path, new_state_id):
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
     return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
-                                    kwargs={'site':site, 'path': path}))
+                kwargs={'twisty_path': join_twisty_path(site, path)}))
 
-def logout(request, site, path):
+def logout(request, twisty_path):
     django.contrib.auth.logout(request)
-    return view_object(request, site, path)
+    return view_object(request, twisty_path)
 
 class LoginForm(forms.Form):
     from django.contrib.auth.models import User
@@ -225,7 +232,8 @@ class LoginForm(forms.Form):
         django.contrib.auth.models.User._meta.get_field('username').max_length)
     password = forms.CharField(max_length=63, widget=forms.PasswordInput)
 
-def login(request, site, path):
+def login(request, twisty_path):
+    site, path = split_twisty_path(twisty_path)
     vobject = models.VObject.objects.get_by_path(request, site, path)
     message = ''
     if request.method!='POST':
@@ -239,7 +247,7 @@ def login(request, site, path):
             if user is not None:
                 if user.is_active:
                     django.contrib.auth.login(request, user)
-                    return view_object(request, site, path)
+                    return view_object(request, twisty_path)
                 else:
                     raise Exception(_(u"Account is disabled"))
             message = _(u"Login incorrect")

@@ -68,10 +68,18 @@ Sites
 
 The Django "sites" framework uses the word "site" where it should use
 the word "domain". In TwistyCMS, we use the word **site** in a more
-general term: you could use the CMS to build three sites, for example:
-``http://www.foo.com/site1``, ``http://www.foo.com/site2``, and
-``http://site3.foo.com/``.  ``twistycms.core.models.Site`` is such a site,
-whereas ``django.contrib.sites.models.Site`` is a domain.
+different sense: you could use the CMS to build two sites, for
+example: ``http://www.foo.com/site1``, ``http://www.foo.com/site2``.
+``twistycms.core.models.Site`` is such a site, whereas
+``django.contrib.sites.models.Site`` is a domain.
+
+TwistyCMS installations have a default site called "main". 
+The part of the url that is handled by TwistyCMS is the **twisty
+path**. If the first component of the twisty path is a site name, then
+the twisty path specifies the site and the path within that site; if
+the first component of the twisty path is not a site, then the whole
+twisty path is a path within site "main". As a result, site names
+cannot be the same as top-level page names of the main site.
 
 Metatags
 ========

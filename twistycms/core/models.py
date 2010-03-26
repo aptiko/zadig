@@ -4,6 +4,7 @@ from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 import django.contrib.auth.models
+from twistycms.core.utils import join_twisty_path
 import settings
 
 class permissions:
@@ -136,6 +137,7 @@ class Site(models.Model):
 class EntryManager(models.Manager):
     def get_by_path(self, request, site, path):
         entry=None
+        if path and not path.startswith('/'): path = '/' + path
         for name in path.split('/'):
             entry = self.get(site__name=site, name=name, container=entry)
             if not permissions.VIEW in entry.get_permissions(request):
@@ -216,7 +218,7 @@ class Entry(models.Model):
     @property
     def url(self):
         return urlresolvers.reverse('twistycms.core.views.view_object',
-            kwargs = { 'site': self.site.name, 'path': self.path })
+            kwargs = { 'twisty_path': join_twisty_path(self.site.name, self.path) })
     def contains(self, entry):
         while entry:
             if entry.container == self: return True

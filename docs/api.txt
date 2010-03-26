@@ -71,7 +71,7 @@ mentioned unless there is something unusual about it.
 
    Stores a site. It has three attributes: :attr:`name` stores the
    name of the site, which may also show on the URL, at the beginning
-   of the path, dependin gon configuration; :attr:`language` is a
+   of the path, depending on configuration; :attr:`language` is a
    foreign key to :class:`~core.models.Language` and designates the primary
    language of the site; and :attr:`workflow` is a foreign key to
    :class:`~core.models.Workflow` and designates the workflow of the site.
@@ -257,3 +257,18 @@ The functions below are in module core.utils.
    Return the path to the current entry. This is something like
    request.path, but does not include any directive like ``__edit__``
    and so on.
+   
+.. function:: core.utils.split_twisty_path(twisty_path)
+
+   Split *twisty_path* into a site and a path and return them as a
+   tuple of two strings. *twisty_path* is either of the form
+   :samp:`*site*/*path*` or :samp:`*path*`. The function checks
+   whether the part preceding the first slash is the name of a site;
+   if it is, it assumes that *twisty_path* is in the first form;
+   otherwise, it assumes it is in the second form, and returns "main"
+   as the site, and *twisty_path* as the path.
+
+.. function:: core.utils.join_twisty_path(site, path)
+
+   Returns the twisty_path (see previous function) based on site and
+   path. If site is "main", then it merely returns the path.
