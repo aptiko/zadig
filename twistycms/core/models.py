@@ -97,6 +97,42 @@ class Site(models.Model):
     class Meta:
         db_table = 'cms_site'
 
+    @transaction.commit_manually
+    def save(self, force_insert=False, force_update=False):
+        """Create an empty root page upon creating a new site.
+        FIXME
+        Note that this is a bad quick-and-dirty function. For the root page, it
+        uses the user with id 1 as owner, and the first available language.
+        It's in fact a bad workaround in order to use the Django admin to
+        create new sites.
+        In addition, each site should have its own workflow, not one workflow
+        for all sites as it is now.
+        """
+        try:
+            this_is_an_insertion = force_insert or not self.pk \
+                            or not Site.objects.filter(pk=self.pk).count()
+            super(Site, self).save(force_insert, force_update)
+            if this_is_an_insertion:
+                initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
+                    .state_transitions.get(source_state__descr="Nonexistent") \
+                    .target_state
+                owner = django.contrib.auth.models.User.objects.get(pk=1)
+                language = Language.objects.all()[0]
+                entry = Entry(site=self, name="", seq=1, owner=owner,
+                    state=initial_state)
+                entry.save()
+                npage = Page(entry=entry, version_number=1, language = language,
+                    format=ContentFormat.objects.get(descr='rst'))
+                npage.save()
+                nmetatags = VObjectMetatags(vobject=npage, language=language,
+                    title="Empty root page", short_title="Home")
+                nmetatags.save()
+        except:
+            transaction.rollback()
+            raise
+        else:
+            transaction.commit()
+
 class EntryManager(models.Manager):
     def get_by_path(self, request, site, path):
         entry=None
