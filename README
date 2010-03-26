@@ -1,7 +1,16 @@
-This system is under heavy development.  Django best practices are
-followed, so if you are a Django developer you should not have difficulty
-installing it. If you are not a Django developer, nothing is going to work
-anyway, so forgive me for not giving you instructions on installation etc.
+This system is under heavy development.  If you are not a Django developer,
+nothing is going to work.  These instructions are intended only to get Django
+developers started.
 
-More information is in the docs directory. Please read it before attempting to
-play with the code.
+Installation:
+  1. Keep my email address handy. anthony@itia.ntua.gr. Send me an email
+     whenever you run into problems.
+  2. Edit settings.py as needed.
+  3. ./manage.py syncdb
+  4. ./manage.py runserver
+  5. Point your browser to http://localhost:8000/__admin__/
+  6. Add a new language; use the ISO 639 language code (e.g. en for English).
+  7. Add a new site (in Core.Sites, not in Sites.Sites), e.g. mysite
+  8. Visit http://localhost:8000/mysite/
+  9. Experiment
+  10. Read documentation under the docs directory
