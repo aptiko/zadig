@@ -26,7 +26,7 @@ class BreadcrumbsNode(template.Node):
                 result = vobject.metatags.default().get_short_title()
             container = vobject.entry.container
             if container:
-                vobject = container.vobject_set.latest()
+                vobject = container.get_vobject(context['request'])
             else:
                 vobject = None
         return result

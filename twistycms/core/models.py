@@ -196,7 +196,7 @@ class Entry(models.Model):
                 result.add(perm.permission_id)
         return result
     def get_vobject(self, request, version_number=None):
-        latest_vobject = self.vobject_set.latest()
+        latest_vobject = self.vobject_set.order_by('-version_number')[0]
         if version_number is None:
             vobject = latest_vobject
         else:
@@ -304,7 +304,6 @@ class VObject(models.Model):
     class Meta:
         ordering = ('entry', 'version_number')
         unique_together = ('entry', 'version_number')
-        get_latest_by = "date"
         db_table = 'cms_vobject'
         permissions = (("view", "View"),)
 
