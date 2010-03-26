@@ -325,6 +325,8 @@ class VObjectMetatags(models.Model):
     def __unicode(self):
         return '%s %s metatags' % (self.vobject.__unicode__(),
                                    self.language)
+    def get_short_title(self):
+        return self.short_title or self.title
     class Meta:
         unique_together = ('vobject', 'language')
         db_table = 'cms_vobjectmetatags'
