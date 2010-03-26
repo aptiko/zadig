@@ -66,7 +66,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.transaction.TransactionMiddleware',
 )
 
-ROOT_URLCONF = 'twisty.urls'
+ROOT_URLCONF = 'urls'
 
 import sys
 import os.path

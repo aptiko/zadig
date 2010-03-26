@@ -66,5 +66,9 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
                                 source_state=published, target_state=private))
         new_workflow.state_transitions.add(models.StateTransition .objects.get(
                                 source_state=nonexistent, target_state=private))
+    if models.ContentFormat in created_models:
+        stderr.write("Populating %s table\n" % (models.ContentFormat._meta.db_table,))
+        new_contentformat = models.ContentFormat(descr='rst')
+        new_contentformat.save()
     
 signals.post_syncdb.connect(import_initial_data, sender=models)
