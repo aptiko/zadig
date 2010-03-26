@@ -154,7 +154,7 @@ def create_new_page(request, site, parent_path):
                                     kwargs={'site':site, 'path': path}))
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
-          'primary_buttons': _primary_buttons(request, vobject, 'edit'),
+          'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
           'secondary_buttons': _secondary_buttons(request, parent_vobject)})
 
 class MoveItemForm(forms.Form):
