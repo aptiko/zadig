@@ -63,24 +63,6 @@ clear about that. The end users should not be bothered, and the word
 
    No type of object has yet been implemented except for pages.
 
-Sites
-=====
-
-The Django "sites" framework uses the word "site" where it should use
-the word "domain". In TwistyCMS, we use the word **site** in a more
-different sense: you could use the CMS to build two sites, for
-example: ``http://www.foo.com/site1``, ``http://www.foo.com/site2``.
-``twistycms.core.models.Site`` is such a site, whereas
-``django.contrib.sites.models.Site`` is a domain.
-
-TwistyCMS installations have a default site called "main". 
-The part of the url that is handled by TwistyCMS is the **twisty
-path**. If the first component of the twisty path is a site name, then
-the twisty path specifies the site and the path within that site; if
-the first component of the twisty path is not a site, then the whole
-twisty path is a path within site "main". As a result, site names
-cannot be the same as top-level page names of the main site.
-
 Metatags
 ========
 
@@ -205,7 +187,7 @@ Published
 A **workflow** is a collection of states and state-transition rules.
 A **state-transition rule** is a many-to-one relationship between
 states: it shows which are the possible states that follow a given
-state. Each site has one workflow.
+state. Each instance has one workflow.
 
 In the default installation, two states are created, private and
 published, two state-transition rules (from private to published and
@@ -262,11 +244,8 @@ navigation, are in ``twistycms/applets/standard``.
    The portlets for pending events, news, and calendar have not been
    implemented yet.
 
-Besides a template tag, an applet can also provide several
-configuration options:
-
-* A site-wide configuration page.
-* A set of configuration options per object (entry).
+Besides a template tag, an applet can also provide a set of
+configuration options per object (entry).
 
 The left and right panes, used as portlet holders in the default
 template, are applets themselves.
@@ -311,9 +290,7 @@ If needed, the template tag can accept arguments.
 
 If you want your applet to store information in the database (usually
 this is configuration options), add models in ``models.py``. You'll
-probably want to reference core models if you do this. The models you
-probably want to reference are ``twistycms.core.models.Site`` if you have
-configuration options per site, and ``twistycms.core.models.Entry`` if you
+probably want to reference ``twistycms.core.models.Entry`` if you
 have options per entry.
 
 If you want your applet to have configuration options, add functions
@@ -321,43 +298,27 @@ to ``myapplet/__init__.py``, according to the following::
 
     from django import forms
 
-    class SiteOptionsForm(forms.Form):
+    class EntryOptionsForm(forms.Form):
         ...
 
-    def site_options(request, site, form=None):
+    def entry_options(request, form=None):
         if not form:
             # Return a Form object that contains the configuration options.
-            form = SiteOptionsForm()
+            form = EntryOptionsForm()
             # Populate form with initial values (usually from the database)
             return form
         else:
             # Process configuration options that have been submitted.
-
-    class EntryOptionsForm(forms.Form):
-        ...
-
-    def entry_options(request, site, path, form=None):
-        ...
         
-The file need not contain both functions; it can contain either
-``site_options``, or ``entry_options``, or both, depending on whether
-the applet has site options or entry options or both.
-
 When TwistyCMS starts, it looks at the ``__init__.py`` file of each
-applet directory. If the file contains ``site_options`` or
-``entry_options``, it registers these functions. Then, when the user
-goes to the site configuration page and selects to configure that
-specific applet, TwistyCMS calls ``site_options`` with ``form=None``,
-it gets a form as a response, it remembers its class, and it displays
-it to the user. When the user submits it, TwistyCMS creates a bound
-form of the remembered class with the request data and calls
-``site_options`` supplying the created form as the ``form`` argument.
-Likewise with ``entry_options``. A difference is that the entry
-options form is not treated as a whole form but as a part of a form
-that is mixed with the entry options of all other installed applets,
-resulting in one form for all applets together; but this makes no
-difference for the applet code.
-
-.. admonition:: Not implemented yet
-
-   Only entry_options have been implemented, not yet site_options.
+applet directory. If the file contains ``entry_options``, it registers
+it. Then, when the user edits a page, TwistyCMS calls
+``entry_options`` with ``form=None``, it gets a form as a response, it
+remembers its class, and it displays it to the user. When the user
+submits it, TwistyCMS creates a bound form of the remembered class
+with the request data and calls ``entry_options`` supplying the
+created form as the ``form`` argument.  In fact the entry options form
+is not treated as a whole form but as a part of a form that is mixed
+with the entry options of all other installed applets, resulting in
+one form for all applets together; but this makes no difference for
+the applet code.

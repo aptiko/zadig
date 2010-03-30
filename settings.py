@@ -85,4 +85,6 @@ INSTALLED_APPS = (
     'twistycms.applets.standard',
 )
 
+# TwistyCMS settings
+LANGUAGES = ('en', 'el')
 WORKFLOW_ID = 1

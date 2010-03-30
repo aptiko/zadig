@@ -67,35 +67,21 @@ mentioned unless there is something unusual about it.
    many to many fields to :class:`~core.models.State` and
    :class:`~core.models.StateTransition`.
 
-.. class:: core.models.Site
-
-   Stores a site. It has three attributes: :attr:`name` stores the
-   name of the site, which may also show on the URL, at the beginning
-   of the path, depending on configuration; :attr:`language` is a
-   foreign key to :class:`~core.models.Language` and designates the primary
-   language of the site; and :attr:`workflow` is a foreign key to
-   :class:`~core.models.Workflow` and designates the workflow of the site.
-
-.. class:: core.models.Entry(request, site_name, path)
+.. class:: core.models.Entry(request, path)
 
    Stores an entry. The constructor creates a new entry at the
-   specified site and path.  The parent entry must already exist and
+   specified path.  The parent entry must already exist and
    the logged on user must have appropriate permissions on the parent
    entry; otherwise, an exception is raised. If other entries with the
    same parent entry exist, the entry is added as the last sibling.
    
    :class:`~core.models.Entry` objects have the following attributes:
 
-   .. attribute:: core.models.Entry.site
-
-      A foreign key to :class:`~core.models.Site`. Indicates the site to
-      which the entry belongs.
-
    .. attribute:: core.models.Entry.container
 
       A foreign key to :class:`~core.models.Entry` (that is, to self). It
       indicates which entry contains the entry. This attribute can be
-      null; there is one and only one entry in each site that has a
+      null; there is one and only one entry that has a
       null :attr:`container`, and it is the root entry.
 
       The *related_name* of this attribute is ``all_subentries``.
@@ -136,9 +122,9 @@ mentioned unless there is something unusual about it.
 
       The default manager has the following additional methods:
 
-      .. method:: core.stdlib.get_by_path(request, site_name, path)
+      .. method:: core.models.EntryManager.get_by_path(request, path)
 
-         Return the entry at the specified site and path, or
+         Return the entry at the specified path, or
          :const:`None` if such an entry does not exist or the user
          does not have permissions to view it.
 
@@ -206,10 +192,10 @@ mentioned unless there is something unusual about it.
       :attr:`objects` is similar to the default manager, except that
       it has an additional method:
 
-      .. method:: get_by_path(request, site_name, path[, version_number])
+      .. method:: get_by_path(request, path[, version_number])
 
          Return the vobject that corresponds to the entry at the
-         specified site and path. If *version_number* is not specified,
+         specified path. If *version_number* is not specified,
          it returns the latest vobject. An exception is raised if the
          entry does not exist, or if the user does not have permission to
          view it.
@@ -257,18 +243,3 @@ The functions below are in module core.utils.
    Return the path to the current entry. This is something like
    request.path, but does not include any directive like ``__edit__``
    and so on.
-   
-.. function:: core.utils.split_twisty_path(twisty_path)
-
-   Split *twisty_path* into a site and a path and return them as a
-   tuple of two strings. *twisty_path* is either of the form
-   :samp:`*site*/*path*` or :samp:`*path*`. The function checks
-   whether the part preceding the first slash is the name of a site;
-   if it is, it assumes that *twisty_path* is in the first form;
-   otherwise, it assumes it is in the second form, and returns "main"
-   as the site, and *twisty_path* as the path.
-
-.. function:: core.utils.join_twisty_path(site, path)
-
-   Returns the twisty_path (see previous function) based on site and
-   path. If site is "main", then it merely returns the path.

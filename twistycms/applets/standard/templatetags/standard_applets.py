@@ -88,8 +88,7 @@ class NavigationNode(template.Node):
         vobject = context.get('vobject', None)
         request = context['request']
         result = self.render_entry_contents(request,
-            coremodels.Entry.objects.get_by_path(request,
-                                            vobject.entry.site.name, ''),
+            coremodels.Entry.objects.get_by_path(request, ''),
             vobject.entry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet"><dt>%s</dt>

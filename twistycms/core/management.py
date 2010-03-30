@@ -1,8 +1,11 @@
+from sys import stderr
+
 from django.dispatch import dispatcher
 from django.db.models import signals
-from twistycms.core import models
 from django.contrib.auth.models import User
-from sys import stderr
+import settings
+
+from twistycms.core import models
 
 def import_initial_data(app, created_models, verbosity, **kwargs):
     if models.Permission in created_models:
@@ -70,5 +73,26 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
         stderr.write("Populating %s table\n" % (models.ContentFormat._meta.db_table,))
         new_contentformat = models.ContentFormat(descr='rst')
         new_contentformat.save()
+    if models.Language in created_models:
+        stderr.write("Populating %s table\n" % (models.Language._meta.db_table,))
+        for lang in settings.LANGUAGES:
+            new_language = models.Language(id=lang)
+            new_language.save()
+    if models.Page in created_models:
+        stderr.write("Creating root page\n")
+        entry = models.Entry(container=None, name='', seq=1, owner_id=1,
+            state=models.Workflow.objects.get(id=settings.WORKFLOW_ID)
+                .state_transitions.get(source_state__descr="Nonexistent")
+                .target_state)
+        entry.save()
+        page = models.Page(entry=entry, version_number=1,
+                language_id=settings.LANGUAGES[0],
+                format=models.ContentFormat.objects.get(descr='rst'),
+                content='This is the root page')
+        page.save()
+        nmetatags = models.VObjectMetatags(vobject=page,
+            language_id=settings.LANGUAGES[0], title = 'Welcome',
+            short_title='Home', description='Root page.')
+        nmetatags.save()
     
 signals.post_syncdb.connect(import_initial_data, sender=models)

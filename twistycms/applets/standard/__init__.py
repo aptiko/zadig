@@ -9,8 +9,8 @@ class EntryOptionsForm(forms.Form):
     no_navigation = forms.BooleanField(label=u"Don't show in Navigation",
                                                     required=False)
 
-def entry_options(request, site, path, form=None):
-    entry = coremodels.Entry.objects.get_by_path(request, site, path)
+def entry_options(request, path, form=None):
+    entry = coremodels.Entry.objects.get_by_path(request, path)
     try:
         entryoptions = models.EntryOptions.objects.get(entry=entry)
     except models.EntryOptions.DoesNotExist:

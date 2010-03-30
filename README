@@ -9,8 +9,7 @@ Installation:
   3. ./manage.py syncdb
   4. ./manage.py runserver
   5. Point your browser to http://localhost:8000/__admin__/
-  6. Add a new language; use the ISO 639 language code (e.g. en for English).
-  7. Add a new site (in Core.Sites, not in Sites.Sites), e.g. mysite
-  8. Visit http://localhost:8000/mysite/
-  9. Experiment
-  10. Read documentation under the docs directory
+  6. Logon
+  7. Visit http://localhost:8000/
+  8. Experiment
+  9. Read documentation under the docs directory

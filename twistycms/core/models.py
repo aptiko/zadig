@@ -4,7 +4,6 @@ from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 import django.contrib.auth.models
-from twistycms.core.utils import join_twisty_path
 import settings
 
 class permissions:
@@ -89,63 +88,17 @@ class Workflow(models.Model):
     class Meta:
         db_table = 'cms_workflow'
 
-class Site(models.Model):
-    name = models.SlugField(max_length=100, unique=True)
-    language = models.ForeignKey(Language)
-    workflow = models.ForeignKey(Workflow)
-    def __unicode__(self):
-        return self.name
-    class Meta:
-        db_table = 'cms_site'
-
-    @transaction.commit_manually
-    def save(self, force_insert=False, force_update=False):
-        """Create an empty root page upon creating a new site.
-        FIXME
-        Note that this is a bad quick-and-dirty function. For the root page, it
-        uses the user with id 1 as owner, and the first available language.
-        It's in fact a bad workaround in order to use the Django admin to
-        create new sites.
-        In addition, each site should have its own workflow, not one workflow
-        for all sites as it is now.
-        """
-        try:
-            this_is_an_insertion = force_insert or not self.pk \
-                            or not Site.objects.filter(pk=self.pk).count()
-            super(Site, self).save(force_insert, force_update)
-            if this_is_an_insertion:
-                initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
-                    .state_transitions.get(source_state__descr="Nonexistent") \
-                    .target_state
-                owner = django.contrib.auth.models.User.objects.get(pk=1)
-                language = Language.objects.all()[0]
-                entry = Entry(site=self, name="", seq=1, owner=owner,
-                    state=initial_state)
-                entry.save()
-                npage = Page(entry=entry, version_number=1, language = language,
-                    format=ContentFormat.objects.get(descr='rst'))
-                npage.save()
-                nmetatags = VObjectMetatags(vobject=npage, language=language,
-                    title="Empty root page", short_title="Home")
-                nmetatags.save()
-        except:
-            transaction.rollback()
-            raise
-        else:
-            transaction.commit()
-
 class EntryManager(models.Manager):
-    def get_by_path(self, request, site, path):
+    def get_by_path(self, request, path):
         entry=None
         if path and not path.startswith('/'): path = '/' + path
         for name in path.split('/'):
-            entry = self.get(site__name=site, name=name, container=entry)
+            entry = self.get(name=name, container=entry)
             if not permissions.VIEW in entry.get_permissions(request):
                 return None
         return entry
 
 class Entry(models.Model):
-    site = models.ForeignKey(Site)
     container = models.ForeignKey('self', related_name="all_subentries",
                                   blank=True, null=True)
     name = models.SlugField(max_length=100, blank=True)
@@ -154,18 +107,17 @@ class Entry(models.Model):
     state = models.ForeignKey(State)
     objects = EntryManager()
     def __init__(self, *args, **kwargs):
-        # If called with only three arguments, then it is someone calling the
-        # twistyCMS API, and the three arguments are request, site_name, path.
+        # If called with only two arguments, then it is someone calling the
+        # twistyCMS API, and the two arguments are request and path.
         # Otherwise, it is likely Django calling us in the default Django way.
-        if len(args)!=3 or kwargs:
+        if len(args)!=2 or kwargs:
             return super(Entry, self).__init__(*args, **kwargs)
-        (request, site_name, path) = args
+        (request, path) = args
         names = path.split('/')
         parent_path = '/'.join(names[:-1])
-        parent_entry = Entry.objects.get_by_path(request,site_name, parent_path)
+        parent_entry = Entry.objects.get_by_path(request, parent_path)
         if not permissions.EDIT in parent_entry.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
-        site = Site.objects.get(name=site_name)
         siblings = Entry.objects.filter(container=parent_entry)
         if siblings.count():
             max_seq = siblings.order_by('-seq')[0].seq
@@ -174,7 +126,7 @@ class Entry(models.Model):
         initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
             .state_transitions.get(source_state__descr="Nonexistent") \
             .target_state
-        return super(Entry, self).__init__(site=site, container=parent_entry,
+        return super(Entry, self).__init__(container=parent_entry,
             name=names[-1], owner=request.user, state=initial_state,
             seq = max_seq+1)
     def get_permissions(self, request):
@@ -218,7 +170,7 @@ class Entry(models.Model):
     @property
     def url(self):
         return urlresolvers.reverse('twistycms.core.views.view_object',
-            kwargs = { 'twisty_path': join_twisty_path(self.site.name, self.path) })
+            kwargs = { 'path': self.path })
     def contains(self, entry):
         while entry:
             if entry.container == self: return True
@@ -272,12 +224,12 @@ class Entry(models.Model):
         while container:
             result = container.name + '/' + result
             container = container.container
-        return self.site.__unicode__() + result
+        return result
     class Meta:
-        unique_together = (('site', 'container', 'name'),
-                           ('site', 'container', 'seq'))
+        unique_together = (('container', 'name'),
+                           ('container', 'seq'))
         db_table = 'cms_entry'
-        ordering = ('site__id', 'container__id', 'seq')
+        ordering = ('container__id', 'seq')
 
 class EntryPermission(models.Model):
     entry = models.ForeignKey(Entry)
@@ -291,8 +243,8 @@ class EntryPermission(models.Model):
         db_table = 'cms_entrypermission'
 
 class VObjectManager(models.Manager):
-    def get_by_path(self, request, site, path, version_number=None):
-        entry = Entry.objects.get_by_path(request, site, path)
+    def get_by_path(self, request, path, version_number=None):
+        entry = Entry.objects.get_by_path(request, path)
         return entry.get_vobject(request, version_number)
 
 class VObject(models.Model):

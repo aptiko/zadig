@@ -7,7 +7,7 @@
 <head>
   <title>
     {% block htmltitle %}
-      {{ vobject.metatags.default.title }} – {{ vobject.entry.site.name }}
+      {{ vobject.metatags.default.title }}
     {% endblock %}
   </title>
   <link rel="stylesheet" type="text/css" href="/static/style.css"
@@ -17,7 +17,7 @@
 
 <body>
   <div id="portalTop">
-    <h1>{{ vobject.entry.site.name }}</h1>
+    <h1>TwistyCMS</h1>
     <div id="portalPersonaltools">
       {% login %}
     </div>
