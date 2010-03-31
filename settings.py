@@ -83,7 +83,12 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'twistycms.core',
     'twistycms.applets.standard',
+    'tinymce',
 )
+
+# TinyMCE settings
+TINYMCE_JS_URL = '/static/tinymce/tiny_mce.js'
+TINYMCE_JS_ROOT = '/static/tinymce'
 
 # TwistyCMS settings
 LANGUAGES = ('en', 'el')

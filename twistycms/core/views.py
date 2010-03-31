@@ -10,6 +10,8 @@ from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
+from tinymce.widgets import TinyMCE
+
 from twistycms.core import models
 import twistycms.core
 
@@ -68,7 +70,8 @@ class EditForm(forms.Form):
     short_title = forms.CharField(required=False, max_length=
         models.VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
-    content = forms.CharField(widget=forms.Textarea, required=False)
+    content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
+        mce_attrs={'theme': 'advanced'}), required=False)
 
 def edit_entry(request, path):
     # FIXME: form.name ignored

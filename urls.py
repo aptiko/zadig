@@ -11,6 +11,7 @@ urlpatterns = patterns('',
 # Cms
 import twistycms.core.urls
 urlpatterns += patterns('',
+    (r'^tinymce/', include('tinymce.urls')),
     (r'^', include('twistycms.core.urls')),
 )
 

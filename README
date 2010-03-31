@@ -5,14 +5,17 @@ developers started.
 Installation:
   1. Keep my email address handy. anthony@itia.ntua.gr. Send me an email
      whenever you run into problems.
-  2. Edit settings.py as needed.
-  3. ./manage.py syncdb
-  4. ./manage.py runserver
-  5. Point your browser to http://localhost:8000/__admin__/
-  6. Logon
-  7. Visit http://localhost:8000/
-  8. Experiment
-  9. Read documentation under the docs directory
+  2. Install TinyMCE and django-tinymce (in Debian/Ubuntu:
+     aptitude install python-django-tinymce); copy the contents of the tinymce
+     www directory (the one containing the tiny_mce.js file) in static/tinymce/.
+  3. Edit settings.py as needed.
+  4. ./manage.py syncdb
+  5. ./manage.py runserver
+  6. Point your browser to http://localhost:8000/__admin__/
+  7. Logon
+  8. Visit http://localhost:8000/
+  9. Experiment
+ 10. Read documentation under the docs directory
 
 IMPORTANT: Don't use for production without contacting me first. I frequently
 make changes in the models without caring about migration. But if you notify
