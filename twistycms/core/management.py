@@ -71,6 +71,8 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
                                 source_state=nonexistent, target_state=private))
     if models.ContentFormat in created_models:
         stderr.write("Populating %s table\n" % (models.ContentFormat._meta.db_table,))
+        new_contentformat = models.ContentFormat(descr='html')
+        new_contentformat.save()
         new_contentformat = models.ContentFormat(descr='rst')
         new_contentformat.save()
     if models.Language in created_models:
@@ -87,7 +89,7 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
         entry.save()
         page = models.Page(entry=entry, version_number=1,
                 language_id=settings.LANGUAGES[0],
-                format=models.ContentFormat.objects.get(descr='rst'),
+                format=models.ContentFormat.objects.get(descr='html'),
                 content='This is the root page')
         page.save()
         nmetatags = models.VObjectMetatags(vobject=page,

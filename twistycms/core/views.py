@@ -58,6 +58,7 @@ def view_object(request, path, version_number=None):
 
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
+    # FIXME: Must sanitize html input after submission
     language = forms.ChoiceField(choices=
         [(l.id, l.id) for l in models.Language.objects.all()])
     name = forms.CharField(required=False,
@@ -98,7 +99,7 @@ def edit_entry(request, path):
                 version_number=vobject.version_number + 1,
                 language=models.Language.objects.get(
                                             id=form.cleaned_data['language']),
-                format=models.ContentFormat.objects.get(descr='rst'),
+                format=models.ContentFormat.objects.get(descr='html'),
                 content=form.cleaned_data['content'])
             npage.save()
             nmetatags = models.VObjectMetatags(
@@ -119,7 +120,7 @@ def edit_entry(request, path):
             'secondary_buttons': _secondary_buttons(request, vobject)})
 
 def create_new_page(request, parent_path):
-    # FIXME: only rst, no html
+    # FIXME: only html, no rst
     # FIXME: no check about contents of form.name
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     if request.method != 'POST':
@@ -130,15 +131,11 @@ def create_new_page(request, parent_path):
             path = parent_path + '/' + form.cleaned_data['name']
             entry = models.Entry(request, path)
             entry.save()
-#            vobject = models.Page(entry=entry, version_number=0,
-#                language=models.Language.objects.all()[0],
-#                format=models.ContentFormat.objects.get(descr='rst'),
-#                content='')
             npage = models.Page(
                 entry=entry, version_number=1,
                 language=models.Language.objects.get(
                                             id=form.cleaned_data['language']),
-                format=models.ContentFormat.objects.get(descr='rst'),
+                format=models.ContentFormat.objects.get(descr='html'),
                 content=form.cleaned_data['content'])
             npage.save()
             nmetatags = models.VObjectMetatags(
