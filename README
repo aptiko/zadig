@@ -13,3 +13,7 @@ Installation:
   7. Visit http://localhost:8000/
   8. Experiment
   9. Read documentation under the docs directory
+
+IMPORTANT: Don't use for production without contacting me first. I frequently
+make changes in the models without caring about migration. But if you notify
+me, I will care.
