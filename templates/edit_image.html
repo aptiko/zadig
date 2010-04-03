@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block mainContent %}
+<div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
+  <h1>Edit {{vobject.entry.name}}</h1>
+  <form class="editObject" enctype="multipart/form-data" action="" method="POST">
+  <table>
+  {{form.as_table}}
+  {% for o in applet_options %}
+     {{o.entry_options_form.as_table}}
+  {% endfor %}
+  </table>
+  <input type="submit" value="Submit" />
+  </form>
+</div>
+{% endblock %}

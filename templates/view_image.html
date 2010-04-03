@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load markup %}
+
+{% block mainContent %}
+<div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
+  <h1>{{vobject.metatags.default.title}}</h1>
+  <p class="objectDescription">{{vobject.metatags.default.description}}</p>
+  <img src="{{vobject.image.content.url}}" width="{{vobject.image.content.width}}"
+    height="{{vobject.image.content.height}}">
+</div>
+{% endblock %}

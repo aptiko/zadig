@@ -44,6 +44,7 @@ def _secondary_buttons(request, vobject):
           { 'name': _(u'Add new…'),
             'items': [
                        { 'href': '__newpage__', 'name': _(u'Page') },
+                       { 'href': '__newimage__', 'name': _(u'Image') },
                      ]
           },
         ]
@@ -53,6 +54,11 @@ def view_object(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)
     if hasattr(vobject, 'page'):
         return render_to_response('view_page.html', { 'request': request,
+                'vobject': vobject,
+                'primary_buttons': _primary_buttons(request, vobject, 'view'),
+                'secondary_buttons': _secondary_buttons(request, vobject)})
+    elif hasattr(vobject, 'image'):
+        return render_to_response('view_image.html', { 'request': request,
                 'vobject': vobject,
                 'primary_buttons': _primary_buttons(request, vobject, 'view'),
                 'secondary_buttons': _secondary_buttons(request, vobject)})
@@ -72,6 +78,19 @@ class EditForm(forms.Form):
     description = forms.CharField(widget=forms.Textarea, required=False)
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
         mce_attrs={'theme': 'advanced'}), required=False)
+
+class ImageForm(forms.Form):
+    # FIXME: metatags should be in many languages
+    language = forms.ChoiceField(choices=
+        [(l.id, l.id) for l in models.Language.objects.all()])
+    name = forms.CharField(required=False,
+        max_length=models.Entry._meta.get_field('name').max_length)
+    title = forms.CharField(
+        max_length=models.VObjectMetatags._meta.get_field('title').max_length)
+    short_title = forms.CharField(required=False, max_length=
+        models.VObjectMetatags._meta.get_field('short_title').max_length)
+    description = forms.CharField(widget=forms.Textarea, required=False)
+    content = forms.ImageField()
 
 def edit_entry(request, path):
     # FIXME: form.name ignored
@@ -156,6 +175,36 @@ def create_new_page(request, parent_path):
           'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
           'secondary_buttons': _secondary_buttons(request, parent_vobject)})
 
+def create_new_image(request, parent_path):
+    parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
+    if request.method != 'POST':
+        form = ImageForm({ 'language': parent_vobject.language.id })
+    else:
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            path = parent_path + '/' + form.cleaned_data['name']
+            entry = models.Entry(request, path)
+            entry.save()
+            nimage = models.Image( entry=entry, version_number=1,
+                language=models.Language.objects.get(
+                                            id=form.cleaned_data['language']),
+                content=form.cleaned_data['content'])
+            nimage.save()
+            nmetatags = models.VObjectMetatags(
+                vobject=nimage,
+                language=models.Language.objects.get(
+                                            id=form.cleaned_data['language']),
+                title=form.cleaned_data['title'],
+                short_title=form.cleaned_data['short_title'],
+                description=form.cleaned_data['description'])
+            nmetatags.save()
+            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
+                        kwargs={'path': path }))
+    return render_to_response('edit_image.html',
+        { 'request': request, 'vobject': parent_vobject, 'form': form,
+          'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
+          'secondary_buttons': _secondary_buttons(request, parent_vobject)})
+    
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
     before_object = forms.IntegerField()
