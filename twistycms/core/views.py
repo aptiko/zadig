@@ -58,10 +58,8 @@ def view_object(request, path, version_number=None):
                 'primary_buttons': _primary_buttons(request, vobject, 'view'),
                 'secondary_buttons': _secondary_buttons(request, vobject)})
     elif hasattr(vobject, 'image'):
-        return render_to_response('view_image.html', { 'request': request,
-                'vobject': vobject,
-                'primary_buttons': _primary_buttons(request, vobject, 'view'),
-                'secondary_buttons': _secondary_buttons(request, vobject)})
+        # FIXME: This is quick and dirty, with no permissions checking
+        return HttpResponseRedirect(vobject.image.content.url)
     return None
 
 class EditForm(forms.Form):
