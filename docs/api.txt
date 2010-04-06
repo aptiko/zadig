@@ -112,11 +112,8 @@ mentioned unless there is something unusual about it.
 
    .. attribute:: twistycms.core.models.Entry.path
 
-      This read-only property returns the URL path to the entry.
-
-   .. attribute:: twistycms.core.models.Entry.url
-
-      This read-only property returns the full URL to the specified entry.
+      This read-only property returns the URL path to the entry, not
+      including a leading or trailing slash..
 
    .. attribute:: objects
 
