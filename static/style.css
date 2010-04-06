@@ -13,9 +13,10 @@ a { color: #436976; }
 #portalColophon ul { text-align: center; list-style-image: none; list-style-type: none; }
 #portalColophon ul li { display: inline; font-size: 90%; padding: 0 0.75em 0 0.75em; }
 #mainColumn h1,h2,h3,h4,h5,h6 { margin: 0.75em 0 0.25em 0; }
-#mainColumn h1,h2 { font-weight: normal; border-bottom: solid #8cacbb 1px; }
-#mainColumn h1 { font-size: 160%; }
-#mainColumn h1.title { margin-top: 0; }
+#mainColumn h1,h2 { font-weight: normal; }
+#mainColumn h1 { font-size: 150%; border-bottom: solid #8cacbb 1px; }
+#mainColumn h1.title { font-size: 160%; margin-top: 0; }
+#mainColumn h2 { font-size: 125%; font-weight: bold; }
 #mainColumn p.authorAndDate { font-size: 90%; font-weight: normal; margin-bottom: 0.5em; margin-top: 0; color: #76797c; }
 #mainColumn .objectDescription { font-weight: bold; margin: 0 0 0.5em 0; line-height: 1.5em; }
 
@@ -28,57 +29,13 @@ a { color: #436976; }
 .primaryButtons .selected a { background-color: #cde2a7; border-bottom: #cde2a7 1px solid; color: #578308; }
 .primaryButtons li a:hover { background-color: #cde2a7; color: #578308; }
 
-ul.secondaryButtons {
-    background-color: #cde2a7;
-    border-left: 1px solid #74ae0b;
-    border-right: 1px solid #74ae0b;
-    color: #578308;
-    text-align: right;
-    padding: 0 0.5em 0 0.5em;
-    z-index: 2;
-    position:relative;
-    height: 1.6em;
-    margin: 0;
-}
-ul.secondaryButtons > li {
-    list-style: none;
-    text-align: left;
-    line-height: 1.6em;
-    margin: 0;
-    float: right;
-    z-index: 4;
-}
-ul.secondaryButtons a {
-    text-decoration: none;
-    color: #578308;
-    padding: 0 0.5em;
-    cursor: pointer;
-    white-space: nowrap;
-}
-ul.secondaryButtons >li>dl {
-    position: relative;
-}
-ul.secondaryButtons >li>dl>dt, ul.secondaryButtons >li>p  {
-    margin: 0;
-    padding: 0;
-    border-left: 1px solid #74ae0b;
-}
-ul.secondaryButtons > li > dl > dd {
-    margin: 0;
-    padding: 0;
-    position: absolute;
-    right: -1px;
-    background-color: #cde2a7;
-    border: 1px #74ae0b solid;
-    border-top: none;
-    visibility: hidden;
-}
-ul.secondaryButtons > li > dl > dd > ul {
-    display: block;
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
+ul.secondaryButtons { background-color: #cde2a7; border-left: 1px solid #74ae0b; border-right: 1px solid #74ae0b; color: #578308; text-align: right; padding: 0 0.5em 0 0.5em; z-index: 2; position:relative; height: 1.6em; margin: 0; }
+ul.secondaryButtons > li { list-style: none; text-align: left; line-height: 1.6em; margin: 0; float: right; z-index: 4; }
+ul.secondaryButtons a { text-decoration: none; color: #578308; padding: 0 0.5em; cursor: pointer; white-space: nowrap; }
+ul.secondaryButtons >li>dl { position: relative; }
+ul.secondaryButtons >li>dl>dt, ul.secondaryButtons >li>p  { margin: 0; padding: 0; border-left: 1px solid #74ae0b; }
+ul.secondaryButtons > li > dl > dd { margin: 0; padding: 0; position: absolute; right: -1px; background-color: #cde2a7; border: 1px #74ae0b solid; border-top: none; visibility: hidden; }
+ul.secondaryButtons > li > dl > dd > ul { display: block; margin: 0; padding: 0; list-style-type: none; }
 
 .portlet { margin: 1px 0 1em 0; border-bottom: solid #8cacbb 1px; }
 .portlet dt { background-color: #dee7ec; border: solid #8cacbb 1px; padding: 0 1em 0 1em; line-height: 1.6em; }
