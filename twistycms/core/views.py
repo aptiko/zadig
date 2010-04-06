@@ -40,7 +40,16 @@ class EditForm(forms.Form):
         models.VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
-        mce_attrs={'theme': 'advanced'}), required=False)
+        mce_attrs={
+            'content_css': '/static/style.css',
+            'theme': 'advanced',
+            'theme_advanced_blockformats': 'p,h1,h2',
+            'theme_advanced_toolbar_location': 'top',
+            'theme_advanced_toolbar_align': 'left',
+            'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect',
+            'theme_advanced_buttons2': '',
+            'theme_advanced_buttons3': '',
+        }), required=False)
 
 class ImageForm(forms.Form):
     # FIXME: metatags should be in many languages
