@@ -15,52 +15,17 @@ from tinymce.widgets import TinyMCE
 from twistycms.core import models
 import twistycms.core
 
-def _primary_buttons(request, vobject, selected_view):
-    if vobject.entry.get_permissions(request).intersection(
-            set((models.permissions.EDIT, models.permissions.ADMIN))) == set():
-        return []
-    href_prefix = ''
-    if re.search(r'__[a-zA-Z]+__/$', request.path): href_prefix = '../'
-    result = []
-    for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
-        href_suffix = '__' + x + '__/'
-        if x == _(u'view'): href_suffix = ''
-        href = href_prefix + href_suffix
-        result.append({ 'name': x, 'href': href, 'selected': x==selected_view })
-    return result
+# If the following two cannot be deleted, some code reorganizing is unfinished.
+from twistycms.core.utils import primary_buttons as _primary_buttons
+from twistycms.core.utils import secondary_buttons as _secondary_buttons
 
-def _secondary_buttons(request, vobject):
-    if vobject.entry.get_permissions(request).intersection(
-            set((models.permissions.EDIT, models.permissions.ADMIN))) == set():
-        return []
-    result = [
-          { 'name': _(u'State:') + ' ' + vobject.entry.state.descr,
-            'items': [
-                       { 'href': '__state__/%d' % (x.target_state.id,),
-                         'name': x.target_state.descr }
-                            for x in vobject.entry.state.source_rules.all()
-                     ]
-          },
-          { 'name': _(u'Add new…'),
-            'items': [
-                       { 'href': '__newpage__', 'name': _(u'Page') },
-                       { 'href': '__newimage__', 'name': _(u'Image') },
-                     ]
-          },
-        ]
-    return result
-    
-def view_object(request, path, version_number=None):
+def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)
-    if hasattr(vobject, 'page'):
-        return render_to_response('view_page.html', { 'request': request,
-                'vobject': vobject,
-                'primary_buttons': _primary_buttons(request, vobject, 'view'),
-                'secondary_buttons': _secondary_buttons(request, vobject)})
-    elif hasattr(vobject, 'image'):
-        # FIXME: This is quick and dirty, with no permissions checking
-        return HttpResponseRedirect(vobject.image.content.url)
-    return None
+    return vobject.end_view(request)
+
+def info_view(request, path, version_number=None):
+    vobject = models.VObject.objects.get_by_path(request, path, version_number)
+    return vobject.info_view(request)
 
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
@@ -131,7 +96,7 @@ def edit_entry(request, path):
             nmetatags.save()
             for o in applet_options:
                 o['entry_options'](request, path, o['entry_options_form'])
-            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
+            return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
                         kwargs={'path': path }))
     return render_to_response('edit_page.html',
           { 'request': request, 'vobject': vobject, 'form': form,
@@ -196,7 +161,7 @@ def create_new_image(request, parent_path):
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])
             nmetatags.save()
-            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
+            return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
                         kwargs={'path': path }))
     return render_to_response('edit_image.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
@@ -258,12 +223,12 @@ def change_state(request, path, new_state_id):
         raise ValidationError(_(u"Invalid target state"))
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
-    return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
+    return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
                 kwargs={'path': path }))
 
 def logout(request, path):
     django.contrib.auth.logout(request)
-    return view_object(request, path)
+    return end_view(request, path)
 
 class LoginForm(forms.Form):
     from django.contrib.auth.models import User
@@ -285,7 +250,7 @@ def login(request, path):
             if user is not None:
                 if user.is_active:
                     django.contrib.auth.login(request, user)
-                    return view_object(request, path)
+                    return end_view(request, path)
                 else:
                     raise Exception(_(u"Account is disabled"))
             message = _(u"Login incorrect")

@@ -3,8 +3,12 @@ from django.core import urlresolvers
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
+from django.shortcuts import render_to_response
+from django.http import HttpResponseRedirect
 import django.contrib.auth.models
 import settings
+
+from twistycms.core import utils
 
 class permissions:
     VIEW=1
@@ -158,6 +162,9 @@ class Entry(models.Model):
         if vobject.version_number != latest_vobject.version_number \
                 and permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
+        for x in ('page', 'image'):
+            if hasattr(vobject, x):
+                return getattr(vobject, x)
         return vobject
     @property
     def path(self):
@@ -169,7 +176,7 @@ class Entry(models.Model):
         return result
     @property
     def url(self):
-        return urlresolvers.reverse('twistycms.core.views.view_object',
+        return urlresolvers.reverse('twistycms.core.views.end_view',
             kwargs = { 'path': self.path })
     def contains(self, entry):
         while entry:
@@ -253,6 +260,8 @@ class VObject(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     language = models.ForeignKey(Language, blank=True, null=True)
     objects = VObjectManager()
+    def end_view(self, request):
+        raise NotImplementedError("Method should be redefined in derived class")
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
     class Meta:
@@ -295,6 +304,11 @@ class ContentFormat(models.Model):
 class Page(VObject):
      format = models.ForeignKey(ContentFormat)
      content = models.TextField(blank=True)
+     def end_view(self, request):
+        return render_to_response('view_page.html', { 'request': request,
+            'vobject': self,
+            'primary_buttons': utils.primary_buttons(request, self, 'view'),
+            'secondary_buttons': utils.secondary_buttons(request, self)})
      class Meta:
         db_table = 'cms_page'
 
@@ -305,19 +319,14 @@ class File(VObject):
 
 class Image(VObject):
     content = models.ImageField(upload_to="images")
+    def end_view(self, request):
+        # FIXME: This is quick and dirty, with no permissions checking
+        return HttpResponseRedirect(self.image.content.url)
     class Meta:
         db_table = 'cms_image'
 
-# I don't know how these two will evolve. If the original idea
-# remains, likely NewsItem and Event are also required, subclassing
-# Page.
-#class NewsItemVersion(PageVersion):
-#    pass
-#class EventVersion(PageVersion):
-#    pass
-
-#class LinkVersion(ObjectVersion):
+#class LinkVersion(VObject):
 #    target = models.TextField()
 
-#class InternalRedirection(Object):
+#class InternalRedirection(VObject):
 #    target = models.ForeignKey(Object)

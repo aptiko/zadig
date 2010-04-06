@@ -14,18 +14,18 @@ In the description of the database models below, it goes without
 saying that all models have an *id* field, which is usually not
 mentioned unless there is something unusual about it.
 
-.. class:: core.models.Language
+.. class:: twistycms.core.models.Language
 
    Contains languages. It has only one field, :attr:`id`, storing the
    language id, as a 5-character long string, in the form "en" or
    "en_us" etc.
 
-.. class:: core.models.Permission
+.. class:: twistycms.core.models.Permission
 
    A lookup that lists permissions: "view", "edit", "admin", "search",
    "delete". Has only a :attr:`descr` attribute.
 
-.. class:: core.models.Lentity
+.. class:: twistycms.core.models.Lentity
 
    A Lentity represents either a user or a group, and is used whenever
    any of the two can be used; for example, a certain permission can
@@ -35,39 +35,39 @@ mentioned unless there is something unusual about it.
    :class:`django.contrib.auth.models.Group`. Either :attr:`user`, or
    :attr:`group`, or :attr:`special`, must be not null; the other two
    must be null. If :attr:`user` is not null, the
-   :class:`~core.models.Lentity` represents a user.  If :attr:`group`
-   is not null, the :class:`~core.models.Lentity` represents a group.
+   :class:`~twistycms.core.models.Lentity` represents a user.  If :attr:`group`
+   is not null, the :class:`~twistycms.core.models.Lentity` represents a group.
    If :attr:`special` is 1, it represents the anonymous user, and if
    :attr:`special` is 2, it represents all valid users (the logged on
    user).
 
-.. class:: core.models.State
+.. class:: twistycms.core.models.State
 
    A list of states. Contains only a :attr:`descr` attribute.
 
-.. class:: core.models.StatePermission
+.. class:: twistycms.core.models.StatePermission
 
    A state is a collection of permissions. This model stores the
    permissions that comprise the state. It has three attributes,
    :attr:`state`, :attr:`lentity` and :attr:`permission`, which are
-   foreign keys to :class:`~core.models.State`, :class:`~core.models.Lentity`
-   and :class:`~core.models.Permission`, and designate that said lentity
+   foreign keys to :class:`~twistycms.core.models.State`, :class:`~twistycms.core.models.Lentity`
+   and :class:`~twistycms.core.models.Permission`, and designate that said lentity
    has said permission on said state.
 
-.. class:: core.models.StateTransition
+.. class:: twistycms.core.models.StateTransition
 
    A state transition. Has two attributes, :attr:`source_state` and
-   :attr:`target_state`, both foreign keys to :class:`~core.models.State`.
+   :attr:`target_state`, both foreign keys to :class:`~twistycms.core.models.State`.
 
-.. class:: core.models.Workflow
+.. class:: twistycms.core.models.Workflow
 
    A workflow is a collection of states and state-transition rules.
    The model has three attributes: :attr:`name`, which is a string,
    :attr:`states`, and :attr:`state_transitions`. The last two are
-   many to many fields to :class:`~core.models.State` and
-   :class:`~core.models.StateTransition`.
+   many to many fields to :class:`~twistycms.core.models.State` and
+   :class:`~twistycms.core.models.StateTransition`.
 
-.. class:: core.models.Entry(request, path)
+.. class:: twistycms.core.models.Entry(request, path)
 
    Stores an entry. The constructor creates a new entry at the
    specified path.  The parent entry must already exist and
@@ -75,11 +75,11 @@ mentioned unless there is something unusual about it.
    entry; otherwise, an exception is raised. If other entries with the
    same parent entry exist, the entry is added as the last sibling.
    
-   :class:`~core.models.Entry` objects have the following attributes:
+   :class:`~twistycms.core.models.Entry` objects have the following attributes:
 
-   .. attribute:: core.models.Entry.container
+   .. attribute:: twistycms.core.models.Entry.container
 
-      A foreign key to :class:`~core.models.Entry` (that is, to self). It
+      A foreign key to :class:`~twistycms.core.models.Entry` (that is, to self). It
       indicates which entry contains the entry. This attribute can be
       null; there is one and only one entry that has a
       null :attr:`container`, and it is the root entry.
@@ -89,32 +89,32 @@ mentioned unless there is something unusual about it.
       ``myentry.all_subentries`` is the list of entries contained in
       ``myentry``. You should not, however, use ``all_subentries``, unless
       you have a good reason to do so; instead, use 
-      :meth:`~core.models.Entry.subentries`, which checks permissions.
+      :meth:`~twistycms.core.models.Entry.subentries`, which checks permissions.
 
-   .. attribute:: core.models.Entry.name
+   .. attribute:: twistycms.core.models.Entry.name
 
       The name of the entry.
 
-   .. attribute:: core.models.Entry.seq
+   .. attribute:: twistycms.core.models.Entry.seq
 
       The sequence of the entry in its container: 1 for the first
       entry, 2 for the second entry, and so on.
 
-   .. attribute:: core.models.Entry.owner
+   .. attribute:: twistycms.core.models.Entry.owner
 
       A foreign key to ``django.contrib.auth.models.User``, indicating
       the owner of the entry.
 
-   .. attribute:: core.models.Entry.state
+   .. attribute:: twistycms.core.models.Entry.state
 
-      A foreign key to :class:`~core.models.State`, indicating the state of
+      A foreign key to :class:`~twistycms.core.models.State`, indicating the state of
       the entry.
 
-   .. attribute:: core.models.Entry.path
+   .. attribute:: twistycms.core.models.Entry.path
 
       This read-only property returns the URL path to the entry.
 
-   .. attribute:: core.models.Entry.url
+   .. attribute:: twistycms.core.models.Entry.url
 
       This read-only property returns the full URL to the specified entry.
 
@@ -122,37 +122,38 @@ mentioned unless there is something unusual about it.
 
       The default manager has the following additional methods:
 
-      .. method:: core.models.EntryManager.get_by_path(request, path)
+      .. method:: twistycms.core.models.EntryManager.get_by_path(request, path)
 
          Return the entry at the specified path, or
          :const:`None` if such an entry does not exist or the user
          does not have permissions to view it.
 
-   :class:`~core.models.Entry` objects also have the following methods:
+   :class:`~twistycms.core.models.Entry` objects also have the following methods:
 
-   .. method:: core.models.Entry.get_permissions(request)
+   .. method:: twistycms.core.models.Entry.get_permissions(request)
 
       Return the permissions the logged on user has on the entry.
 
-   .. method:: core.models.Entry.get_vobject(request[, version_number])
+   .. method:: twistycms.core.models.Entry.get_vobject(request[, version_number])
 
-      Return the entry's vobject.  If *version_number* is not specified,
-      it returns the latest vobject. An exception is raised if the
-      user does not have permission to view the vobject.
+      Return the entry's vobject; actually returns a
+      `twistycms.core.models.VObject` descendant. If *version_number*
+      is not specified, it returns the latest vobject. An exception is
+      raised if the user does not have permission to view the vobject.
 
-   .. method:: core.models.Entry.contains(entry)
+   .. method:: twistycms.core.models.Entry.contains(entry)
 
       Check whether *entry* is contained, directly or indirectly, in
       *self*. Returns :const:`True` if *self* is the parent of
       *entry*, or the parent of its parent, or any ancenstor, and
       :const:`False` otherwise.
 
-   .. method:: core.models.Entry.get_subentries(request)
+   .. method:: twistycms.core.models.Entry.get_subentries(request)
 
-      Return a list of :class:`~core.models.Entry` objects, which are the
+      Return a list of :class:`~twistycms.core.models.Entry` objects, which are the
       subentries which the user has permission to search, in order.
 
-   .. method:: core.models.Entry.reorder(request, source_seq, target_seq)
+   .. method:: twistycms.core.models.Entry.reorder(request, source_seq, target_seq)
 
       Move the subentry with :samp:`seq={source_seq}` before subentry
       with :samp:`seq={target_seq}`.  *source_seq* and *target_seq*
@@ -161,30 +162,54 @@ mentioned unless there is something unusual about it.
       before the child that has :samp:`seq={target_seq}`, unless
       *target_seq* is one more than the number of children, in which
       case the child is moved to the end. The other children are
-      renumbered as needed (i.e.  their :attr:`~core.models.Entry.seq`
+      renumbered as needed (i.e.  their :attr:`~twistycms.core.models.Entry.seq`
       is modified accordingly).  Raises an exception if *source_seq*
       or *target_seq* are inappropriate; for example, if *source_seq*
       is larger than the number of children, or if *source_seq* and
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
-.. class:: core.models.EntryPermission
+.. class:: twistycms.core.models.EntryPermission
 
    Permissions assigned to the entry besides those assigned to its
    state. Has three attributes: :attr:`entry`, :attr:`lentity` and
    :attr:`permission`, all foreign keys to the respective model.
 
-.. class:: core.models.VObject
+.. class:: twistycms.core.models.VObject
 
    This model is the parent of models that inherit it using
-   multi-table inheritance, and stores a vobject. Has four attributes:
-   :attr:`entry`, foreign key to :class:`~core.models.Entry`,
-   :attr:`version_number`, an integer, :attr:`date`, the date in which
-   the vobject has been created, and :attr:`language`, a foreign key
-   to :class:`Language` designating the language of the vobject. This
-   model does not actually store the content of the vobject; this is
-   stored by the descendant model.
+   multi-table inheritance, and stores a vobject.  This model does not
+   actually store the content of the vobject; this is stored by the
+   descendant model.  :class:`VObject` provides the following
+   attributes and methods:
+   
+   .. attribute:: entry
 
+      Foreign key to ::class:`~twistycms.core.models.Entry`.
+
+   .. attribute:: version_number
+
+      An integer
+
+   .. attribute:: date
+
+      The date in which the vobject has been created.
+
+   .. attribute:: language
+
+      A foreign key to :class:`Language` designating the language of
+      the vobject.
+
+   .. method:: end_view(request)
+
+      Returns a :class:`django.http.HttpResponse` object with the end
+      view of the vobject.
+
+   .. method:: info_view(request)
+
+      Returns a :class:`django.http.HttpResponse` object with the end
+      view of the vobject.
+      
    :class:`VObject` has a custom manager:
 
    .. attribute:: objects
@@ -212,34 +237,44 @@ mentioned unless there is something unusual about it.
    of metatags in the language of the vobject; but if such a set does
    not exist, :meth:`default` returns a random set of metatags.
 
-.. class:: core.models.ContentFormat
+.. class:: twistycms.core.models.ContentFormat
 
    A lookup storing content formats, such as "text/html" or
    "text/x-rst". Has only a :attr:`descr` field.
 
-.. class:: core.models.Page(VObject)
+.. class:: twistycms.core.models.Page(VObject)
 
-   Inherits :class:`~core.models.VObject` and designates a page. Has
+   Inherits :class:`~twistycms.core.models.VObject` and designates a page. Has
    attributes :attr:`format`, a foreign key to
-   :class:`~core.models.ContentFormat`, and :attr:`content`, a text field.
+   :class:`~twistycms.core.models.ContentFormat`, and :attr:`content`, a text field.
 
-.. class:: core.models.File(VObject)
+.. class:: twistycms.core.models.File(VObject)
 
-   Inherits :class:`~core.models.VObject` and designates a file. Has
+   Inherits :class:`~twistycms.core.models.VObject` and designates a file. Has
    attribute :attr:`content`, a file field.
    
-.. class:: core.models.Image(VObject)
+.. class:: twistycms.core.models.Image(VObject)
 
-   Inherits :class:`~core.models.VObject` and designates an image. Has
+   Inherits :class:`~twistycms.core.models.VObject` and designates an image. Has
    attribute :attr:`content`, an image field.
 
 Utility functions
 =================
 
-The functions below are in module core.utils.
+The functions below are in module twistycms.core.utils.
 
-.. function:: core.utils.get_current_path(request)
+.. function:: twistycms.core.utils.get_current_path(request)
 
    Return the path to the current entry. This is something like
    request.path, but does not include any directive like ``__edit__``
    and so on.
+
+.. function:: twistycms.core.utils.primary_buttons(request, vobject, selected_view)
+
+   Return a list of dictionaries, where each dictionary is a primary
+   button.
+
+.. function:: twistycms.core.utils.secondary_buttons(request, vobject)
+
+   Return a list of dictionaries, where each dictionary is a secondary
+   button.
