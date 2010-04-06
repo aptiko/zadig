@@ -4,6 +4,12 @@ import re
 
 from django.utils.translation import ugettext as _
 
+def split_path(path):
+    if path=='' or path=='/': return ['',]
+    if path.startswith('/'): path = path[1:]
+    if path.endswith('/'): path = path[:-1]
+    return ['',] + path.split('/')
+
 def get_current_path(request):
     path = request.path
     assert(path[0] == '/')

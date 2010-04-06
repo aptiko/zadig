@@ -263,6 +263,14 @@ Utility functions
 
 The functions below are in module twistycms.core.utils.
 
+.. function:: twistycms.core.utils.split_path(path)
+
+   Return a list with the path items. Roughly :samp:`path.split('/')`
+   but not confused by trailing slash, will ignore a starting slash,
+   will work on an empty string or single slash, and it always
+   includes an empty string as the first path item, which stands for
+   the root entry.
+
 .. function:: twistycms.core.utils.get_current_path(request)
 
    Return the path to the current entry. This is something like

@@ -95,8 +95,7 @@ class Workflow(models.Model):
 class EntryManager(models.Manager):
     def get_by_path(self, request, path):
         entry=None
-        if path and not path.startswith('/'): path = '/' + path
-        for name in path.split('/'):
+        for name in utils.split_path(path):
             entry = self.get(name=name, container=entry)
             if not permissions.VIEW in entry.get_permissions(request):
                 return None
@@ -262,6 +261,8 @@ class VObject(models.Model):
     objects = VObjectManager()
     def end_view(self, request):
         raise NotImplementedError("Method should be redefined in derived class")
+    def info_view(self, request):
+        raise NotImplementedError("Method should be redefined in derived class")
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
     class Meta:
@@ -309,6 +310,8 @@ class Page(VObject):
             'vobject': self,
             'primary_buttons': utils.primary_buttons(request, self, 'view'),
             'secondary_buttons': utils.secondary_buttons(request, self)})
+     def info_view(self, request):
+        return self.end_view(request)
      class Meta:
         db_table = 'cms_page'
 
@@ -322,6 +325,11 @@ class Image(VObject):
     def end_view(self, request):
         # FIXME: This is quick and dirty, with no permissions checking
         return HttpResponseRedirect(self.image.content.url)
+    def info_view(self, request):
+        return render_to_response('view_image.html', { 'request': request,
+            'vobject': self,
+            'primary_buttons': utils.primary_buttons(request, self, 'view'),
+            'secondary_buttons': utils.secondary_buttons(request, self)})
     class Meta:
         db_table = 'cms_image'
 
