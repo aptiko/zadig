@@ -56,7 +56,7 @@ class ImageForm(forms.Form):
     # FIXME: metatags should be in many languages
     language = forms.ChoiceField(choices=
         [(l.id, l.id) for l in models.Language.objects.all()])
-    name = forms.CharField(required=False,
+    name = forms.CharField(required=True,
         max_length=models.Entry._meta.get_field('name').max_length)
     title = forms.CharField(
         max_length=models.VObjectMetatags._meta.get_field('title').max_length)
