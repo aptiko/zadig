@@ -60,3 +60,43 @@ def secondary_buttons(request, vobject):
           },
         ]
     return result
+
+class sanitize_html(unicode):
+    valid_tags = 'p i string b u a h1 h2 pre br img'.split()
+    valid_attrs = 'href src width height class'.split()
+    url_attrs = 'href src'.split()
+    valid_schemes = 'http https ftp mailto'.split()
+    def __new__(cls, html):
+        from BeautifulSoup import BeautifulSoup, Comment
+        soup = BeautifulSoup(html)
+        for c in soup.findAll(text=lambda text: isinstance(text, Comment)):
+            c.extract() # Remove comments
+        for tag in soup.findAll(True):
+            if tag.name not in cls.valid_tags:
+                tag.extract()
+                continue
+            attrs = tag.attrs
+            tag.attrs = []
+            for attr, val in attrs:
+                if attr not in cls.valid_attrs: continue
+                if (attr in cls.url_attrs) and not cls.url_is_safe(val):
+                    continue
+                tag.attrs.append((attr, val))
+        result = soup.renderContents().decode('utf8')
+        return super(sanitize_html, cls).__new__(cls, result)
+    @classmethod
+    def url_is_safe(cls, url):
+        """Return True if the url is relative or its scheme is in valid_schemes.
+        Note that we don't use the Python urlparse library, because apparently
+        it follows the RFC, and we also need to account for stupid web browsers
+        that don't follow the RFC and will honour deceptive urls like ' j
+        avascript:' or similar (http://ha.ckers.org/xss.html for examples).
+        What we do is the following: First we unquote the url. Then, if the url
+        does not contain a colon, it's relative and it's OK; if a slash
+        precedes the first colon, it's relative and it's OK; otherwise, the
+        part preceding the colon is considered to be a scheme and it must be
+        one of those whitelisted."""
+        from urllib import unquote
+        (scheme, sep, rest) = unquote(url).partition(':')
+        return (not sep) or (scheme.find('/')>=0) or (scheme in
+                                                      cls.valid_schemes)

@@ -5,9 +5,10 @@ developers started.
 Installation:
   1. Keep my email address handy. anthony@itia.ntua.gr. Send me an email
      whenever you run into problems.
-  2. Install TinyMCE and django-tinymce (in Debian/Ubuntu:
-     aptitude install python-django-tinymce); copy the contents of the tinymce
-     www directory (the one containing the tiny_mce.js file) in static/tinymce/.
+  2. Install TinyMCE, django-tinymce, and BeautifulSoup (in Debian/Ubuntu:
+     aptitude install python-django-tinymce python-beautifulsoup); symlink
+     the tinymce www directory (the one containing the tiny_mce.js file) to
+     static/tinymce.
   3. Edit settings.py as needed.
   4. ./manage.py syncdb
   5. ./manage.py runserver

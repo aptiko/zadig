@@ -283,3 +283,13 @@ The functions below are in module twistycms.core.utils.
 
    Return a list of dictionaries, where each dictionary is a secondary
    button.
+
+.. function:: twistycms.core.utils.sanitize_html(html)
+
+   Sanitize the HTML provided and return a sanitized version. This is
+   done for two reasons: (a) to avoid cross site scripting attacks;
+   (b) to discourage users from using too much markup. It only allows
+   specific (whitelisted) tags and specific (whitelisted) attributes,
+   deleting all the rest, and it also sanitizes the content of *href*
+   and *src* attributes, by allowing only specific (whitelisted) URL
+   schemes. The whitelists are hardwired in this version.

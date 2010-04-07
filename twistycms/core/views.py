@@ -14,6 +14,7 @@ from tinymce.widgets import TinyMCE
 
 from twistycms.core import models
 import twistycms.core
+from twistycms.core import utils
 
 # If the following two cannot be deleted, some code reorganizing is unfinished.
 from twistycms.core.utils import primary_buttons as _primary_buttons
@@ -29,7 +30,6 @@ def info_view(request, path, version_number=None):
 
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
-    # FIXME: Must sanitize html input after submission
     language = forms.ChoiceField(choices=
         [(l.id, l.id) for l in models.Language.objects.all()])
     name = forms.CharField(required=False,
@@ -94,7 +94,7 @@ def edit_entry(request, path):
                 language=models.Language.objects.get(
                                             id=form.cleaned_data['language']),
                 format=models.ContentFormat.objects.get(descr='html'),
-                content=form.cleaned_data['content'])
+                content=utils.sanitize_html(form.cleaned_data['content']))
             npage.save()
             nmetatags = models.VObjectMetatags(
                 vobject=npage,
@@ -130,7 +130,7 @@ def create_new_page(request, parent_path):
                 language=models.Language.objects.get(
                                             id=form.cleaned_data['language']),
                 format=models.ContentFormat.objects.get(descr='html'),
-                content=form.cleaned_data['content'])
+                content=utils.sanitize_html(form.cleaned_data['content']))
             npage.save()
             nmetatags = models.VObjectMetatags(
                 vobject=npage,
