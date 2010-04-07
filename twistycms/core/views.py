@@ -119,7 +119,7 @@ def create_new_page(request, parent_path):
     # FIXME: no check about contents of form.name
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     if request.method != 'POST':
-        form = EditForm({ 'language': parent_vobject.language.id })
+        form = EditForm(initial={ 'language': parent_vobject.language.id })
     else:
         form = EditForm(request.POST)
         if form.is_valid():
@@ -151,7 +151,7 @@ def create_new_page(request, parent_path):
 def create_new_image(request, parent_path):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     if request.method != 'POST':
-        form = ImageForm({ 'language': parent_vobject.language.id })
+        form = ImageForm(initial={ 'language': parent_vobject.language.id })
     else:
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
