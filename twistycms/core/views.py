@@ -141,8 +141,8 @@ def create_new_page(request, parent_path):
                 short_title=form.cleaned_data['short_title'],
                 description=form.cleaned_data['description'])
             nmetatags.save()
-            return HttpResponseRedirect(reverse('twistycms.core.views.view_object',
-                        kwargs={'path': path }))
+            return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
+                        kwargs={'path': '/' + path }))
     return render_to_response('edit_page.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
           'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
@@ -172,7 +172,7 @@ def create_new_image(request, parent_path):
                 description=form.cleaned_data['description'])
             nmetatags.save()
             return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
-                        kwargs={'path': path }))
+                        kwargs={'path': '/' + path }))
     return render_to_response('edit_image.html',
         { 'request': request, 'vobject': parent_vobject, 'form': form,
           'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
