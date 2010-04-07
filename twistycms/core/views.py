@@ -42,6 +42,7 @@ class EditForm(forms.Form):
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
         mce_attrs={
             'content_css': '/static/style.css',
+            'convert_urls': False,
             'theme': 'advanced',
             'theme_advanced_blockformats': 'p,h1,h2',
             'theme_advanced_toolbar_location': 'top',
