@@ -1,11 +1,14 @@
+import mimetypes
+
 from django.db import transaction
 from django.core import urlresolvers
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 import django.contrib.auth.models
+from django.core.servers.basehttp import FileWrapper
 import settings
 
 from twistycms.core import utils
@@ -319,8 +322,11 @@ class File(VObject):
 class Image(VObject):
     content = models.ImageField(upload_to="images")
     def end_view(self, request):
-        # FIXME: This is quick and dirty, with no permissions checking
-        return HttpResponseRedirect(self.image.content.url)
+        content_type = mimetypes.guess_type(self.content.path)[0]
+        wrapper = FileWrapper(open(self.content.path))
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-length'] = self.content.size
+        return response
     def info_view(self, request):
         return render_to_response('view_image.html', { 'request': request,
             'vobject': self,
