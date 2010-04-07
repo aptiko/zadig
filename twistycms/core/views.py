@@ -250,7 +250,7 @@ def login(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
     message = ''
     if request.method!='POST':
-        form = LoginForm({})
+        form = LoginForm()
     else:
         form = LoginForm(request.POST)
         if form.is_valid():
