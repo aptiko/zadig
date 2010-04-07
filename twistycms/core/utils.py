@@ -62,7 +62,13 @@ def secondary_buttons(request, vobject):
     return result
 
 class sanitize_html(unicode):
-    valid_tags = 'p i string b u a h1 h2 pre br img'.split()
+    # FIXME: Still vulnerable to some attacks. Go to
+    # http://ha.ckers.org/xss.html. The attacks to which we are vulnerable are:
+    #  * & Javascript includes (only Netscape 4.x)
+    #  * IMG Embedded commands (part I and II)
+    # FIXME: Needs unit testing
+    valid_tags = '''p i string b u a h1 h2 pre br img table thead tbody td
+                    tr'''.split()
     valid_attrs = 'href src width height class'.split()
     url_attrs = 'href src'.split()
     valid_schemes = 'http https ftp mailto'.split()
