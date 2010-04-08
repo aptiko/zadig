@@ -291,6 +291,7 @@ class PageEntry(Entry):
                                             for o in applet_options]))
             if all_forms_are_valid:
                 if new:
+                    # FIXME: Code duplication with Entry.__init__
                     if not permissions.EDIT in self.container.get_permissions(request):
                         raise PermissionDenied(_(u"Permission denied"))
                     self.name = form.cleaned_data['name']
