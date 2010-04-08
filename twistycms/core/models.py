@@ -2,6 +2,7 @@ import mimetypes
 
 from django.db import transaction
 from django.core import urlresolvers
+from django.core.urlresolvers import reverse
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
@@ -13,6 +14,7 @@ from django import forms
 import settings
 
 from twistycms.core import utils
+import twistycms.core
 
 # If the following two cannot be deleted, some code reorganizing is unfinished.
 from twistycms.core.utils import primary_buttons as _primary_buttons
@@ -276,7 +278,7 @@ class PageEntry(Entry):
                 'content': vobject.page.content
             })
             for o in applet_options:
-                o['entry_options_form'] = o['entry_options'](request, path)
+                o['entry_options_form'] = o['entry_options'](request, self.path)
         else:
             form = EditForm(request.POST)
             for o in applet_options:
@@ -285,14 +287,14 @@ class PageEntry(Entry):
                                     tuple([o['entry_options_form'].is_valid()
                                             for o in applet_options]))
             if all_forms_are_valid:
-                npage = models.Page(entry=self,
+                npage = Page(entry=self,
                     version_number=vobject.version_number + 1,
-                    language=models.Language.objects.get(
+                    language=Language.objects.get(
                                               id=form.cleaned_data['language']),
-                    format=models.ContentFormat.objects.get(descr='html'),
+                    format=ContentFormat.objects.get(descr='html'),
                     content=utils.sanitize_html(form.cleaned_data['content']))
                 npage.save()
-                nmetatags = models.VObjectMetatags(
+                nmetatags = VObjectMetatags(
                     vobject=npage,
                     language=npage.language,
                     title=form.cleaned_data['title'],
@@ -300,9 +302,10 @@ class PageEntry(Entry):
                     description=form.cleaned_data['description'])
                 nmetatags.save()
                 for o in applet_options:
-                    o['entry_options'](request, path, o['entry_options_form'])
+                    o['entry_options'](request, self.path,
+                                                        o['entry_options_form'])
                 return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
-                            kwargs={'path': path }))
+                            kwargs={'path': self.path }))
         return render_to_response('edit_page.html',
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,

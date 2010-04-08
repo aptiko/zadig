@@ -42,7 +42,7 @@ class ImageForm(forms.Form):
 
 def edit_entry(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
-    entry = vobject.entry.get_descendant()
+    entry = vobject.entry.descendant
     return entry.edit_view(request)
 
 def create_new_page(request, parent_path):
