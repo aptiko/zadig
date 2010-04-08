@@ -14,58 +14,8 @@ In the description of the database models below, it goes without
 saying that all models have an *id* field, which is usually not
 mentioned unless there is something unusual about it.
 
-.. class:: twistycms.core.models.Language
-
-   Contains languages. It has only one field, :attr:`id`, storing the
-   language id, as a 5-character long string, in the form "en" or
-   "en_us" etc.
-
-.. class:: twistycms.core.models.Permission
-
-   A lookup that lists permissions: "view", "edit", "admin", "search",
-   "delete". Has only a :attr:`descr` attribute.
-
-.. class:: twistycms.core.models.Lentity
-
-   A Lentity represents either a user or a group, and is used whenever
-   any of the two can be used; for example, a certain permission can
-   be given either to a user or to a group. It has three attributes:
-   :attr:`user`, :attr:`group` and :attr:`special`.  The former two
-   are foreign keys to :class:`django.contrib.auth.models.User` and
-   :class:`django.contrib.auth.models.Group`. Either :attr:`user`, or
-   :attr:`group`, or :attr:`special`, must be not null; the other two
-   must be null. If :attr:`user` is not null, the
-   :class:`~twistycms.core.models.Lentity` represents a user.  If :attr:`group`
-   is not null, the :class:`~twistycms.core.models.Lentity` represents a group.
-   If :attr:`special` is 1, it represents the anonymous user, and if
-   :attr:`special` is 2, it represents all valid users (the logged on
-   user).
-
-.. class:: twistycms.core.models.State
-
-   A list of states. Contains only a :attr:`descr` attribute.
-
-.. class:: twistycms.core.models.StatePermission
-
-   A state is a collection of permissions. This model stores the
-   permissions that comprise the state. It has three attributes,
-   :attr:`state`, :attr:`lentity` and :attr:`permission`, which are
-   foreign keys to :class:`~twistycms.core.models.State`, :class:`~twistycms.core.models.Lentity`
-   and :class:`~twistycms.core.models.Permission`, and designate that said lentity
-   has said permission on said state.
-
-.. class:: twistycms.core.models.StateTransition
-
-   A state transition. Has two attributes, :attr:`source_state` and
-   :attr:`target_state`, both foreign keys to :class:`~twistycms.core.models.State`.
-
-.. class:: twistycms.core.models.Workflow
-
-   A workflow is a collection of states and state-transition rules.
-   The model has three attributes: :attr:`name`, which is a string,
-   :attr:`states`, and :attr:`state_transitions`. The last two are
-   many to many fields to :class:`~twistycms.core.models.State` and
-   :class:`~twistycms.core.models.StateTransition`.
+Entry
+-----
 
 .. class:: twistycms.core.models.Entry(request, path)
 
@@ -111,6 +61,9 @@ mentioned unless there is something unusual about it.
 
       A foreign key to :class:`~twistycms.core.models.State`, indicating the state of
       the entry.
+
+   :class:`~twistycms.core.models.Entry` objects also have the
+   following properties:
 
    .. attribute:: twistycms.core.models.Entry.path
 
@@ -177,7 +130,7 @@ mentioned unless there is something unusual about it.
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
-   .. method:: twistycms.core.models.Entry.edit_view(request[, spawner=None])
+   .. method:: twistycms.core.models.Entry.edit_view(request[, new=False])
 
       Return a :class:`django.http.HttpResponse` object with the edit
       view of the vobject. Depending on the contents of *request*, it
@@ -186,20 +139,20 @@ mentioned unless there is something unusual about it.
       response, or it returns a page with a form for editing the
       entry.
 
-      If *spawner* is not :const:`None`, it means that the entry does not exist
-      yet but is in the process of being created. *spawner* is the entry of
-      which the new entry will be a child, and *self* must be an empty
-      :class:`~twistycms.core.models.Entry` subclass. Depending on the
-      contents of *request*, the method will then either process a
-      submitted form (either creating the entry or finding an error in
-      the submitted form) and return the response, or return a page with a
-      (mostly empty) form for filling in the entry.
+      If *new* is :const:`True`, it means that the entry does not
+      exist yet but is in the process of being created. When calling
+      in this manner, *self* must be an
+      :class:`~twistycms.core.models.Entry` subclass, and
+      :attr:`~twistycms.core.models.Entry.container` must have been
+      set to the entry of which the new entry will be a child; the
+      other attributes are irrelevant.  Depending on the contents of
+      *request*, the method will then either process a submitted form
+      (either creating the entry or finding an error in the submitted
+      form) and return the response, or return a page with a (mostly
+      empty) form for filling in the entry.
 
-.. class:: twistycms.core.models.EntryPermission
-
-   Permissions assigned to the entry besides those assigned to its
-   state. Has three attributes: :attr:`entry`, :attr:`lentity` and
-   :attr:`permission`, all foreign keys to the respective model.
+VObject
+-------
 
 .. class:: twistycms.core.models.VObject
 
@@ -259,6 +212,68 @@ mentioned unless there is something unusual about it.
          it returns the latest vobject. An exception is raised if the
          entry does not exist, or if the user does not have permission to
          view it.
+
+Other models
+------------
+
+.. class:: twistycms.core.models.EntryPermission
+
+   Permissions assigned to the entry besides those assigned to its
+   state. Has three attributes: :attr:`entry`, :attr:`lentity` and
+   :attr:`permission`, all foreign keys to the respective model.
+
+.. class:: twistycms.core.models.Language
+
+   Contains languages. It has only one field, :attr:`id`, storing the
+   language id, as a 5-character long string, in the form "en" or
+   "en_us" etc.
+
+.. class:: twistycms.core.models.Permission
+
+   A lookup that lists permissions: "view", "edit", "admin", "search",
+   "delete". Has only a :attr:`descr` attribute.
+
+.. class:: twistycms.core.models.Lentity
+
+   A Lentity represents either a user or a group, and is used whenever
+   any of the two can be used; for example, a certain permission can
+   be given either to a user or to a group. It has three attributes:
+   :attr:`user`, :attr:`group` and :attr:`special`.  The former two
+   are foreign keys to :class:`django.contrib.auth.models.User` and
+   :class:`django.contrib.auth.models.Group`. Either :attr:`user`, or
+   :attr:`group`, or :attr:`special`, must be not null; the other two
+   must be null. If :attr:`user` is not null, the
+   :class:`~twistycms.core.models.Lentity` represents a user.  If :attr:`group`
+   is not null, the :class:`~twistycms.core.models.Lentity` represents a group.
+   If :attr:`special` is 1, it represents the anonymous user, and if
+   :attr:`special` is 2, it represents all valid users (the logged on
+   user).
+
+.. class:: twistycms.core.models.State
+
+   A list of states. Contains only a :attr:`descr` attribute.
+
+.. class:: twistycms.core.models.StatePermission
+
+   A state is a collection of permissions. This model stores the
+   permissions that comprise the state. It has three attributes,
+   :attr:`state`, :attr:`lentity` and :attr:`permission`, which are
+   foreign keys to :class:`~twistycms.core.models.State`, :class:`~twistycms.core.models.Lentity`
+   and :class:`~twistycms.core.models.Permission`, and designate that said lentity
+   has said permission on said state.
+
+.. class:: twistycms.core.models.StateTransition
+
+   A state transition. Has two attributes, :attr:`source_state` and
+   :attr:`target_state`, both foreign keys to :class:`~twistycms.core.models.State`.
+
+.. class:: twistycms.core.models.Workflow
+
+   A workflow is a collection of states and state-transition rules.
+   The model has three attributes: :attr:`name`, which is a string,
+   :attr:`states`, and :attr:`state_transitions`. The last two are
+   many to many fields to :class:`~twistycms.core.models.State` and
+   :class:`~twistycms.core.models.StateTransition`.
 
 .. class:: twistycms.core.models.VObjectMetatags
 
