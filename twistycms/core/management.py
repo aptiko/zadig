@@ -82,7 +82,7 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
             new_language.save()
     if models.Page in created_models:
         stderr.write("Creating root page\n")
-        entry = models.Entry(container=None, name='', seq=1, owner_id=1,
+        entry = models.PageEntry(container=None, name='', seq=1, owner_id=1,
             state=models.Workflow.objects.get(id=settings.WORKFLOW_ID)
                 .state_transitions.get(source_state__descr="Nonexistent")
                 .target_state)

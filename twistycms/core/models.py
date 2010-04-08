@@ -9,9 +9,14 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 import django.contrib.auth.models
 from django.core.servers.basehttp import FileWrapper
+from django import forms
 import settings
 
 from twistycms.core import utils
+
+# If the following two cannot be deleted, some code reorganizing is unfinished.
+from twistycms.core.utils import primary_buttons as _primary_buttons
+from twistycms.core.utils import secondary_buttons as _secondary_buttons
 
 class permissions:
     VIEW=1
@@ -105,6 +110,7 @@ class EntryManager(models.Manager):
         return entry
 
 class Entry(models.Model):
+    object_class = models.CharField(max_length=100)
     container = models.ForeignKey('self', related_name="all_subentries",
                                   blank=True, null=True)
     name = models.SlugField(max_length=100, blank=True)
@@ -135,6 +141,16 @@ class Entry(models.Model):
         return super(Entry, self).__init__(container=parent_entry,
             name=names[-1], owner=request.user, state=initial_state,
             seq = max_seq+1)
+    def save(self, *args, **kwargs):
+        if not self.object_class:
+            self.object_class = self._meta.module_name
+        return super(Entry, self).save(args, kwargs)
+    @property
+    def descendant(self):
+        if self._meta.module_name == self.object_class:
+            return self
+        else:
+            return getattr(self, self.object_class)
     def get_permissions(self, request):
         if request.user.is_authenticated() and self.owner.pk == request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
@@ -223,6 +239,11 @@ class Entry(models.Model):
             raise
         else:
             transaction.commit()
+    def edit_view(self, request, create=None):
+        if not create:
+            raise NotImplementedError("This functionality is only "
+                                      + "available in subclasses")
+        # FIXME: follow by create new entry functionality
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -235,6 +256,64 @@ class Entry(models.Model):
                            ('container', 'seq'))
         db_table = 'cms_entry'
         ordering = ('container__id', 'seq')
+
+class PageEntry(Entry):
+    def edit_view(self, request, create=None):
+        if create:
+            return super(PageEntry, self).edit_view(request, create)
+        # FIXME: form.name ignored
+        vobject = self.get_vobject(request)
+        language = vobject.language
+        applet_options = [o for o in twistycms.core.applet_options
+                                                        if o['entry_options']]
+        if request.method != 'POST':
+            form = EditForm(initial={
+                'language': vobject.language.id,
+                'name': vobject.entry.name,
+                'title': vobject.metatags.default().title,
+                'short_title': vobject.metatags.default().short_title,
+                'description': vobject.metatags.default().description,
+                'content': vobject.page.content
+            })
+            for o in applet_options:
+                o['entry_options_form'] = o['entry_options'](request, path)
+        else:
+            form = EditForm(request.POST)
+            for o in applet_options:
+                o['entry_options_form'] = o['EntryOptionsForm'](request.POST)
+            all_forms_are_valid = all((form.is_valid(),) +
+                                    tuple([o['entry_options_form'].is_valid()
+                                            for o in applet_options]))
+            if all_forms_are_valid:
+                npage = models.Page(entry=self,
+                    version_number=vobject.version_number + 1,
+                    language=models.Language.objects.get(
+                                              id=form.cleaned_data['language']),
+                    format=models.ContentFormat.objects.get(descr='html'),
+                    content=utils.sanitize_html(form.cleaned_data['content']))
+                npage.save()
+                nmetatags = models.VObjectMetatags(
+                    vobject=npage,
+                    language=npage.language,
+                    title=form.cleaned_data['title'],
+                    short_title=form.cleaned_data['short_title'],
+                    description=form.cleaned_data['description'])
+                nmetatags.save()
+                for o in applet_options:
+                    o['entry_options'](request, path, o['entry_options_form'])
+                return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
+                            kwargs={'path': path }))
+        return render_to_response('edit_page.html',
+              { 'request': request, 'vobject': vobject, 'form': form,
+                'applet_options': applet_options,
+                'primary_buttons': _primary_buttons(request, vobject, 'edit'),
+                'secondary_buttons': _secondary_buttons(request, vobject)})
+    class Meta:
+        db_table = 'cms_pageentry'
+
+class ImageEntry(Entry):
+    class Meta:
+        db_table = 'cms_imageentry'
 
 class EntryPermission(models.Model):
     entry = models.ForeignKey(Entry)
@@ -253,11 +332,22 @@ class VObjectManager(models.Manager):
         return entry.get_vobject(request, version_number)
 
 class VObject(models.Model):
+    object_class = models.CharField(max_length=100)
     entry = models.ForeignKey(Entry, related_name="vobject_set")
     version_number = models.PositiveIntegerField()
     date = models.DateTimeField(auto_now_add=True)
     language = models.ForeignKey(Language, blank=True, null=True)
     objects = VObjectManager()
+    def save(self, *args, **kwargs):
+        if not self.object_class:
+            self.object_class = self._meta.module_name
+        return super(VObject, self).save(args, kwargs)
+    @property
+    def descendant(self):
+        if self._meta.module_name == self.object_class:
+            return self
+        else:
+            return getattr(self, self.object_class)
     def end_view(self, request):
         raise NotImplementedError("Method should be redefined in derived class")
     def info_view(self, request):
@@ -302,22 +392,23 @@ class ContentFormat(models.Model):
         db_table = 'cms_contentformat'
 
 class Page(VObject):
-     format = models.ForeignKey(ContentFormat)
-     content = models.TextField(blank=True)
-     def end_view(self, request):
+    format = models.ForeignKey(ContentFormat)
+    content = models.TextField(blank=True)
+    def end_view(self, request):
         return render_to_response('view_page.html', { 'request': request,
             'vobject': self,
             'primary_buttons': utils.primary_buttons(request, self, 'view'),
             'secondary_buttons': utils.secondary_buttons(request, self)})
-     def info_view(self, request):
+    def info_view(self, request):
         return self.end_view(request)
-     class Meta:
+    class Meta:
         db_table = 'cms_page'
 
-class File(VObject):
-    content = models.FileField(upload_to="files")
-    class Meta:
-        db_table = 'cms_file'
+#class File(VObject):
+#    entry = models.ForeignKey(PageEntry, related_name="vobject_set")
+#    content = models.FileField(upload_to="files")
+#    class Meta:
+#        db_table = 'cms_file'
 
 class Image(VObject):
     content = models.ImageField(upload_to="images")
@@ -340,3 +431,28 @@ class Image(VObject):
 
 #class InternalRedirection(VObject):
 #    target = models.ForeignKey(Object)
+
+from tinymce.widgets import TinyMCE
+class EditForm(forms.Form):
+    # FIXME: metatags should be in many languages
+    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
+    name = forms.CharField(required=False,
+        max_length=Entry._meta.get_field('name').max_length)
+    title = forms.CharField(
+        max_length=VObjectMetatags._meta.get_field('title').max_length)
+    short_title = forms.CharField(required=False, max_length=
+        VObjectMetatags._meta.get_field('short_title').max_length)
+    description = forms.CharField(widget=forms.Textarea, required=False)
+    content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
+        mce_attrs={
+            'content_css': '/static/style.css',
+            'convert_urls': False,
+            'theme': 'advanced',
+            'theme_advanced_blockformats': 'p,h1,h2',
+            'theme_advanced_toolbar_location': 'top',
+            'theme_advanced_toolbar_align': 'left',
+            'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect',
+            'theme_advanced_buttons2': '',
+            'theme_advanced_buttons3': '',
+        }), required=False)
+

@@ -69,11 +69,13 @@ mentioned unless there is something unusual about it.
 
 .. class:: twistycms.core.models.Entry(request, path)
 
-   Stores an entry. The constructor creates a new entry at the
-   specified path.  The parent entry must already exist and
-   the logged on user must have appropriate permissions on the parent
-   entry; otherwise, an exception is raised. If other entries with the
-   same parent entry exist, the entry is added as the last sibling.
+   Stores an entry. It is always a subclass that is used, rather than
+   :class:`~twistycms.core.models.Entry` itself. The constructor of
+   the subclass creates a new entry at the specified path.  The parent
+   entry must already exist and the logged on user must have
+   appropriate permissions on the parent entry; otherwise, an
+   exception is raised. If other entries with the same parent entry
+   exist, the entry is added as the last sibling.
    
    :class:`~twistycms.core.models.Entry` objects have the following attributes:
 
@@ -115,6 +117,15 @@ mentioned unless there is something unusual about it.
       This read-only property returns the URL path to the entry, not
       including a leading or trailing slash..
 
+   .. attribute:: twistycms.core.models.Entry.descendant
+
+      :class:`~twistycms.core.models.Entry` is always subclassed. If
+      you get a grip on an object of type
+      :class:`~twistycms.core.models.Entry` when in fact you need that
+      same object but in its descendant class, and you don't know
+      which subclass it is, use this property, which gives you the 
+      same object but in the proper subclass.
+      
    .. attribute:: objects
 
       The default manager has the following additional methods:
@@ -166,6 +177,20 @@ mentioned unless there is something unusual about it.
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
+   .. method:: twistycms.core.models.Entry.edit_view(request[, create=None])
+
+      Return a :class:`django.http.HttpResponse` object with the edit
+      view of the vobject. Depending on the contents of *request*, it
+      either processes a submitted form (either modifying the entry or
+      finding an error in the submitted form) and returns the
+      response, or it returns a page with a form for editing the
+      entry.
+
+      If *create* is not :const:`None`, then it must be a
+      :class:`~twistycms.core.models.Entry` subclass. In that case,
+      instead of editing the entry, the method creates a new child
+      entry with the specified subclass.
+
 .. class:: twistycms.core.models.EntryPermission
 
    Permissions assigned to the entry besides those assigned to its
@@ -197,6 +222,15 @@ mentioned unless there is something unusual about it.
       A foreign key to :class:`Language` designating the language of
       the vobject.
 
+   .. attribute:: descendant
+
+      :class:`~twistycms.core.models.VObject` is always subclassed. If
+      you get a grip on an object of type
+      :class:`~twistycms.core.models.VObject` when in fact you need that
+      same object but in its descendant class, and you don't know
+      which subclass it is, use this property, which gives you the 
+      same object but in the proper subclass.
+      
    .. method:: end_view(request)
 
       Returns a :class:`django.http.HttpResponse` object with the end

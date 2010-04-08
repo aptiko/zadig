@@ -138,8 +138,8 @@ entry, including the history, is permanently and irrevocably deleted.
    Although the database is ready for all that, deleting an object (in
    any way) has not yet been implemented in the user interface.
 
-Requests on entries and vobjects
-================================
+Views
+=====
 
 Things you can do with an entry or vobject include (but are not
 limited to) creating a new entry, viewing a vobject, viewing the entry
@@ -159,6 +159,10 @@ who have permissions to modify the image. For some object types, such
 as pages, the end view and the info view may be identical.
 http://localhost/myobject/ provides the end view for *myobject*,
 whereas http://localhost/myobject/__view__/ provides the info view.
+
+We also call the rest of the operations *views*. Specifically, there
+are the **edit view**, the **contents view**, and the **history
+view**.
 
 Permissions and workflows
 =========================
