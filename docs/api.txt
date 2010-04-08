@@ -177,7 +177,7 @@ mentioned unless there is something unusual about it.
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
-   .. method:: twistycms.core.models.Entry.edit_view(request[, create=None])
+   .. method:: twistycms.core.models.Entry.edit_view(request[, spawner=None])
 
       Return a :class:`django.http.HttpResponse` object with the edit
       view of the vobject. Depending on the contents of *request*, it
@@ -186,10 +186,14 @@ mentioned unless there is something unusual about it.
       response, or it returns a page with a form for editing the
       entry.
 
-      If *create* is not :const:`None`, then it must be a
-      :class:`~twistycms.core.models.Entry` subclass. In that case,
-      instead of editing the entry, the method creates a new child
-      entry with the specified subclass.
+      If *spawner* is not :const:`None`, it means that the entry does not exist
+      yet but is in the process of being created. *spawner* is the entry of
+      which the new entry will be a child, and *self* must be an empty
+      :class:`~twistycms.core.models.Entry` subclass. Depending on the
+      contents of *request*, the method will then either process a
+      submitted form (either creating the entry or finding an error in
+      the submitted form) and return the response, or return a page with a
+      (mostly empty) form for filling in the entry.
 
 .. class:: twistycms.core.models.EntryPermission
 

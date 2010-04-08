@@ -47,7 +47,6 @@ def edit_entry(request, path):
 
 def create_new_page(request, parent_path):
     # FIXME: only html, no rst
-    # FIXME: no check about contents of form.name
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     if request.method != 'POST':
         form = EditForm(initial={ 'language': parent_vobject.language.id })

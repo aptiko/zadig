@@ -241,11 +241,9 @@ class Entry(models.Model):
             raise
         else:
             transaction.commit()
-    def edit_view(self, request, create=None):
-        if not create:
-            raise NotImplementedError("This functionality is only "
+    def edit_view(self, request, spawner=None):
+        raise NotImplementedError("This functionality is only "
                                       + "available in subclasses")
-        # FIXME: follow by create new entry functionality
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -260,9 +258,7 @@ class Entry(models.Model):
         ordering = ('container__id', 'seq')
 
 class PageEntry(Entry):
-    def edit_view(self, request, create=None):
-        if create:
-            return super(PageEntry, self).edit_view(request, create)
+    def edit_view(self, request, spawner=None):
         # FIXME: form.name ignored
         vobject = self.get_vobject(request)
         language = vobject.language
