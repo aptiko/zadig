@@ -84,7 +84,7 @@ mentioned unless there is something unusual about it.
       A foreign key to :class:`~twistycms.core.models.Entry` (that is, to self). It
       indicates which entry contains the entry. This attribute can be
       null; there is one and only one entry that has a
-      null :attr:`container`, and it is the root entry.
+      null :attr:`~twistycms.core.models.Entry.container`, and it is the root entry.
 
       The *related_name* of this attribute is ``all_subentries``.
       Therefore, if you have an entry ``myentry``, then
@@ -126,7 +126,7 @@ mentioned unless there is something unusual about it.
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
       
-   .. attribute:: objects
+   .. attribute:: twistycms.core.models.Entry.objects
 
       The default manager has the following additional methods:
 
@@ -206,27 +206,27 @@ mentioned unless there is something unusual about it.
    This model is the parent of models that inherit it using
    multi-table inheritance, and stores a vobject.  This model does not
    actually store the content of the vobject; this is stored by the
-   descendant model.  :class:`VObject` provides the following
+   descendant model.  :class:`~twistycms.core.models.VObject` provides the following
    attributes and methods:
    
-   .. attribute:: entry
+   .. attribute:: twistycms.core.models.VObject.entry
 
       Foreign key to ::class:`~twistycms.core.models.Entry`.
 
-   .. attribute:: version_number
+   .. attribute:: twistycms.core.models.VObject.version_number
 
       An integer
 
-   .. attribute:: date
+   .. attribute:: twistycms.core.models.VObject.date
 
       The date in which the vobject has been created.
 
-   .. attribute:: language
+   .. attribute:: twistycms.core.models.VObject.language
 
-      A foreign key to :class:`Language` designating the language of
+      A foreign key to :class:`~twistycms.core.models.Language` designating the language of
       the vobject.
 
-   .. attribute:: descendant
+   .. attribute:: twistycms.core.models.VObject.descendant
 
       :class:`~twistycms.core.models.VObject` is always subclassed. If
       you get a grip on an object of type
@@ -235,19 +235,19 @@ mentioned unless there is something unusual about it.
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
       
-   .. method:: end_view(request)
+   .. method:: twistycms.core.models.VObject.end_view(request)
 
       Returns a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
 
-   .. method:: info_view(request)
+   .. method:: twistycms.core.models.VObject.info_view(request)
 
       Returns a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
       
-   :class:`VObject` has a custom manager:
+   :class:`~twistycms.core.models.VObject` has a custom manager:
 
-   .. attribute:: objects
+   .. attribute:: twistycms.core.models.VObject.objects
 
       :attr:`objects` is similar to the default manager, except that
       it has an additional method:
@@ -260,7 +260,7 @@ mentioned unless there is something unusual about it.
          entry does not exist, or if the user does not have permission to
          view it.
 
-.. class:: VObjectMetatags
+.. class:: twistycms.core.models.VObjectMetatags
 
    Stores the metatags of a vobject. Has five attributes:
    :attr:`vobject` and :attr:`language` are foreign keys to the
