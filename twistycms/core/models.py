@@ -241,7 +241,7 @@ class Entry(models.Model):
             raise
         else:
             transaction.commit()
-    def edit_view(self, request, spawner=None):
+    def edit_view(self, request, new=False):
         raise NotImplementedError("This functionality is only "
                                       + "available in subclasses")
     def __unicode__(self):
@@ -258,23 +258,30 @@ class Entry(models.Model):
         ordering = ('container__id', 'seq')
 
 class PageEntry(Entry):
-    def edit_view(self, request, spawner=None):
-        # FIXME: form.name ignored
-        vobject = self.get_vobject(request)
-        language = vobject.language
+    def edit_view(self, request, new=False):
+        # FIXME: form.name ignored when editing
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
+        if new:
+            vobject = self.container.get_vobject(request).descendant
+            path = self.container.path
+        else:
+            vobject = self.get_vobject(request).descendant
+            path = self.path
         if request.method != 'POST':
-            form = EditForm(initial={
-                'language': vobject.language.id,
-                'name': vobject.entry.name,
-                'title': vobject.metatags.default().title,
-                'short_title': vobject.metatags.default().short_title,
-                'description': vobject.metatags.default().description,
-                'content': vobject.page.content
-            })
+            if new:
+                form = EditForm(initial={ 'language': vobject.language.id })
+            else:
+                form = EditForm(initial={
+                    'language': vobject.language.id,
+                    'name': vobject.entry.name,
+                    'title': vobject.metatags.default().title,
+                    'short_title': vobject.metatags.default().short_title,
+                    'description': vobject.metatags.default().description,
+                    'content': vobject.content
+                })
             for o in applet_options:
-                o['entry_options_form'] = o['entry_options'](request, self.path)
+                o['entry_options_form'] = o['entry_options'](request, path)
         else:
             form = EditForm(request.POST)
             for o in applet_options:
@@ -283,8 +290,21 @@ class PageEntry(Entry):
                                     tuple([o['entry_options_form'].is_valid()
                                             for o in applet_options]))
             if all_forms_are_valid:
+                if new:
+                    if not permissions.EDIT in self.container.get_permissions(request):
+                        raise PermissionDenied(_(u"Permission denied"))
+                    self.name = form.cleaned_data['name']
+                    self.seq = 1
+                    siblings = Entry.objects.filter(container=self.container)
+                    if siblings.count():
+                        self.seq = siblings.order_by('-seq')[0].seq + 1
+                    self.owner = request.user
+                    self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
+                        .state_transitions \
+                        .get(source_state__descr="Nonexistent").target_state
+                    self.save()
                 npage = Page(entry=self,
-                    version_number=vobject.version_number + 1,
+                    version_number=new and 1 or (vobject.version_number + 1),
                     language=Language.objects.get(
                                               id=form.cleaned_data['language']),
                     format=ContentFormat.objects.get(descr='html'),

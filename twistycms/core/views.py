@@ -46,37 +46,10 @@ def edit_entry(request, path):
     return entry.edit_view(request)
 
 def create_new_page(request, parent_path):
-    # FIXME: only html, no rst
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
-    if request.method != 'POST':
-        form = EditForm(initial={ 'language': parent_vobject.language.id })
-    else:
-        form = EditForm(request.POST)
-        if form.is_valid():
-            path = parent_path + '/' + form.cleaned_data['name']
-            entry = models.Entry(request, path)
-            entry.save()
-            npage = models.Page(
-                entry=entry, version_number=1,
-                language=models.Language.objects.get(
-                                            id=form.cleaned_data['language']),
-                format=models.ContentFormat.objects.get(descr='html'),
-                content=utils.sanitize_html(form.cleaned_data['content']))
-            npage.save()
-            nmetatags = models.VObjectMetatags(
-                vobject=npage,
-                language=models.Language.objects.get(
-                                            id=form.cleaned_data['language']),
-                title=form.cleaned_data['title'],
-                short_title=form.cleaned_data['short_title'],
-                description=form.cleaned_data['description'])
-            nmetatags.save()
-            return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
-                        kwargs={'path': '/' + path }))
-    return render_to_response('edit_page.html',
-        { 'request': request, 'vobject': parent_vobject, 'form': form,
-          'primary_buttons': _primary_buttons(request, parent_vobject, 'edit'),
-          'secondary_buttons': _secondary_buttons(request, parent_vobject)})
+    parent_entry = parent_vobject.entry.descendant
+    entry = models.PageEntry(container=parent_entry)
+    return entry.edit_view(request, new=True)
 
 def create_new_image(request, parent_path):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
