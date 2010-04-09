@@ -137,7 +137,8 @@ Entry
       either processes a submitted form (either modifying the entry or
       finding an error in the submitted form) and returns the
       response, or it returns a page with a form for editing the
-      entry.
+      entry. *self* must be an :class:`~twistycms.core.models.Entry`
+      subclass.
 
       If *new* is :const:`True`, it means that the entry does not
       exist yet but is in the process of being created. When calling
@@ -150,6 +151,17 @@ Entry
       (either creating the entry or finding an error in the submitted
       form) and return the response, or return a page with a (mostly
       empty) form for filling in the entry.
+
+   .. method:: twistycms.core.models.Entry.add_details(vobject, form)
+
+      The :meth:`~twistycms.core.models.Entry.edit_view` method is
+      implemented in :class:`~twistycms.core.models.Entry` and not in
+      its subclasses. When creating a new vobject as a result of edit
+      form submission, it doesn't know how to process all attributes
+      submitted with the form. It therefore processes only those it
+      can, and then calls this method (which should be implemented in
+      the subclass), which should process any *form* attributes
+      special to the subclass and modify *vobject* accordingly.
 
 VObject
 -------
