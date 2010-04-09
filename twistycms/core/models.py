@@ -321,8 +321,7 @@ class PageEntry(Entry):
                 for o in applet_options:
                     o['entry_options'](request, self.path,
                                                         o['entry_options_form'])
-                return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
-                            kwargs={'path': self.path }))
+                return HttpResponseRedirect(self.path)
         return render_to_response('edit_page.html',
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,
