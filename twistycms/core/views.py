@@ -32,17 +32,11 @@ def edit_entry(request, path):
     entry = vobject.entry.descendant
     return entry.edit_view(request)
 
-def create_new_page(request, parent_path):
+def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     parent_entry = parent_vobject.entry.descendant
-    entry = models.PageEntry(container=parent_entry)
-    return entry.edit_view(request, new=True)
-
-def create_new_image(request, parent_path):
-    # FIXME: same code with above - remove duplication
-    parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
-    parent_entry = parent_vobject.entry.descendant
-    entry = models.ImageEntry(container=parent_entry)
+    new_entry_class = eval('models.%sEntry' % (entry_type,))
+    entry = new_entry_class(container=parent_entry)
     return entry.edit_view(request, new=True)
 
 class MoveItemForm(forms.Form):

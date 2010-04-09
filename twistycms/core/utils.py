@@ -54,8 +54,8 @@ def secondary_buttons(request, vobject):
           },
           { 'name': _(u'Add new…'),
             'items': [
-                       { 'href': '__newpage__', 'name': _(u'Page') },
-                       { 'href': '__newimage__', 'name': _(u'Image') },
+                       { 'href': '__new__/Page/', 'name': _(u'Page') },
+                       { 'href': '__new__/Image/', 'name': _(u'Image') },
                      ]
           },
         ]
