@@ -125,34 +125,33 @@ class Entry(models.Model):
         # twistyCMS API, and the two arguments are request and path.
         # Otherwise, it is likely Django calling us in the default Django way.
         if len(args)!=2 or kwargs:
-            return super(Entry, self).__init__(*args, **kwargs)
-        (request, path) = args
-        names = path.split('/')
-        parent_path = '/'.join(names[:-1])
-        parent_entry = Entry.objects.get_by_path(request, parent_path)
-        if not permissions.EDIT in parent_entry.get_permissions(request):
-            raise PermissionDenied(_(u"Permission denied"))
-        siblings = Entry.objects.filter(container=parent_entry)
-        if siblings.count():
-            max_seq = siblings.order_by('-seq')[0].seq
+            result = super(Entry, self).__init__(*args, **kwargs)
         else:
-            max_seq = 0
-        initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
-            .state_transitions.get(source_state__descr="Nonexistent") \
-            .target_state
-        return super(Entry, self).__init__(container=parent_entry,
-            name=names[-1], owner=request.user, state=initial_state,
-            seq = max_seq+1)
-    def save(self, *args, **kwargs):
+            (request, path) = args
+            names = path.split('/')
+            parent_path = '/'.join(names[:-1])
+            parent_entry = Entry.objects.get_by_path(request, parent_path)
+            if not permissions.EDIT in parent_entry.get_permissions(request):
+                raise PermissionDenied(_(u"Permission denied"))
+            siblings = Entry.objects.filter(container=parent_entry)
+            if siblings.count():
+                max_seq = siblings.order_by('-seq')[0].seq
+            else:
+                max_seq = 0
+            initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
+                .state_transitions.get(source_state__descr="Nonexistent") \
+                .target_state
+            result = super(Entry, self).__init__(container=parent_entry,
+                name=names[-1], owner=request.user, state=initial_state,
+                seq = max_seq+1)
         if not self.object_class:
-            self.object_class = self._meta.module_name
-        return super(Entry, self).save(args, kwargs)
+            self.object_class = self._meta.object_name
     @property
     def descendant(self):
         if self._meta.module_name == self.object_class:
             return self
         else:
-            return getattr(self, self.object_class)
+            return getattr(self, self.object_class.lower())
     def get_permissions(self, request):
         if request.user.is_authenticated() and self.owner.pk == request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
@@ -241,25 +240,18 @@ class Entry(models.Model):
             raise
         else:
             transaction.commit()
+    def add_details(self, vobject, form):
+        raise NotImplementedError("This functionality is only available "
+            +"in sublcasses")
     def edit_view(self, request, new=False):
-        raise NotImplementedError("This functionality is only "
-                                      + "available in subclasses")
-    def __unicode__(self):
-        result = self.name
-        container = self.container
-        while container:
-            result = container.name + '/' + result
-            container = container.container
-        return result
-    class Meta:
-        unique_together = (('container', 'name'),
-                           ('container', 'seq'))
-        db_table = 'cms_entry'
-        ordering = ('container__id', 'seq')
-
-class PageEntry(Entry):
-    def edit_view(self, request, new=False):
+        for x in self._meta.__dict__:
+            print "%s: %s\n" % (x, self._meta.__dict__[x])
         # FIXME: form.name ignored when editing
+        assert self.object_class.endswith('Entry'), \
+            "Assertion failed:%s" % (self.object_class,)
+        entry_type = self.object_class[:-5]
+        entry_class = eval(entry_type)
+        editform = eval('Edit%sForm' % (entry_type,))
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
         if new:
@@ -270,9 +262,9 @@ class PageEntry(Entry):
             path = self.path
         if request.method != 'POST':
             if new:
-                form = EditForm(initial={ 'language': vobject.language.id })
+                form = editform(initial={ 'language': vobject.language.id })
             else:
-                form = EditForm(initial={
+                form = editform(initial={
                     'language': vobject.language.id,
                     'name': vobject.entry.name,
                     'title': vobject.metatags.default().title,
@@ -283,7 +275,7 @@ class PageEntry(Entry):
             for o in applet_options:
                 o['entry_options_form'] = o['entry_options'](request, path)
         else:
-            form = EditForm(request.POST)
+            form = editform(request.POST, request.FILES)
             for o in applet_options:
                 o['entry_options_form'] = o['EntryOptionsForm'](request.POST)
             all_forms_are_valid = all((form.is_valid(),) +
@@ -304,16 +296,15 @@ class PageEntry(Entry):
                         .state_transitions \
                         .get(source_state__descr="Nonexistent").target_state
                     self.save()
-                npage = Page(entry=self,
+                nvobject = entry_class(entry=self,
                     version_number=new and 1 or (vobject.version_number + 1),
                     language=Language.objects.get(
-                                              id=form.cleaned_data['language']),
-                    format=ContentFormat.objects.get(descr='html'),
-                    content=utils.sanitize_html(form.cleaned_data['content']))
-                npage.save()
+                                              id=form.cleaned_data['language']))
+                self.add_details(nvobject, form)
+                nvobject.save()
                 nmetatags = VObjectMetatags(
-                    vobject=npage,
-                    language=npage.language,
+                    vobject=nvobject,
+                    language=nvobject.language,
                     title=form.cleaned_data['title'],
                     short_title=form.cleaned_data['short_title'],
                     description=form.cleaned_data['description'])
@@ -322,15 +313,34 @@ class PageEntry(Entry):
                     o['entry_options'](request, self.path,
                                                         o['entry_options_form'])
                 return HttpResponseRedirect(self.path)
-        return render_to_response('edit_page.html',
+        return render_to_response('edit_%s.html' % (entry_type.lower()),
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,
                 'primary_buttons': _primary_buttons(request, vobject, 'edit'),
                 'secondary_buttons': _secondary_buttons(request, vobject)})
+    def __unicode__(self):
+        result = self.name
+        container = self.container
+        while container:
+            result = container.name + '/' + result
+            container = container.container
+        return result
+    class Meta:
+        unique_together = (('container', 'name'),
+                           ('container', 'seq'))
+        db_table = 'cms_entry'
+        ordering = ('container__id', 'seq')
+
+class PageEntry(Entry):
+    def add_details(self, vobject, form):
+        vobject.format=ContentFormat.objects.get(descr='html')
+        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
     class Meta:
         db_table = 'cms_pageentry'
 
 class ImageEntry(Entry):
+    def add_details(self, vobject, form):
+        vobject.content=form.cleaned_data['content']
     class Meta:
         db_table = 'cms_imageentry'
 
@@ -451,7 +461,6 @@ class Image(VObject):
 #class InternalRedirection(VObject):
 #    target = models.ForeignKey(Object)
 
-from tinymce.widgets import TinyMCE
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
@@ -462,6 +471,9 @@ class EditForm(forms.Form):
     short_title = forms.CharField(required=False, max_length=
         VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
+
+class EditPageForm(EditForm):
+    from tinymce.widgets import TinyMCE
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
         mce_attrs={
             'content_css': '/static/style.css',
@@ -475,3 +487,5 @@ class EditForm(forms.Form):
             'theme_advanced_buttons3': '',
         }), required=False)
 
+class EditImageForm(EditForm):
+    content = forms.ImageField()
