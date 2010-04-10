@@ -56,8 +56,7 @@ def change_state(request, path, new_state_id):
         raise ValidationError(_(u"Invalid target state"))
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
-    return HttpResponseRedirect(reverse('twistycms.core.views.end_view',
-                kwargs={'path': path }))
+    return HttpResponseRedirect(entry.spath)
 
 def logout(request, path):
     django.contrib.auth.logout(request)
