@@ -316,7 +316,7 @@ class Entry(models.Model):
                 for o in applet_options:
                     o['entry_options'](request, self.path,
                                                         o['entry_options_form'])
-                return HttpResponseRedirect(self.path)
+                return HttpResponseRedirect(self.spath)
         return render_to_response('edit_%s.html' % (entry_type.lower()),
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,
