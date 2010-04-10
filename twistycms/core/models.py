@@ -318,6 +318,23 @@ class Entry(models.Model):
                 'applet_options': applet_options,
                 'primary_buttons': _primary_buttons(request, vobject, 'edit'),
                 'secondary_buttons': _secondary_buttons(request, vobject)})
+    def contents_view(self, request):
+        subentries = self.get_subentries(request)
+        vobject = self.get_vobject(request)
+        if request.method == 'POST':
+            move_item_form = MoveItemForm(request.POST)
+            if move_item_form.is_valid():
+                s = move_item_form.cleaned_data['move_object']
+                t = move_item_form.cleaned_data['before_object']
+                self.reorder(request, s, t)
+        else:
+            move_item_form = MoveItemForm(initial=
+                {'num_of_objects': len(subentries)})
+        return render_to_response('entry_contents.html',
+                { 'request': request, 'vobject': vobject,
+                  'subentries': subentries, 'move_item_form': move_item_form,
+                  'primary_buttons': _primary_buttons(request, vobject, 'contents'),
+                  'secondary_buttons': _secondary_buttons(request, vobject)})
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -489,3 +506,25 @@ class EditPageForm(EditForm):
 
 class EditImageForm(EditForm):
     content = forms.ImageField()
+
+class MoveItemForm(forms.Form):
+    move_object = forms.IntegerField()
+    before_object = forms.IntegerField()
+    num_of_objects = forms.IntegerField(widget=forms.HiddenInput)
+    def clean(self):
+        s = self.cleaned_data['move_object']
+        t = self.cleaned_data['before_object']
+        n = self.cleaned_data['num_of_objects']
+        if s<1 or s>n:
+            raise forms.ValidationError(
+                                _("The specified object to move is incorrect"))
+        if t<1 or t>n+1:
+            raise forms.ValidationError(
+                   _("The specified target position is incorrect; "
+                    +"use up to one more than the existing number of objects"))
+        if s==t or t==s+1:
+            raise forms.ValidationError(
+             _("You can't move an object before itself or before the next one; "
+              +"this would leave it in the same position"))
+        return self.cleaned_data
+
