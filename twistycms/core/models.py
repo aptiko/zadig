@@ -267,6 +267,7 @@ class Entry(models.Model):
             if new:
                 form = editform(initial={ 'language': vobject.language.id })
             else:
+                # FIXME: Not all subtypes have 'content' in form
                 form = editform(initial={
                     'language': vobject.language.id,
                     'name': vobject.entry.name,
@@ -501,12 +502,6 @@ class EditPageForm(EditForm):
             'theme_advanced_buttons2': '',
             'theme_advanced_buttons3': '',
         }), required=False)
-
-#class File(VObject):
-#    entry = models.ForeignKey(PageEntry, related_name="vobject_set")
-#    content = models.FileField(upload_to="files")
-#    class Meta:
-#        db_table = 'cms_file'
 
 ### Image ###
 
