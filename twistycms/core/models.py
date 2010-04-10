@@ -530,9 +530,6 @@ class VImage(VObject):
 class EditImageForm(EditForm):
     content = forms.ImageField()
 
-#class LinkVersion(VObject):
-#    target = models.TextField()
-
 ### InternalRedirection ###
 
 class InternalRedirectionEntry(Entry):
