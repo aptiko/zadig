@@ -152,6 +152,11 @@ Entry
       form) and return the response, or return a page with a (mostly
       empty) form for filling in the entry.
 
+   .. method:: twistycms.core.models.Entry.contents_view(request)
+
+      Return a :class:`django.http.HttpResponse` object with the
+      contents view of the entry.
+
    .. method:: twistycms.core.models.Entry.add_details(vobject, form)
 
       The :meth:`~twistycms.core.models.Entry.edit_view` method is
@@ -202,7 +207,7 @@ VObject
       
    .. method:: twistycms.core.models.VObject.end_view(request)
 
-      Returns a :class:`django.http.HttpResponse` object with the end
+      Return a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
 
    .. method:: twistycms.core.models.VObject.info_view(request)
