@@ -250,8 +250,6 @@ class Entry(models.Model):
         raise NotImplementedError("This functionality is only available "
             +"in sublcasses")
     def edit_view(self, request, new=False):
-        for x in self._meta.__dict__:
-            print "%s: %s\n" % (x, self._meta.__dict__[x])
         # FIXME: form.name ignored when editing
         assert self.object_class.endswith('Entry'), \
             "Assertion failed:%s" % (self.object_class,)
