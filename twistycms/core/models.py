@@ -254,7 +254,6 @@ class Entry(models.Model):
             +"in sublcasses")
     @transaction.commit_on_success
     def edit_view(self, request, new=False):
-        # FIXME: form.name ignored when editing
         assert self.object_class.endswith('Entry'), \
             "Assertion failed:%s" % (self.object_class,)
         entry_type = self.object_class[:-5]
