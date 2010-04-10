@@ -16,9 +16,8 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-# FIXME: If the following two cannot be deleted, some code reorganizing is unfinished.
-from twistycms.core.utils import primary_buttons as _primary_buttons
-from twistycms.core.utils import secondary_buttons as _secondary_buttons
+from twistycms.core.utils import primary_buttons
+from twistycms.core.utils import secondary_buttons
 
 class permissions:
     VIEW=1
@@ -320,8 +319,8 @@ class Entry(models.Model):
         return render_to_response('edit_%s.html' % (entry_type.lower()),
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,
-                'primary_buttons': _primary_buttons(request, vobject, 'edit'),
-                'secondary_buttons': _secondary_buttons(request, vobject)})
+                'primary_buttons': primary_buttons(request, vobject, 'edit'),
+                'secondary_buttons': secondary_buttons(request, vobject)})
     def contents_view(self, request):
         subentries = self.get_subentries(request)
         vobject = self.get_vobject(request)
@@ -337,14 +336,14 @@ class Entry(models.Model):
         return render_to_response('entry_contents.html',
                 { 'request': request, 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': _primary_buttons(request, vobject, 'contents'),
-                  'secondary_buttons': _secondary_buttons(request, vobject)})
+                  'primary_buttons': primary_buttons(request, vobject, 'contents'),
+                  'secondary_buttons': secondary_buttons(request, vobject)})
     def history_view(self, request):
         vobject = self.get_vobject(request)
         return render_to_response('entry_history.html',
                 { 'request': request, 'vobject': vobject,
-                  'primary_buttons': _primary_buttons(request, vobject, 'history'),
-                  'secondary_buttons': _secondary_buttons(request, vobject)})
+                  'primary_buttons': primary_buttons(request, vobject, 'history'),
+                  'secondary_buttons': secondary_buttons(request, vobject)})
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -453,8 +452,8 @@ class Page(VObject):
     def end_view(self, request):
         return render_to_response('view_page.html', { 'request': request,
             'vobject': self,
-            'primary_buttons': utils.primary_buttons(request, self, 'view'),
-            'secondary_buttons': utils.secondary_buttons(request, self)})
+            'primary_buttons': primary_buttons(request, self, 'view'),
+            'secondary_buttons': secondary_buttons(request, self)})
     def info_view(self, request):
         return self.end_view(request)
     class Meta:
@@ -477,8 +476,8 @@ class Image(VObject):
     def info_view(self, request):
         return render_to_response('view_image.html', { 'request': request,
             'vobject': self,
-            'primary_buttons': utils.primary_buttons(request, self, 'view'),
-            'secondary_buttons': utils.secondary_buttons(request, self)})
+            'primary_buttons': primary_buttons(request, self, 'view'),
+            'secondary_buttons': secondary_buttons(request, self)})
     class Meta:
         db_table = 'cms_image'
 
