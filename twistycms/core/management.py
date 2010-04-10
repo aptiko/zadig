@@ -80,14 +80,14 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
         for lang in settings.LANGUAGES:
             new_language = models.Language(id=lang)
             new_language.save()
-    if models.Page in created_models:
+    if models.VPage in created_models:
         stderr.write("Creating root page\n")
         entry = models.PageEntry(container=None, name='', seq=1, owner_id=1,
             state=models.Workflow.objects.get(id=settings.WORKFLOW_ID)
                 .state_transitions.get(source_state__descr="Nonexistent")
                 .target_state)
         entry.save()
-        page = models.Page(entry=entry, version_number=1,
+        page = models.VPage(entry=entry, version_number=1,
                 language_id=settings.LANGUAGES[0],
                 format=models.ContentFormat.objects.get(descr='html'),
                 content='This is the root page')

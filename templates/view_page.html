@@ -6,6 +6,6 @@
 <div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
-  {{vobject.page.content|safe}}
+  {{vobject.content|safe}}
 </div>
 {% endblock %}

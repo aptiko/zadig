@@ -20,11 +20,13 @@ from twistycms.core.utils import primary_buttons as _primary_buttons
 from twistycms.core.utils import secondary_buttons as _secondary_buttons
 
 def end_view(request, path, version_number=None):
-    vobject = models.VObject.objects.get_by_path(request, path, version_number)
+    vobject = models.VObject.objects.get_by_path(request, path, version_number)\
+                                                                .descendant
     return vobject.end_view(request)
 
 def info_view(request, path, version_number=None):
-    vobject = models.VObject.objects.get_by_path(request, path, version_number)
+    vobject = models.VObject.objects.get_by_path(request, path, version_number)\
+                                                                .descendant
     return vobject.info_view(request)
 
 def edit_entry(request, path):

@@ -147,7 +147,7 @@ class Entry(models.Model):
             self.object_class = self._meta.object_name
     @property
     def descendant(self):
-        if self._meta.module_name == self.object_class:
+        if self._meta.object_name == self.object_class:
             return self
         else:
             return getattr(self, self.object_class.lower())
@@ -253,7 +253,7 @@ class Entry(models.Model):
         assert self.object_class.endswith('Entry'), \
             "Assertion failed:%s" % (self.object_class,)
         entry_type = self.object_class[:-5]
-        entry_class = eval(entry_type)
+        vobject_class = eval('V' + entry_type)
         editform = eval('Edit%sForm' % (entry_type,))
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
@@ -299,7 +299,7 @@ class Entry(models.Model):
                         .state_transitions \
                         .get(source_state__descr="Nonexistent").target_state
                     self.save()
-                nvobject = entry_class(entry=self,
+                nvobject = vobject_class(entry=self,
                     version_number=new and 1 or (vobject.version_number + 1),
                     language=Language.objects.get(
                                               id=form.cleaned_data['language']))
@@ -382,14 +382,14 @@ class VObject(models.Model):
     objects = VObjectManager()
     def save(self, *args, **kwargs):
         if not self.object_class:
-            self.object_class = self._meta.module_name
+            self.object_class = self._meta.object_name
         return super(VObject, self).save(args, kwargs)
     @property
     def descendant(self):
-        if self._meta.module_name == self.object_class:
+        if self._meta.object_name == self.object_class:
             return self
         else:
-            return getattr(self, self.object_class)
+            return getattr(self, self.object_class.lower())
     def end_view(self, request):
         raise NotImplementedError("Method should be redefined in derived class")
     def info_view(self, request):
@@ -474,7 +474,7 @@ class PageEntry(Entry):
     class Meta:
         db_table = 'cms_pageentry'
 
-class Page(VObject):
+class VPage(VObject):
     format = models.ForeignKey(ContentFormat)
     content = models.TextField(blank=True)
     def end_view(self, request):
@@ -485,7 +485,7 @@ class Page(VObject):
     def info_view(self, request):
         return self.end_view(request)
     class Meta:
-        db_table = 'cms_page'
+        db_table = 'cms_vpage'
 
 class EditPageForm(EditForm):
     from tinymce.widgets import TinyMCE
@@ -516,7 +516,7 @@ class ImageEntry(Entry):
     class Meta:
         db_table = 'cms_imageentry'
 
-class Image(VObject):
+class VImage(VObject):
     content = models.ImageField(upload_to="images")
     def end_view(self, request):
         content_type = mimetypes.guess_type(self.content.path)[0]
@@ -530,7 +530,7 @@ class Image(VObject):
             'primary_buttons': primary_buttons(request, self, 'view'),
             'secondary_buttons': secondary_buttons(request, self)})
     class Meta:
-        db_table = 'cms_image'
+        db_table = 'cms_vimage'
 
 class EditImageForm(EditForm):
     content = forms.ImageField()
@@ -553,6 +553,8 @@ class VInternalRedirection(VObject):
             { 'request': request, 'vobject': self,
               'primary_buttons': primary_buttons(request, self, 'view'),
               'secondary_buttons': secondary_buttons(request, self)} )
+    class Meta:
+        db_table = 'cms_vinternalredirection'
 
 class EditInternalRedirectionForm(EditForm):
     pass
