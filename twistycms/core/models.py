@@ -8,6 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponsePermanentRedirect
 import django.contrib.auth.models
 from django.core.servers.basehttp import FileWrapper
 from django import forms
@@ -130,21 +131,24 @@ class Entry(models.Model):
             names = path.split('/')
             parent_path = '/'.join(names[:-1])
             parent_entry = Entry.objects.get_by_path(request, parent_path)
-            if not permissions.EDIT in parent_entry.get_permissions(request):
-                raise PermissionDenied(_(u"Permission denied"))
-            siblings = Entry.objects.filter(container=parent_entry)
-            if siblings.count():
-                max_seq = siblings.order_by('-seq')[0].seq
-            else:
-                max_seq = 0
-            initial_state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
-                .state_transitions.get(source_state__descr="Nonexistent") \
-                .target_state
-            result = super(Entry, self).__init__(container=parent_entry,
-                name=names[-1], owner=request.user, state=initial_state,
-                seq = max_seq+1)
+            super(Entry, self).__init__()
+            self.container = parent_entry
+            self.__initialize(request)
         if not self.object_class:
             self.object_class = self._meta.object_name
+    def __initialize(self, request):
+        """Set all other attributes of a newly created Entry, when only
+        container has been set."""
+        if not permissions.EDIT in self.container.get_permissions(request):
+            raise PermissionDenied(_(u"Permission denied"))
+        self.seq = 1
+        siblings = Entry.objects.filter(container=self.container)
+        if siblings.count():
+            self.seq = siblings.order_by('-seq')[0].seq + 1
+        self.owner = request.user
+        self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
+            .state_transitions \
+            .get(source_state__descr="Nonexistent").target_state
     @property
     def descendant(self):
         if self._meta.object_name == self.object_class:
@@ -248,6 +252,7 @@ class Entry(models.Model):
     def add_details(self, vobject, form):
         raise NotImplementedError("This functionality is only available "
             +"in sublcasses")
+    @transaction.commit_on_success
     def edit_view(self, request, new=False):
         # FIXME: form.name ignored when editing
         assert self.object_class.endswith('Entry'), \
@@ -287,23 +292,13 @@ class Entry(models.Model):
                                             for o in applet_options]))
             if all_forms_are_valid:
                 if new:
-                    # FIXME: Code duplication with Entry.__init__
-                    if not permissions.EDIT in self.container.get_permissions(request):
-                        raise PermissionDenied(_(u"Permission denied"))
+                    self.__initialize(request)
                     self.name = form.cleaned_data['name']
-                    self.seq = 1
-                    siblings = Entry.objects.filter(container=self.container)
-                    if siblings.count():
-                        self.seq = siblings.order_by('-seq')[0].seq + 1
-                    self.owner = request.user
-                    self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
-                        .state_transitions \
-                        .get(source_state__descr="Nonexistent").target_state
                     self.save()
                 nvobject = vobject_class(entry=self,
                     version_number=new and 1 or (vobject.version_number + 1),
                     language=Language.objects.get(
-                                              id=form.cleaned_data['language']))
+                                          id=form.cleaned_data['language']))
                 self.add_details(nvobject, form)
                 nvobject.save()
                 nmetatags = VObjectMetatags(
@@ -315,13 +310,40 @@ class Entry(models.Model):
                 nmetatags.save()
                 for o in applet_options:
                     o['entry_options'](request, self.path,
-                                                        o['entry_options_form'])
+                                                   o['entry_options_form'])
+                if form.cleaned_data['name'] != self.name:
+                    self.rename(request, form.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
         return render_to_response('edit_%s.html' % (entry_type.lower()),
               { 'request': request, 'vobject': vobject, 'form': form,
                 'applet_options': applet_options,
                 'primary_buttons': primary_buttons(request, vobject, 'edit'),
                 'secondary_buttons': secondary_buttons(request, vobject)})
+    @transaction.commit_on_success
+    def rename(self, request, newname):
+        if not self.container:
+            raise ValueError(_("The root page cannot be renamed"))
+        for sibling in self.container.all_subentries.all():
+            if sibling.id == self.id: continue
+            if sibling.name == newname:
+                raise ValueError(_("Cannot rename; target name already exists"))
+        oldname = self.name
+        self.name = newname
+        self.save()
+        nentry = InternalRedirectionEntry(container=self.container)
+        nentry.__initialize(request)
+        nentry.name = oldname
+        nentry.save()
+        nvobject = VInternalRedirection(entry=nentry,
+            version_number=1,
+            language=self.get_vobject(request).language,
+            target=self)
+        nvobject.save()
+        nmetatags = VObjectMetatags(
+            vobject=nvobject,
+            language=nvobject.language,
+            title=_("Redirection"))
+        nmetatags.save()
     def contents_view(self, request):
         subentries = self.get_subentries(request)
         vobject = self.get_vobject(request)
