@@ -305,7 +305,9 @@ Other models
    Stores the metatags of a vobject. Has five attributes:
    :attr:`vobject` and :attr:`language` are foreign keys to the
    respective models; :attr:`title`, :attr:`short_title` and
-   :attr:`description` are strings.
+   :attr:`description` are strings. Also has method
+   :meth:`get_short_title`, which returns the short title, or the
+   title if the short title is empty.
 
    The default manager has an additional method, :meth:`default`,
    which returns the default set of metatags. This is normally the set
