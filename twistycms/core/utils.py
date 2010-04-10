@@ -45,11 +45,12 @@ def secondary_buttons(request, vobject):
             set((permissions.EDIT, permissions.ADMIN))) == set():
         return []
     result = [
-          { 'name': _(u'State:') + ' ' + vobject.entry.state.descr,
+          { 'name': _(u'State: <span class="state%s">%s</span>') %
+                (vobject.entry.state.descr, vobject.entry.state.descr),
             'items': [
                        { 'href': '__state__/%d' % (x.target_state.id,),
-                         'name': x.target_state.descr }
-                            for x in vobject.entry.state.source_rules.all()
+                         'name': x.target_state.descr,
+                       } for x in vobject.entry.state.source_rules.all()
                      ]
           },
           { 'name': _(u'Add new…'),
