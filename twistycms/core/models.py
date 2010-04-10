@@ -538,6 +538,21 @@ class EditImageForm(EditForm):
 #class LinkVersion(VObject):
 #    target = models.TextField()
 
-#class InternalRedirection(VObject):
-#    target = models.ForeignKey(Object)
+### InternalRedirection ###
 
+class InternalRedirectionEntry(Entry):
+    class Meta:
+        db_table = 'cms_internalredirectionentry'
+
+class VInternalRedirection(VObject):
+    target = models.ForeignKey(Entry)
+    def end_view(self, request):
+        return HttpResponsePermanentRedirect(self.target.spath)
+    def info_view(self, request):
+        return render_to_response('view_internalredirection.html',
+            { 'request': request, 'vobject': self,
+              'primary_buttons': primary_buttons(request, self, 'view'),
+              'secondary_buttons': secondary_buttons(request, self)} )
+
+class EditInternalRedirectionForm(EditForm):
+    pass
