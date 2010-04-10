@@ -2,22 +2,13 @@
 import re
 
 from django.shortcuts import render_to_response
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
-from django.template import RequestContext
 from django import forms
-from django.forms.formsets import formset_factory
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
 
 from twistycms.core import models
-import twistycms.core
-from twistycms.core import utils
-
-# If the following two cannot be deleted, some code reorganizing is unfinished.
-from twistycms.core.utils import primary_buttons as _primary_buttons
-from twistycms.core.utils import secondary_buttons as _secondary_buttons
 
 def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
