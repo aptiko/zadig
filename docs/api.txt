@@ -70,6 +70,14 @@ Entry
       This read-only property returns the URL path to the entry, not
       including a leading or trailing slash..
 
+   .. attribute:: twistycms.core.models.Entry.spath
+
+      This read-only property returns the full relative URL path to
+      the entry, starting end ending in a slash. (This is more
+      complicated than just prefixing and suffixing
+      :attr:`twistycms.core.models.Entry.path` with a slash, because
+      then the root entry would be two slashes instead of one.)
+
    .. attribute:: twistycms.core.models.Entry.descendant
 
       :class:`~twistycms.core.models.Entry` is always subclassed. If

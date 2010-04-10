@@ -189,9 +189,15 @@ class Entry(models.Model):
     def path(self):
         result = self.name
         entry = self
-        while entry.container:
+        while entry.container and entry.container.name:
             entry = entry.container
             result = entry.name + '/' + result
+        return result
+    @property
+    def spath(self):
+        result = '/' + self.path + '/'
+        if result == '//':
+            result = '/'
         return result
     def contains(self, entry):
         while entry:

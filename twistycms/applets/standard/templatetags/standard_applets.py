@@ -18,9 +18,9 @@ class BreadcrumbsNode(template.Node):
         vobject = context.get('vobject', None)
         while vobject:
             if result:
-                result = u'''<a href="/%s">%s</a>
+                result = u'''<a href="%s">%s</a>
                     <span class="breadcrumb-separator">→</span> %s''' % (
-                    vobject.entry.path,
+                    vobject.entry.spath,
                     vobject.metatags.default().get_short_title(), result)
             else:
                 result = vobject.metatags.default().get_short_title()
@@ -76,7 +76,7 @@ class NavigationNode(template.Node):
             result += '<li><a class="state%s %s" href="%s">%s</a>' % (
                 s.state.descr.replace(' ',''),
                 s.id==current_entry.id and 'current' or '',
-                s.path,
+                s.spath,
                 s.get_vobject(request).metatags.default().get_short_title())
             if s.contains(current_entry) or s.id==current_entry.id:
                 result += self.render_entry_contents(request, s, current_entry,
