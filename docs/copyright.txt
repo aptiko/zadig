@@ -1,10 +1,10 @@
 TwistyCMS Copyright
 ===================
 
-The copyright applies to all TwistyCMS files, except those were
+The copyright applies to all TwistyCMS files, except those where
 something else is mentioned.
 
-Copyright (C) 2009 Antonis Christofides
+Copyright (C) 2009-2010 Antonis Christofides
 
 Permission is granted to redistribute and/or modify TwistyCMS under
 the terms of the GNU General Public License as published by the Free
