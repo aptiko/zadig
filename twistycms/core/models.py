@@ -16,7 +16,7 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-# If the following two cannot be deleted, some code reorganizing is unfinished.
+# FIXME: If the following two cannot be deleted, some code reorganizing is unfinished.
 from twistycms.core.utils import primary_buttons as _primary_buttons
 from twistycms.core.utils import secondary_buttons as _secondary_buttons
 
@@ -338,6 +338,12 @@ class Entry(models.Model):
                 { 'request': request, 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
                   'primary_buttons': _primary_buttons(request, vobject, 'contents'),
+                  'secondary_buttons': _secondary_buttons(request, vobject)})
+    def history_view(self, request):
+        vobject = self.get_vobject(request)
+        return render_to_response('entry_history.html',
+                { 'request': request, 'vobject': vobject,
+                  'primary_buttons': _primary_buttons(request, vobject, 'history'),
                   'secondary_buttons': _secondary_buttons(request, vobject)})
     def __unicode__(self):
         result = self.name

@@ -44,11 +44,8 @@ def entry_contents(request, path):
     return entry.contents_view(request)
 
 def entry_history(request, path):
-    vobject = models.VObject.objects.get_by_path(request, path)
-    return render_to_response('entry_history.html',
-            { 'request': request, 'vobject': vobject,
-              'primary_buttons': _primary_buttons(request, vobject, 'history'),
-              'secondary_buttons': _secondary_buttons(request, vobject)})
+    entry = models.Entry.objects.get_by_path(request, path)
+    return entry.history_view(request)
 
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, path)
