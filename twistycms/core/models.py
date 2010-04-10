@@ -357,19 +357,6 @@ class Entry(models.Model):
         db_table = 'cms_entry'
         ordering = ('container__id', 'seq')
 
-class PageEntry(Entry):
-    def add_details(self, vobject, form):
-        vobject.format=ContentFormat.objects.get(descr='html')
-        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
-    class Meta:
-        db_table = 'cms_pageentry'
-
-class ImageEntry(Entry):
-    def add_details(self, vobject, form):
-        vobject.content=form.cleaned_data['content']
-    class Meta:
-        db_table = 'cms_imageentry'
-
 class EntryPermission(models.Model):
     entry = models.ForeignKey(Entry)
     lentity = models.ForeignKey(Lentity)
@@ -439,54 +426,6 @@ class VObjectMetatags(models.Model):
         db_table = 'cms_vobjectmetatags'
     objects = MetatagManager()
 
-class ContentFormat(models.Model):
-    descr = models.CharField(max_length=20)
-    def __unicode__(self):
-        return self.descr
-    class Meta:
-        db_table = 'cms_contentformat'
-
-class Page(VObject):
-    format = models.ForeignKey(ContentFormat)
-    content = models.TextField(blank=True)
-    def end_view(self, request):
-        return render_to_response('view_page.html', { 'request': request,
-            'vobject': self,
-            'primary_buttons': primary_buttons(request, self, 'view'),
-            'secondary_buttons': secondary_buttons(request, self)})
-    def info_view(self, request):
-        return self.end_view(request)
-    class Meta:
-        db_table = 'cms_page'
-
-#class File(VObject):
-#    entry = models.ForeignKey(PageEntry, related_name="vobject_set")
-#    content = models.FileField(upload_to="files")
-#    class Meta:
-#        db_table = 'cms_file'
-
-class Image(VObject):
-    content = models.ImageField(upload_to="images")
-    def end_view(self, request):
-        content_type = mimetypes.guess_type(self.content.path)[0]
-        wrapper = FileWrapper(open(self.content.path))
-        response = HttpResponse(wrapper, content_type=content_type)
-        response['Content-length'] = self.content.size
-        return response
-    def info_view(self, request):
-        return render_to_response('view_image.html', { 'request': request,
-            'vobject': self,
-            'primary_buttons': primary_buttons(request, self, 'view'),
-            'secondary_buttons': secondary_buttons(request, self)})
-    class Meta:
-        db_table = 'cms_image'
-
-#class LinkVersion(VObject):
-#    target = models.TextField()
-
-#class InternalRedirection(VObject):
-#    target = models.ForeignKey(Object)
-
 class EditForm(forms.Form):
     # FIXME: metatags should be in many languages
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
@@ -497,24 +436,6 @@ class EditForm(forms.Form):
     short_title = forms.CharField(required=False, max_length=
         VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
-
-class EditPageForm(EditForm):
-    from tinymce.widgets import TinyMCE
-    content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
-        mce_attrs={
-            'content_css': '/static/style.css',
-            'convert_urls': False,
-            'theme': 'advanced',
-            'theme_advanced_blockformats': 'p,h1,h2',
-            'theme_advanced_toolbar_location': 'top',
-            'theme_advanced_toolbar_align': 'left',
-            'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect',
-            'theme_advanced_buttons2': '',
-            'theme_advanced_buttons3': '',
-        }), required=False)
-
-class EditImageForm(EditForm):
-    content = forms.ImageField()
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
@@ -536,4 +457,87 @@ class MoveItemForm(forms.Form):
              _("You can't move an object before itself or before the next one; "
               +"this would leave it in the same position"))
         return self.cleaned_data
+
+### Page ###
+
+class ContentFormat(models.Model):
+    descr = models.CharField(max_length=20)
+    def __unicode__(self):
+        return self.descr
+    class Meta:
+        db_table = 'cms_contentformat'
+
+class PageEntry(Entry):
+    def add_details(self, vobject, form):
+        vobject.format=ContentFormat.objects.get(descr='html')
+        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
+    class Meta:
+        db_table = 'cms_pageentry'
+
+class Page(VObject):
+    format = models.ForeignKey(ContentFormat)
+    content = models.TextField(blank=True)
+    def end_view(self, request):
+        return render_to_response('view_page.html', { 'request': request,
+            'vobject': self,
+            'primary_buttons': primary_buttons(request, self, 'view'),
+            'secondary_buttons': secondary_buttons(request, self)})
+    def info_view(self, request):
+        return self.end_view(request)
+    class Meta:
+        db_table = 'cms_page'
+
+class EditPageForm(EditForm):
+    from tinymce.widgets import TinyMCE
+    content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
+        mce_attrs={
+            'content_css': '/static/style.css',
+            'convert_urls': False,
+            'theme': 'advanced',
+            'theme_advanced_blockformats': 'p,h1,h2',
+            'theme_advanced_toolbar_location': 'top',
+            'theme_advanced_toolbar_align': 'left',
+            'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect',
+            'theme_advanced_buttons2': '',
+            'theme_advanced_buttons3': '',
+        }), required=False)
+
+#class File(VObject):
+#    entry = models.ForeignKey(PageEntry, related_name="vobject_set")
+#    content = models.FileField(upload_to="files")
+#    class Meta:
+#        db_table = 'cms_file'
+
+### Image ###
+
+class ImageEntry(Entry):
+    def add_details(self, vobject, form):
+        vobject.content=form.cleaned_data['content']
+    class Meta:
+        db_table = 'cms_imageentry'
+
+class Image(VObject):
+    content = models.ImageField(upload_to="images")
+    def end_view(self, request):
+        content_type = mimetypes.guess_type(self.content.path)[0]
+        wrapper = FileWrapper(open(self.content.path))
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-length'] = self.content.size
+        return response
+    def info_view(self, request):
+        return render_to_response('view_image.html', { 'request': request,
+            'vobject': self,
+            'primary_buttons': primary_buttons(request, self, 'view'),
+            'secondary_buttons': secondary_buttons(request, self)})
+    class Meta:
+        db_table = 'cms_image'
+
+class EditImageForm(EditForm):
+    content = forms.ImageField()
+
+#class LinkVersion(VObject):
+#    target = models.TextField()
+
+#class InternalRedirection(VObject):
+#    target = models.ForeignKey(Object)
 
