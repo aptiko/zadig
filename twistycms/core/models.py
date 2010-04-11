@@ -8,9 +8,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-from django.http import HttpResponsePermanentRedirect
 import django.contrib.auth.models
-from django.core.servers.basehttp import FileWrapper
 from django import forms
 import settings
 
@@ -246,94 +244,77 @@ class Entry(models.Model):
             raise
         else:
             transaction.commit()
-    def add_details(self, vobject, form):
-        raise NotImplementedError("This functionality is only available "
-            +"in sublcasses")
-    def __create_metatags_forms(self, request, new=False):
-        """Return a list of metatags forms, as many as existing metatag sets
+    @property
+    def template_name(self):
+        return 'edit_entry.html'
+    def __create_metatags_formset(self, request, new):
+        """Return a formset of metatags forms, as many as existing metatag sets
         plus one if there is another available language. Called by edit_view()
         method. """
-        result = []
+        initial = []
         if new:
             vobject = self.container.get_vobject(request).descendant
-            result.append(MetatagsForm(
-                                initial={ 'language': vobject.language.id }))
+            initial.append({ 'language': vobject.language.id })
         else:
             vobject = self.get_vobject(request).descendant
             used_langs = []
             for m in vobject.vobjectmetatags_set:
-                result.append(MetatagsForm(initial={'language': m.language.id,
-                    'title': m.title, 'short_title': m.short_title,
-                    'description': m.description}))
+                initial.append({'language': m.language.id, 'title': m.title,
+                    'short_title': m.short_title, 'description': m.description})
                 used_langs.append(m.language.id)
             remaining_langs = set(settings.LANGUAGES).difference(used_langs)
             if remaining_langs:
-                result.append(MetatagsForm(
-                                initial={ 'language': remaining_langs.pop() }))
-        return result
+                initial.append({ 'language': remaining_langs.pop() })
+        return MetatagsFormSet(initial=initial)
+    def __process_metatags_formset(self, vobject, metatagsformset):
+        for m in metatagsformset.cleaned_data:
+            if not (m['title'] or m['short_title'] or m['description']):
+                continue
+            nmetatags = VObjectMetatags(vobject=vobject,
+                language=m['language'], title=m['title'],
+                short_title=m['short_title'], description=m['description'])
+            nmetatags.save()
     @transaction.commit_on_success
     def edit_view(self, request, new=False):
         assert self.object_class.endswith('Entry'), \
                                 "Assertion failed:%s" % (self.object_class,)
-        entry_type = self.object_class[:-5]
-        vobject_class = eval('V' + entry_type)
-        editform = eval('Edit%sForm' % (entry_type,))
-        applet_options = [o for o in twistycms.core.applet_options
-                                                        if o['entry_options']]
-        if new:
-            vobject = self.container.get_vobject(request).descendant
-            path = self.container.path
-        else:
-            vobject = self.get_vobject(request).descendant
-            path = self.path
         if request.method != 'POST':
-            if new:
-                form = editform(initial={ 'language': vobject.language.id })
-            else:
-                # FIXME: Not all subtypes have 'content' in form
-                form = editform(initial={
-                    'language': vobject.language.id,
-                    'name': vobject.entry.name,
-                    'title': vobject.metatags.default().title,
-                    'short_title': vobject.metatags.default().short_title,
-                    'description': vobject.metatags.default().description,
-                    'content': vobject.content
-                })
-            for o in applet_options:
-                o['entry_options_form'] = o['entry_options'](request, path)
+            mainform = EditEntryForm(initial={ 'name': self.name })
+            metatagsformset = self.__create_metatags_formset(request, new)
+            subform = self.create_edit_subform(request, new)
+            optionsforms = [o['entry_options'](request, path)
+                                                        for o in applet_options]
         else:
-            form = editform(request.POST, request.FILES)
-            for o in applet_options:
-                o['entry_options_form'] = o['EntryOptionsForm'](request.POST)
-            all_forms_are_valid = all((form.is_valid(),) +
-                                    tuple([o['entry_options_form'].is_valid()
-                                            for o in applet_options]))
+            mainform = EditEntryForm(request.POST)
+            metatagsformset = MetatagsFormSet(request.POST)
+            subform = self.subform_class(request.POST, request.FILES)
+            optionsforms = [o['EntryOptionsForm'](request.POST)
+                                                        for o in applet_options]
+            all_forms_are_valid = all(
+                [mainform.is_valid(),
+                 metatagsformset.is_valid(),
+                 subform.is_valid() ] +
+                [o['entry_options_form'].is_valid() for o in applet_options])
             if all_forms_are_valid:
                 if new:
                     self.__initialize(request)
-                    self.name = form.cleaned_data['name']
+                    self.name = mainform.cleaned_data['name']
                     self.save()
                 nvobject = vobject_class(entry=self,
                     version_number=new and 1 or (vobject.version_number + 1),
                     language=Language.objects.get(
-                                          id=form.cleaned_data['language']))
-                self.add_details(nvobject, form)
+                                       id=mainform.cleaned_data['language']))
+                self.process_edit_subform(nvobject, subform)
                 nvobject.save()
-                nmetatags = VObjectMetatags(
-                    vobject=nvobject,
-                    language=nvobject.language,
-                    title=form.cleaned_data['title'],
-                    short_title=form.cleaned_data['short_title'],
-                    description=form.cleaned_data['description'])
-                nmetatags.save()
-                for o in applet_options:
-                    o['entry_options'](request, self.path,
-                                                   o['entry_options_form'])
+                self.__process_metatags_formset(nvobject, metatagsformset)
+                for o,f in applet_options, optionsforms:
+                    o['entry_options'](request, self.path, f)
                 if form.cleaned_data['name'] != self.name:
                     self.rename(request, form.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
-        return render_to_response('edit_%s.html' % (entry_type.lower()),
-              { 'request': request, 'vobject': vobject, 'form': form,
+        return render_to_response(self.template_name,
+              { 'request': request, 'vobject': vobject,
+                'mainform': form, 'metatagsformset': metatagsformset,
                 'applet_options': applet_options,
                 'primary_buttons': primary_buttons(request, vobject, 'edit'),
                 'secondary_buttons': secondary_buttons(request, vobject)})
@@ -463,10 +444,6 @@ class VObject(models.Model):
             return self
         else:
             return getattr(self, self.object_class.lower())
-    def end_view(self, request):
-        raise NotImplementedError("Method should be redefined in derived class")
-    def info_view(self, request):
-        raise NotImplementedError("Method should be redefined in derived class")
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
     class Meta:
@@ -511,6 +488,9 @@ class MetatagsForm(forms.Form):
                 VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
 
+from django.forms.formsets import formset_factory
+MetatagsFormSet = formset_factory(MetatagsForm, extra=0)
+
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
     before_object = forms.IntegerField()
@@ -542,7 +522,9 @@ class ContentFormat(models.Model):
         db_table = 'cms_contentformat'
 
 class PageEntry(Entry):
-    def add_details(self, vobject, form):
+    def create_edit_subform(self, request, new):
+        return EditPageForm(initial={'content': self.get_vobject().content})
+    def process_edit_subform(self, vobject, form):
         vobject.format=ContentFormat.objects.get(descr='html')
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
     class Meta:
@@ -579,7 +561,9 @@ class EditPageForm(forms.Form):
 ### Image ###
 
 class ImageEntry(Entry):
-    def add_details(self, vobject, form):
+    def create_edit_subform(self, request, new):
+        return EditImageForm(initial={'content': self.get_vobject().content})
+    def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
     class Meta:
         db_table = 'cms_imageentry'
@@ -587,6 +571,7 @@ class ImageEntry(Entry):
 class VImage(VObject):
     content = models.ImageField(upload_to="images")
     def end_view(self, request):
+        from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
         response = HttpResponse(wrapper, content_type=content_type)
@@ -597,6 +582,9 @@ class VImage(VObject):
             'vobject': self,
             'primary_buttons': primary_buttons(request, self, 'view'),
             'secondary_buttons': secondary_buttons(request, self)})
+    @property
+    def template_name(self, request):
+        return 'edit_page.html'
     class Meta:
         db_table = 'cms_vimage'
 
@@ -606,12 +594,18 @@ class EditImageForm(forms.Form):
 ### InternalRedirection ###
 
 class InternalRedirectionEntry(Entry):
+    def process_edit_subform(self, vobject, form):
+        vobject.content=form.cleaned_data['target']
+    def create_edit_subform(self, request, new):
+        return EditInternalRedirectionForm(
+                            initial={'target': self.get_vobject().content})
     class Meta:
         db_table = 'cms_internalredirectionentry'
 
 class VInternalRedirection(VObject):
     target = models.ForeignKey(Entry)
     def end_view(self, request):
+        from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
     def info_view(self, request):
         return render_to_response('view_internalredirection.html',
@@ -622,4 +616,5 @@ class VInternalRedirection(VObject):
         db_table = 'cms_vinternalredirection'
 
 class EditInternalRedirectionForm(forms.Form):
-    pass
+    target = forms.ChoiceField(choices=
+            [(e.id, e.spath) for e in Entry.objects.all()])

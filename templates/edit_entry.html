@@ -5,9 +5,13 @@
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" enctype="multipart/form-data" action="" method="POST">
   <table>
-  {{form.as_table}}
-  {% for o in applet_options %}
-     {{o.entry_options_form.as_table}}
+  {{forms.main.as_table}}
+  {% for f in forms.metatags %}
+    {{f.as_table}}
+  {% endfor %}
+  {{forms.subtype.as_table}}
+  {% for f in forms.options %}
+    {{f.as_table}}
   {% endfor %}
   </table>
   <input type="submit" value="Submit" />
