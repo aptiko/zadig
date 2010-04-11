@@ -258,7 +258,7 @@ class Entry(models.Model):
         else:
             vobject = self.get_vobject(request).descendant
             used_langs = []
-            for m in vobject.vobjectmetatags_set:
+            for m in vobject.metatags.all():
                 initial.append({'language': m.language.id, 'title': m.title,
                     'short_title': m.short_title, 'description': m.description})
                 used_langs.append(m.language.id)
@@ -278,11 +278,13 @@ class Entry(models.Model):
     def edit_view(self, request, new=False):
         assert self.object_class.endswith('Entry'), \
                                 "Assertion failed:%s" % (self.object_class,)
+        applet_options = [o for o in twistycms.core.applet_options
+                                                        if o['entry_options']]
         if request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name })
             metatagsformset = self.__create_metatags_formset(request, new)
             subform = self.create_edit_subform(request, new)
-            optionsforms = [o['entry_options'](request, path)
+            optionsforms = [o['entry_options'](request, self.path)
                                                         for o in applet_options]
         else:
             mainform = EditEntryForm(request.POST)
@@ -294,7 +296,7 @@ class Entry(models.Model):
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
                  subform.is_valid() ] +
-                [o['entry_options_form'].is_valid() for o in applet_options])
+                [o.is_valid() for o in optionsforms])
             if all_forms_are_valid:
                 if new:
                     self.__initialize(request)
@@ -312,10 +314,11 @@ class Entry(models.Model):
                 if form.cleaned_data['name'] != self.name:
                     self.rename(request, form.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
+        vobject = self.get_vobject(request)
         return render_to_response(self.template_name,
               { 'request': request, 'vobject': vobject,
-                'mainform': form, 'metatagsformset': metatagsformset,
-                'applet_options': applet_options,
+                'mainform': mainform, 'metatagsformset': metatagsformset,
+                'subform': subform, 'optionsforms': optionsforms,
                 'primary_buttons': primary_buttons(request, vobject, 'edit'),
                 'secondary_buttons': secondary_buttons(request, vobject)})
     @transaction.commit_on_success
@@ -523,10 +526,17 @@ class ContentFormat(models.Model):
 
 class PageEntry(Entry):
     def create_edit_subform(self, request, new):
-        return EditPageForm(initial={'content': self.get_vobject().content})
+        return EditPageForm(
+                    initial={'content': self.get_vobject(request).content})
     def process_edit_subform(self, vobject, form):
         vobject.format=ContentFormat.objects.get(descr='html')
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
+    @property
+    def template_name(self):
+        return 'edit_page.html'
+    @property
+    def subform_class(self):
+        return EditPageForm
     class Meta:
         db_table = 'cms_pageentry'
 
@@ -562,9 +572,12 @@ class EditPageForm(forms.Form):
 
 class ImageEntry(Entry):
     def create_edit_subform(self, request, new):
-        return EditImageForm(initial={'content': self.get_vobject().content})
+        return EditImageForm(
+                    initial={'content': self.get_vobject(request).content})
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
+    def subform_class(self):
+        return EditImageForm
     class Meta:
         db_table = 'cms_imageentry'
 
@@ -582,9 +595,6 @@ class VImage(VObject):
             'vobject': self,
             'primary_buttons': primary_buttons(request, self, 'view'),
             'secondary_buttons': secondary_buttons(request, self)})
-    @property
-    def template_name(self, request):
-        return 'edit_page.html'
     class Meta:
         db_table = 'cms_vimage'
 
@@ -598,7 +608,9 @@ class InternalRedirectionEntry(Entry):
         vobject.content=form.cleaned_data['target']
     def create_edit_subform(self, request, new):
         return EditInternalRedirectionForm(
-                            initial={'target': self.get_vobject().content})
+                        initial={'target': self.get_vobject(request).content})
+    def subform_class(self):
+        return EditInternalRedirectionForm
     class Meta:
         db_table = 'cms_internalredirectionentry'
 

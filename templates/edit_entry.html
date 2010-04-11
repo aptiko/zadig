@@ -5,12 +5,10 @@
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" enctype="multipart/form-data" action="" method="POST">
   <table>
-  {{forms.main.as_table}}
-  {% for f in forms.metatags %}
-    {{f.as_table}}
-  {% endfor %}
-  {{forms.subtype.as_table}}
-  {% for f in forms.options %}
+  {{mainform.as_table}}
+  {{metatagsformset}}
+  {{subform.as_table}}
+  {% for f in optionsforms %}
     {{f.as_table}}
   {% endfor %}
   </table>
