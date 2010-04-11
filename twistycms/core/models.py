@@ -309,10 +309,10 @@ class Entry(models.Model):
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
-                for o,f in applet_options, optionsforms:
+                for o,f in map(lambda x,y:(x,y), applet_options, optionsforms):
                     o['entry_options'](request, self.path, f)
-                if form.cleaned_data['name'] != self.name:
-                    self.rename(request, form.cleaned_data['name'])
+                if mainform.cleaned_data['name'] != self.name:
+                    self.rename(request, mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
         vobject = self.get_vobject(request)
         return render_to_response(self.template_name,
