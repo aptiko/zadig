@@ -249,10 +249,32 @@ class Entry(models.Model):
     def add_details(self, vobject, form):
         raise NotImplementedError("This functionality is only available "
             +"in sublcasses")
+    def __create_metatags_forms(self, request, new=False):
+        """Return a list of metatags forms, as many as existing metatag sets
+        plus one if there is another available language. Called by edit_view()
+        method. """
+        result = []
+        if new:
+            vobject = self.container.get_vobject(request).descendant
+            result.append(MetatagsForm(
+                                initial={ 'language': vobject.language.id }))
+        else:
+            vobject = self.get_vobject(request).descendant
+            used_langs = []
+            for m in vobject.vobjectmetatags_set:
+                result.append(MetatagsForm(initial={'language': m.language.id,
+                    'title': m.title, 'short_title': m.short_title,
+                    'description': m.description}))
+                used_langs.append(m.language.id)
+            remaining_langs = set(settings.LANGUAGES).difference(used_langs)
+            if remaining_langs:
+                result.append(MetatagsForm(
+                                initial={ 'language': remaining_langs.pop() }))
+        return result
     @transaction.commit_on_success
     def edit_view(self, request, new=False):
         assert self.object_class.endswith('Entry'), \
-            "Assertion failed:%s" % (self.object_class,)
+                                "Assertion failed:%s" % (self.object_class,)
         entry_type = self.object_class[:-5]
         vobject_class = eval('V' + entry_type)
         editform = eval('Edit%sForm' % (entry_type,))
@@ -477,15 +499,16 @@ class VObjectMetatags(models.Model):
         db_table = 'cms_vobjectmetatags'
     objects = MetatagManager()
 
-class EditForm(forms.Form):
-    # FIXME: metatags should be in many languages
-    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
+class EditEntryForm(forms.Form):
     name = forms.CharField(required=False,
-        max_length=Entry._meta.get_field('name').max_length)
+                        max_length=Entry._meta.get_field('name').max_length)
+
+class MetatagsForm(forms.Form):
+    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
     title = forms.CharField(
-        max_length=VObjectMetatags._meta.get_field('title').max_length)
+                max_length=VObjectMetatags._meta.get_field('title').max_length)
     short_title = forms.CharField(required=False, max_length=
-        VObjectMetatags._meta.get_field('short_title').max_length)
+                VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
 
 class MoveItemForm(forms.Form):
@@ -538,7 +561,7 @@ class VPage(VObject):
     class Meta:
         db_table = 'cms_vpage'
 
-class EditPageForm(EditForm):
+class EditPageForm(forms.Form):
     from tinymce.widgets import TinyMCE
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
         mce_attrs={
@@ -577,7 +600,7 @@ class VImage(VObject):
     class Meta:
         db_table = 'cms_vimage'
 
-class EditImageForm(EditForm):
+class EditImageForm(forms.Form):
     content = forms.ImageField()
 
 ### InternalRedirection ###
@@ -598,5 +621,5 @@ class VInternalRedirection(VObject):
     class Meta:
         db_table = 'cms_vinternalredirection'
 
-class EditInternalRedirectionForm(EditForm):
+class EditInternalRedirectionForm(forms.Form):
     pass
