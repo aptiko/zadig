@@ -9,5 +9,7 @@ urlpatterns = patterns('twistycms.core.views',
     ('^(?P<parent_path>.*)__new__/(?P<entry_type>[^/]*)/?$', 'new_entry'),
     ('^(?P<path>.*)__logout__/?$', 'logout'),
     ('^(?P<path>.*)__login__/?$', 'login'),
+    ('^(?P<path>.*)__cut__/?$', 'cut'),
+    ('^(?P<path>.*)__paste__/?$', 'paste'),
     ('^(?P<path>.*)$', 'end_view'),
 )

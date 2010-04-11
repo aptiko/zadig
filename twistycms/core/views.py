@@ -7,6 +7,7 @@ from django import forms
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
+from django.db import transaction
 
 from twistycms.core import models
 
@@ -82,3 +83,15 @@ def login(request, path):
     return render_to_response('login.html',
           { 'request': request, 'vobject': vobject, 'form': form,
             'message': message })
+
+def cut(request, path):
+    entry = models.Entry.objects.get_by_path(request, path)
+    request.session['cut_entries'] = [entry.id]
+    return info_view(request, path)
+
+@transaction.commit_on_success
+def paste(request, path):
+    target_entry = models.Entry.objects.get_by_path(request, path)
+    for entry_id in request.session['cut_entries']:
+        models.Entry.objects.get(pk=entry_id).move(request, target_entry)
+    return entry_contents(request, path)

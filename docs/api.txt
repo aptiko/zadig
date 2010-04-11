@@ -170,6 +170,17 @@ Entry
       Return a :class:`django.http.HttpResponse` object with the
       history view of the entry.
 
+   .. method:: twistycms.core.models.Entry.rename(request, newname)
+
+      Rename the entry to the specified new name; it also creates a
+      new redirection entry with the old name.
+
+   .. method:: twistycms.core.models.Entry.move(request, target_entry)
+
+      Move the entry from its current container to *target_entry*,
+      which will be the new container. Also create a new redirection
+      entry at the old location. Verifies permissions to do all that.
+
    .. method:: twistycms.core.models.Entry.add_details(vobject, form)
 
       The :meth:`~twistycms.core.models.Entry.edit_view` method is

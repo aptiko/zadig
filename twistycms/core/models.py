@@ -184,10 +184,7 @@ class Entry(models.Model):
         if vobject.version_number != latest_vobject.version_number \
                 and permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
-        for x in ('page', 'image'):
-            if hasattr(vobject, x):
-                return getattr(vobject, x)
-        return vobject
+        return vobject.descendant
     @property
     def path(self):
         result = self.name
@@ -332,6 +329,38 @@ class Entry(models.Model):
         nentry = InternalRedirectionEntry(container=self.container)
         nentry.__initialize(request)
         nentry.name = oldname
+        nentry.save()
+        nvobject = VInternalRedirection(entry=nentry,
+            version_number=1,
+            language=self.get_vobject(request).language,
+            target=self)
+        nvobject.save()
+        nmetatags = VObjectMetatags(
+            vobject=nvobject,
+            language=nvobject.language,
+            title=_("Redirection"))
+        nmetatags.save()
+    @transaction.commit_on_success
+    def move(self, request, target_entry):
+        if not self.container:
+            raise ValueError(_("The root page cannot be moved"))
+        if self.container.id == target_entry.id:
+            return
+        for nsibling in target_entry.all_subentries.all():
+            if nsibling.name == self.name:
+                raise ValueError(_("Cannot move; an entry with the same name at the target location already exists"))
+        if (permissions.EDIT not in target_entry.get_permissions(request)) \
+                or (permissions.DELETE not in self.get_permissions(request)):
+            raise PermissionDenied(_("Permission denied"))
+        oldcontainer = self.container
+        oldseq = self.seq
+        self.seq = target_entry.all_subentries.count() + 1
+        self.container = target_entry
+        self.save()
+        nentry = InternalRedirectionEntry(container=oldcontainer)
+        nentry.__initialize(request)
+        nentry.seq = oldseq
+        nentry.name = self.name
         nentry.save()
         nvobject = VInternalRedirection(entry=nentry,
             version_number=1,

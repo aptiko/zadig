@@ -59,6 +59,12 @@ def secondary_buttons(request, vobject):
                        { 'href': '__new__/Image/', 'name': _(u'Image') },
                      ]
           },
+          { 'name': _(u'Actions'),
+            'items': [
+                       { 'href': '__cut__/', 'name': _(u'Cut') },
+                       { 'href': '__paste__/', 'name': _(u'Paste') },
+                     ]
+          },
         ]
     return result
 
