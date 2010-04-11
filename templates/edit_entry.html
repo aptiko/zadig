@@ -1,11 +1,26 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block mainContent %}
 <div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" enctype="multipart/form-data" action="" method="POST">
-  {{ mainform.non_field_errors }} <table>{{mainform.as_table}}</table>
-  {{ metatagsformset.non_form_errors }} <table>{{metatagsformset}}</table>
+  <table>
+    <tr><td colspan="2">{{ mainform.non_field_errors }}</td></tr>
+    <tr>
+      <td>{{ mainform.name.errors }}
+           <label for="id_name">{% trans "Name:" %}</label>
+           {{mainform.name}}
+      </td>
+      <td>{{ mainform.language.errors }}
+           <label for="id_language">{% trans "Language:" %}</label>
+           {{mainform.language}}
+      </td>
+    </tr>
+  </table>
+  <table>
+    {{ metatagsformset.as_wide_table }}
+  </table>
   {{ subform.non_field_errors }} <table>{{subform.as_table}}</table>
   {% for f in optionsforms %}
     {{f.non_field_errors}}<table>{{f.as_table}}</table>

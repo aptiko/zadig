@@ -490,7 +490,8 @@ class MetatagsForm(forms.Form):
                 max_length=VObjectMetatags._meta.get_field('title').max_length)
     short_title = forms.CharField(required=False, max_length=
                 VObjectMetatags._meta.get_field('short_title').max_length)
-    description = forms.CharField(widget=forms.Textarea, required=False)
+    description = forms.CharField(widget=forms.Textarea(
+        attrs={'cols':'40', 'rows': '5'}), required=False)
     def clean(self):
         c = self.cleaned_data
         if not c['title'] and (c['short_title'] or c['description']):
@@ -516,6 +517,28 @@ class BaseMetatagsFormSet(BaseFormSet):
         if not used_langs:
             raise forms.ValidationError(_(u"You must specify a title"))
         return super(BaseMetatagsFormSet, self).clean()
+    def hello(self):
+        return 'hello'
+    def as_wide_table(self):
+        result = '<tr><td colspan="3">%s</td></tr>' % (self.no_form_errors,)
+        for i in range(0, len(self.forms), 2):
+            result += u'<tr><th><label for="id_language">%s:</label></th>' \
+                    + u'<td>%s</td><td>%s</td>' % (_(u'Language'),
+                    self.forms[i].language,
+                    i+1<len(self.forms and self.forms[i+1].language) or '')
+            result += u'<tr><th><label for="id_title">%s:</label></th>' \
+                    + u'<td>%s</td><td>%s</td>' % (_(u'Title'),
+                    self.forms[i].title,
+                    i+1<len(self.forms and self.forms[i+1].title) or '')
+            result += u'<tr><th><label for="id_short_title">%s:</label></th>' \
+                    + u'<td>%s</td><td>%s</td>' % (_(u'Short title'),
+                    self.forms[i].short_title,
+                    i+1<len(self.forms and self.forms[i+1].short_title) or '')
+            result += u'<tr><th><label for="id_description">%s:</label></th>' \
+                    + u'<td>%s</td><td>%s</td>' % (_(u'Description'),
+                    self.forms[i].description,
+                    i+1<len(self.forms and self.forms[i+1].description) or '')
+        return result
 MetatagsFormSet = formset_factory(MetatagsForm, formset=BaseMetatagsFormSet,
                                                                         extra=0)
 
