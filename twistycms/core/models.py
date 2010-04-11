@@ -271,13 +271,12 @@ class Entry(models.Model):
             if not (m['title'] or m['short_title'] or m['description']):
                 continue
             nmetatags = VObjectMetatags(vobject=vobject,
-                language=m['language'], title=m['title'],
-                short_title=m['short_title'], description=m['description'])
+                language=Language.objects.get(id=m['language']),
+                title=m['title'], short_title=m['short_title'],
+                description=m['description'])
             nmetatags.save()
     @transaction.commit_on_success
     def edit_view(self, request, new=False):
-        assert self.object_class.endswith('Entry'), \
-                                "Assertion failed:%s" % (self.object_class,)
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
         if request.method != 'POST':
@@ -302,8 +301,9 @@ class Entry(models.Model):
                     self.__initialize(request)
                     self.name = mainform.cleaned_data['name']
                     self.save()
-                nvobject = vobject_class(entry=self,
-                    version_number=new and 1 or (vobject.version_number + 1),
+                nvobject = self.vobject_class(entry=self,
+                    version_number=new and 1 or (
+                                self.get_vobject(request).version_number + 1),
                     language=Language.objects.get(
                                        id=mainform.cleaned_data['language']))
                 self.process_edit_subform(nvobject, subform)
@@ -480,19 +480,44 @@ class VObjectMetatags(models.Model):
     objects = MetatagManager()
 
 class EditEntryForm(forms.Form):
+    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
 
 class MetatagsForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
-    title = forms.CharField(
+    title = forms.CharField(required=False,
                 max_length=VObjectMetatags._meta.get_field('title').max_length)
     short_title = forms.CharField(required=False, max_length=
                 VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea, required=False)
+    def clean(self):
+        c = self.cleaned_data
+        if not c['title'] and (c['short_title'] or c['description']):
+            raise forms.ValidationError(_(u"When you specify a short "
+                    +"title or description, you must also specify a title"))
+        return c
 
-from django.forms.formsets import formset_factory
-MetatagsFormSet = formset_factory(MetatagsForm, extra=0)
+from django.forms.formsets import BaseFormSet, formset_factory
+class BaseMetatagsFormSet(BaseFormSet):
+    def clean(self):
+        used_langs = []
+        for f in self.forms:
+            if not f.is_valid():
+                # There are errors already, don't check further
+                return super(BaseMetatagsFormSet, self).clean()
+            c = f.cleaned_data
+            if not c['title']:
+                continue
+            if c['language'] in used_langs:
+                raise forms.ValidationError(_(u"Language %s used more than "
+                        +"once") % (c['language'],))
+            used_langs.append(c['language'])
+        if not used_langs:
+            raise forms.ValidationError(_(u"You must specify a title"))
+        return super(BaseMetatagsFormSet, self).clean()
+MetatagsFormSet = formset_factory(MetatagsForm, formset=BaseMetatagsFormSet,
+                                                                        extra=0)
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
@@ -537,6 +562,9 @@ class PageEntry(Entry):
     @property
     def subform_class(self):
         return EditPageForm
+    @property
+    def vobject_class(self):
+        return VPage
     class Meta:
         db_table = 'cms_pageentry'
 
@@ -576,8 +604,12 @@ class ImageEntry(Entry):
                     initial={'content': self.get_vobject(request).content})
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
+    @property
     def subform_class(self):
         return EditImageForm
+    @property
+    def vobject_class(self):
+        return VImage
     class Meta:
         db_table = 'cms_imageentry'
 
@@ -609,8 +641,12 @@ class InternalRedirectionEntry(Entry):
     def create_edit_subform(self, request, new):
         return EditInternalRedirectionForm(
                         initial={'target': self.get_vobject(request).content})
+    @property
     def subform_class(self):
         return EditInternalRedirectionForm
+    @property
+    def vobject_class(self):
+        return VInternalRedirection
     class Meta:
         db_table = 'cms_internalredirectionentry'
 
