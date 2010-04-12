@@ -517,26 +517,30 @@ class BaseMetatagsFormSet(BaseFormSet):
         if not used_langs:
             raise forms.ValidationError(_(u"You must specify a title"))
         return super(BaseMetatagsFormSet, self).clean()
+
+    fieldlabels = {'language':    _(u'Language'),
+                   'title':       _(u'Title'),
+                   'short_title': _(u'Short title'),
+                   'description': _(u'Description')}
     def as_wide_table(self):
-        result = '<tr><td colspan="3">%s</td></tr>' % (self.no_form_errors,)
+        from django.utils.safestring import mark_safe
+        from django.forms.forms import BoundField
+        result = '<tr><td colspan="3">%s</td></tr>' % (self.non_form_errors(),)
         for i in range(0, len(self.forms), 2):
-            result += u'<tr><th><label for="id_language">%s:</label></th>' \
-                    + u'<td>%s</td><td>%s</td>' % (_(u'Language'),
-                    self.forms[i].language,
-                    i+1<len(self.forms and self.forms[i+1].language) or '')
-            result += u'<tr><th><label for="id_title">%s:</label></th>' \
-                    + u'<td>%s</td><td>%s</td>' % (_(u'Title'),
-                    self.forms[i].title,
-                    i+1<len(self.forms and self.forms[i+1].title) or '')
-            result += u'<tr><th><label for="id_short_title">%s:</label></th>' \
-                    + u'<td>%s</td><td>%s</td>' % (_(u'Short title'),
-                    self.forms[i].short_title,
-                    i+1<len(self.forms and self.forms[i+1].short_title) or '')
-            result += u'<tr><th><label for="id_description">%s:</label></th>' \
-                    + u'<td>%s</td><td>%s</td>' % (_(u'Description'),
-                    self.forms[i].description,
-                    i+1<len(self.forms and self.forms[i+1].description) or '')
-        return result
+            lfields = [(n, f) for n, f in self.forms[i].fields.items()]
+            rfields = [('',''), ('',''), ('',''), ('','')]
+            if i+1<len(self.forms):
+                rfields = [(n, f) for n, f in self.forms[i+1].fields.items()]
+            all_fields = map(lambda x,y:(x[0],x[1],y[0],y[1]), lfields, rfields)
+                
+            for lname, lfield, rname, rfield in all_fields:
+                lbf = BoundField(self.forms[i], lfield, lname)
+                rbf = ''
+                if i+1<len(self.forms):
+                    rbf = BoundField(self.forms[i+1], rfield, rname)
+                result += u'<tr><th>%s:</th><td>%s</td><td>%s</td>' % (
+                    self.fieldlabels[lname], lbf, rbf)
+        return mark_safe(result)
 MetatagsFormSet = formset_factory(MetatagsForm, formset=BaseMetatagsFormSet,
                                                                         extra=0)
 
