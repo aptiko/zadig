@@ -517,8 +517,6 @@ class BaseMetatagsFormSet(BaseFormSet):
         if not used_langs:
             raise forms.ValidationError(_(u"You must specify a title"))
         return super(BaseMetatagsFormSet, self).clean()
-    def hello(self):
-        return 'hello'
     def as_wide_table(self):
         result = '<tr><td colspan="3">%s</td></tr>' % (self.no_form_errors,)
         for i in range(0, len(self.forms), 2):
