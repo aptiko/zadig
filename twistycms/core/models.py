@@ -525,14 +525,20 @@ class BaseMetatagsFormSet(BaseFormSet):
     def as_wide_table(self):
         from django.utils.safestring import mark_safe
         from django.forms.forms import BoundField
-        result = '<tr><td colspan="3">%s</td></tr>' % (self.non_form_errors(),)
+        result = '''<tr><td colspan="3">%s
+                    <input type="hidden" name="form-TOTAL_FORMS" value="%s" />
+                    <input type="hidden" name="form-INITIAL_FORMS" value="%s" />
+                    </td></tr>''' % (self.non_form_errors(), len(self.forms),
+                    len(self.forms))
         for i in range(0, len(self.forms), 2):
+            result += u'<tr><td></td><td>%s</td><td>%s</td></tr>' % (
+                self.forms[i].non_field_errors(),
+                i+1<len(self.forms) and self.forms[i+1].non_field_errors() or '')
             lfields = [(n, f) for n, f in self.forms[i].fields.items()]
             rfields = [('',''), ('',''), ('',''), ('','')]
             if i+1<len(self.forms):
                 rfields = [(n, f) for n, f in self.forms[i+1].fields.items()]
             all_fields = map(lambda x,y:(x[0],x[1],y[0],y[1]), lfields, rfields)
-                
             for lname, lfield, rname, rfield in all_fields:
                 lbf = BoundField(self.forms[i], lfield, lname)
                 rbf = ''
