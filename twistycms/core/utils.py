@@ -96,7 +96,10 @@ class sanitize_html(unicode):
                     continue
                 tag.attrs.append((attr, val))
         result = soup.renderContents().decode('utf8')
-        return super(sanitize_html, cls).__new__(cls, result)
+        # I don't understand what the unicode() does below, but if it's not
+        # there, then the postgresql_psycopg2 backend causes a ProgrammingError
+        # with message "can't adapt" when an attempt is made to save a page.
+        return unicode(super(sanitize_html, cls).__new__(cls, result))
     @classmethod
     def url_is_safe(cls, url):
         """Return True if the url is relative or its scheme is in valid_schemes.
