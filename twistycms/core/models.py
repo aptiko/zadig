@@ -620,6 +620,8 @@ class EditPageForm(forms.Form):
             'theme_advanced_buttons2': '',
             'theme_advanced_buttons3': '',
         }), required=False)
+    def render(self):
+        return self['content']
 
 ### Image ###
 
@@ -657,6 +659,8 @@ class VImage(VObject):
 
 class EditImageForm(forms.Form):
     content = forms.ImageField()
+    def render(self):
+        return self.as_table()
 
 ### InternalRedirection ###
 
@@ -692,3 +696,5 @@ class EditInternalRedirectionForm(forms.Form):
     target = forms.ChoiceField()
     def __init__(self):
         self.target.choices = [(e.id, e.spath) for e in Entry.objects.all()]
+    def render(self):
+        return self.as_table()

@@ -21,7 +21,7 @@
   <table>
     {{ metatagsformset.as_wide_table }}
   </table>
-  {{ subform.non_field_errors }} <table>{{subform.as_table}}</table>
+  {{ subform.non_field_errors }} <table>{{subform.render}}</table>
   {% for f in optionsforms %}
     {{f.non_field_errors}}<table>{{f.as_table}}</table>
   {% endfor %}
