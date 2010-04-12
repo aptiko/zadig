@@ -687,5 +687,6 @@ class VInternalRedirection(VObject):
         db_table = 'cms_vinternalredirection'
 
 class EditInternalRedirectionForm(forms.Form):
-    target = forms.ChoiceField(choices=
-            [(e.id, e.spath) for e in Entry.objects.all()])
+    target = forms.ChoiceField()
+    def __init__(self):
+        self.target.choices = [(e.id, e.spath) for e in Entry.objects.all()]
