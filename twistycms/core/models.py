@@ -314,13 +314,18 @@ class Entry(models.Model):
                 if mainform.cleaned_data['name'] != self.name:
                     self.rename(request, mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
-        vobject = self.get_vobject(request)
+        if new:
+            vobject = self.container.get_vobject(request)
+        else:
+            vobject = self.get_vobject(request)
         return render_to_response(self.template_name,
               { 'request': request, 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms,
-                'primary_buttons': primary_buttons(request, vobject, 'edit'),
-                'secondary_buttons': secondary_buttons(request, vobject)})
+                'primary_buttons': 
+                        primary_buttons(request, not new and vobject, 'edit'),
+                'secondary_buttons':
+                    not new and secondary_buttons(request, vobject) or []})
     @transaction.commit_on_success
     def rename(self, request, newname):
         if not self.container:
@@ -582,8 +587,12 @@ class ContentFormat(models.Model):
 
 class PageEntry(Entry):
     def create_edit_subform(self, request, new):
-        return EditPageForm(
+        if new:
+            result = EditPageForm()
+        else:
+            result = EditPageForm(
                     initial={'content': self.get_vobject(request).content})
+        return result
     def process_edit_subform(self, vobject, form):
         vobject.format=ContentFormat.objects.get(descr='html')
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
@@ -633,8 +642,12 @@ class EditPageForm(forms.Form):
 
 class ImageEntry(Entry):
     def create_edit_subform(self, request, new):
-        return EditImageForm(
+        if new:
+            result = EditImageForm()
+        else:
+            result = EditImageForm(
                     initial={'content': self.get_vobject(request).content})
+        return result
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
     @property
@@ -674,8 +687,12 @@ class InternalRedirectionEntry(Entry):
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['target']
     def create_edit_subform(self, request, new):
-        return EditInternalRedirectionForm(
-                        initial={'target': self.get_vobject(request).content})
+        if new:
+            result = EditInternalRedirectionForm()
+        else:
+            result = EditInternalRedirectionForm(
+                    initial={'target': self.get_vobject(request).target})
+        return result
     @property
     def subform_class(self):
         return EditInternalRedirectionForm

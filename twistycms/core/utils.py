@@ -26,6 +26,8 @@ def get_current_path(request):
 
 def primary_buttons(request, vobject, selected_view):
     from twistycms.core.models import permissions
+    if not vobject:
+        return [{ 'name': _(u'new'), 'href': '', 'selected': True }]
     if vobject.entry.get_permissions(request).intersection(
             set((permissions.EDIT, permissions.ADMIN))) == set():
         return []
@@ -41,6 +43,7 @@ def primary_buttons(request, vobject, selected_view):
 
 def secondary_buttons(request, vobject):
     from twistycms.core.models import permissions
+    if not vobject: return []
     spath = vobject.entry.spath
     if vobject.entry.get_permissions(request).intersection(
             set((permissions.EDIT, permissions.ADMIN))) == set():
