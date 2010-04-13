@@ -80,9 +80,15 @@ class sanitize_html(unicode):
     #  * & Javascript includes (only Netscape 4.x)
     #  * IMG Embedded commands (part I and II)
     # FIXME: Needs unit testing
+    # FIXME: I added style to valid_attrs. There are several related kinds of
+    # attacks listed on http://ha.ckers.org/xss.html, in addition to which
+    # users can create chaos by overusing it. Using style, however, is
+    # necessary; what is needed is to check the contents of the attribute and
+    # only allow a few improvements. Ideally, the allowed contents of the
+    # attribute should depend on the tag.
     valid_tags = '''p i string b u a h1 h2 pre br img table thead tbody td
                     tr'''.split()
-    valid_attrs = 'href src width height class'.split()
+    valid_attrs = 'href src width height class style'.split()
     url_attrs = 'href src'.split()
     valid_schemes = 'http https ftp mailto'.split()
     def __new__(cls, html):
