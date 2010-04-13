@@ -41,6 +41,7 @@ def primary_buttons(request, vobject, selected_view):
 
 def secondary_buttons(request, vobject):
     from twistycms.core.models import permissions
+    spath = vobject.entry.spath
     if vobject.entry.get_permissions(request).intersection(
             set((permissions.EDIT, permissions.ADMIN))) == set():
         return []
@@ -48,21 +49,23 @@ def secondary_buttons(request, vobject):
           { 'name': _(u'State: <span class="state%s">%s</span>') %
                 (vobject.entry.state.descr, vobject.entry.state.descr),
             'items': [
-                       { 'href': '__state__/%d' % (x.target_state.id,),
+                       { 'href': '%s__state__/%d' % (spath, x.target_state.id,),
                          'name': x.target_state.descr,
                        } for x in vobject.entry.state.source_rules.all()
                      ]
           },
           { 'name': _(u'Add new…'),
             'items': [
-                       { 'href': '__new__/Page/', 'name': _(u'Page') },
-                       { 'href': '__new__/Image/', 'name': _(u'Image') },
+                       { 'href': '%s__new__/Page/' % (spath,),
+                                                    'name': _(u'Page') },
+                       { 'href': '%s__new__/Image/'% (spath,),
+                                                    'name': _(u'Image') },
                      ]
           },
           { 'name': _(u'Actions'),
             'items': [
-                       { 'href': '__cut__/', 'name': _(u'Cut') },
-                       { 'href': '__paste__/', 'name': _(u'Paste') },
+                       { 'href': '%s__cut__/' % (spath,) , 'name': _(u'Cut') },
+                       { 'href': '%s__paste__/' % (spath,),'name': _(u'Paste')},
                      ]
           },
         ]
