@@ -1,0 +1,92 @@
+.. _developers_guide:
+
+===========================
+TwistyCMS Developer's Guide
+===========================
+
+There are two things a TwistyCMS developer is expected to do: (1)
+create applets; and (2) create new object types. We explain those in
+separate chapters below. It is essential to first read the
+:ref:`concepts` document.
+
+Creating applets
+================
+
+To create an applet (or a set of related applets in a Django
+application), create a directory, say ``myapplet``, inside the
+``twistycms/applets`` directory. Inside ``myapplet``, create an
+empty ``__init__.py`` file, an empty ``models.py`` file, and a
+``templatetags`` directory. Inside ``templatetags``, create an empty
+``__init__.py`` and a ``myapplet.py`` file.
+
+In ``myapplet.py``, add Django code that implements a template tag
+(we'll assume ``myapplettag``). If the applet is a portlet, make sure
+that the tag output conforms to the portlet specification:
+
+    <dl class="portlet">
+      <dt>Portlet title</dt>
+      <dd>First item</dd>
+      <dd>Second item</dd>
+      ...
+      <dd class="lastItem">Last item</dd>
+    </dl>
+
+That is all you have to do for a basic applet. You can then use
+it in your template like this::
+
+    {% load myapplet %}
+    ...
+    {% myapplettag %}
+    ...
+
+If needed, the template tag can accept arguments.
+
+If you want your applet to store information in the database (usually
+this is configuration options), add models in ``models.py``. You'll
+probably want to reference ``twistycms.core.models.Entry`` if you
+have options per entry.
+
+If you want your applet to have configuration options, add functions
+to ``myapplet/__init__.py``, according to the following::
+
+    from django import forms
+
+    class EntryOptionsForm(forms.Form):
+        ...
+
+    def entry_options(request, form=None):
+        if not form:
+            # Return a Form object that contains the configuration options.
+            form = EntryOptionsForm()
+            # Populate form with initial values (usually from the database)
+            return form
+        else:
+            # Process configuration options that have been submitted.
+        
+When TwistyCMS starts, it looks at the ``__init__.py`` file of each
+applet directory. If the file contains ``entry_options``, it registers
+it. Then, when the user edits a page, TwistyCMS calls
+``entry_options`` with ``form=None``, it gets a form as a response, it
+remembers its class, and it displays it to the user. When the user
+submits it, TwistyCMS creates a bound form of the remembered class
+with the request data and calls ``entry_options`` supplying the
+created form as the ``form`` argument.  In fact the entry options form
+is not treated as a whole form but as a part of a form that is mixed
+with the entry options of all other installed applets, resulting in
+one form for all applets together; but this makes no difference for
+the applet code.
+
+Creating new object types
+=========================
+
+To create a new object type, you need to subclass
+:class:`twistycms.core.models.Entry` and
+:class:`twistycms.core.models.VObject`, and create a form. Let's
+assume that the type you want to create is to be called a Snail. Name
+your :class:`twistycms.core.models.Entry` subclass *SnailEntry*, your
+:class:`twistycms.core.models.VObject` subclass *VSnail*, and your
+form *EditSnailForm*.
+
+.. admonition:: Work in progress
+
+   There's obviously more to write here.

@@ -12,9 +12,7 @@ they expect the administrators to tell them everything. Therefore we
 have documentation for administrators and developers only.  The most
 important piece of documentation is the :ref:`concepts` document,
 which you must read carefully if you are going to administer a
-TwistyCMS installation or do any development.  The :ref:`requirements`
-document briefly sketches the basic requirements and principles.
-Finally, there are documents describing the APIs.
+TwistyCMS installation or do any development.
 
 Contents:
 
@@ -23,6 +21,7 @@ Contents:
 
    requirements
    concepts
+   developers_guide
    api
    copyright
 
