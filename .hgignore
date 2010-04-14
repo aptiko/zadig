@@ -6,5 +6,6 @@ syntax: glob
 *.project
 *.swp
 *.orig
-doc/_build
+docs/_build
 static/tinymce
+testdb
