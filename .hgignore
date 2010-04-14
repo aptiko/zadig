@@ -1,0 +1,10 @@
+syntax: glob
+*.pyc
+*.pyo
+*~
+*.pydevproject
+*.project
+*.swp
+*.orig
+doc/_build
+static/tinymce
