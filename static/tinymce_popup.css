@@ -1,0 +1,6 @@
+@import url("tinymce/themes/advanced/skins/default/dialog.css");
+
+*#hspace, label[for="hspace"] { display: none; }
+*#vspace, label[for="vspace"] { display: none; }
+*#border, label[for="border"] { display: none; }
+*#align, label[for="align"] { display: none; }

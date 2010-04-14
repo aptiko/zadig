@@ -634,6 +634,7 @@ class EditPageForm(forms.Form):
             'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect',
             'theme_advanced_buttons2': '',
             'theme_advanced_buttons3': '',
+            'popup_css': '/static/tinymce_popup.css',
         }), required=False)
     def render(self):
         return self['content']
