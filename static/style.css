@@ -12,7 +12,7 @@ a { color: #436976; }
 #portalFooter { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.2em; margin: 2em 0 1em 0; padding: 0.5em 0 1em 0; text-align: center; }
 #portalColophon ul { text-align: center; list-style-image: none; list-style-type: none; }
 #portalColophon ul li { display: inline; font-size: 90%; padding: 0 0.75em 0 0.75em; }
-#mainColumn h1,h2,h3,h4,h5,h6 { margin: 0.75em 0 0.25em 0; }
+#mainColumn h1,h2,h3,h4,h5,h6 { margin: 0.75em 0 0.25em 0; clear: left; }
 #mainColumn h1,h2 { font-weight: normal; }
 #mainColumn h1 { font-size: 150%; border-bottom: solid #8cacbb 1px; }
 #mainColumn h1.title { font-size: 160%; margin-top: 0; }
@@ -55,3 +55,6 @@ ul.errorlist { color: red; font-weight: bold; list-style-type: none; margin-left
 .navigationLevel1 { margin: 0; }
 .navigationLevel2 { margin-left: 1em; }
 .navigationPortlet a.current { background-color: #dee7ec; border: solid #8cacbb 1px; }
+
+.floatLeft { float: left; margin: 5px; }
+.floatRight { float: right; margin: 5px; }
