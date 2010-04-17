@@ -68,14 +68,14 @@ Entry
    .. attribute:: twistycms.core.models.Entry.path
 
       This read-only property returns the URL path to the entry, not
-      including a leading or trailing slash..
+      including a leading or trailing slash.
 
    .. attribute:: twistycms.core.models.Entry.spath
 
       This read-only property returns the full relative URL path to
-      the entry, starting end ending in a slash. (This is more
+      the entry, starting and ending in a slash. (This is more
       complicated than just prefixing and suffixing
-      :attr:`twistycms.core.models.Entry.path` with a slash, because
+      :attr:`~twistycms.core.models.Entry.path` with a slash, because
       then the root entry would be two slashes instead of one.)
 
    .. attribute:: twistycms.core.models.Entry.descendant
@@ -89,9 +89,9 @@ Entry
       
    .. attribute:: twistycms.core.models.Entry.objects
 
-      The default manager has the following additional methods:
+      The default manager has the following additional method:
 
-      .. method:: twistycms.core.models.EntryManager.get_by_path(request, path)
+      .. method:: get_by_path(request, path)
 
          Return the entry at the specified path, or
          :const:`None` if such an entry does not exist or the user
@@ -106,7 +106,7 @@ Entry
    .. method:: twistycms.core.models.Entry.get_vobject(request[, version_number])
 
       Return the entry's vobject; actually returns a
-      `twistycms.core.models.VObject` descendant. If *version_number*
+      :class:`~twistycms.core.models.VObject` descendant. If *version_number*
       is not specified, it returns the latest vobject. An exception is
       raised if the user does not have permission to view the vobject.
 
