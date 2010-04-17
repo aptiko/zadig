@@ -104,7 +104,10 @@ class EntryManager(models.Manager):
     def get_by_path(self, request, path):
         entry=None
         for name in utils.split_path(path):
-            entry = self.get(name=name, container=entry)
+            try:
+                entry = self.get(name=name, container=entry)
+            except Entry.DoesNotExist:
+                return None
             if not permissions.VIEW in entry.get_permissions(request):
                 return None
         return entry
@@ -131,6 +134,7 @@ class Entry(models.Model):
             parent_entry = Entry.objects.get_by_path(request, parent_path)
             super(Entry, self).__init__()
             self.container = parent_entry
+            self.name = names[-1]
             self.__initialize(request)
         if not self.object_class:
             self.object_class = self._meta.object_name
