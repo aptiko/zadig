@@ -1,0 +1,79 @@
+#!/usr/bin/python
+"""This script is in heavy development. Don't expect it to work."""
+
+PLONE_URL=''            # Will migrate this and all subobjects of it.
+TARGET_PATH='antonis'   # Will migrate PLONE_URL to this path, and subobjects
+                        # to subpaths. If TARGET_PATH already exists, it and
+                        # its subentries are deleted.
+OWNER='admin'           # The objects created will belong to this user.
+
+from BeautifulSoup import BeautifulSoup
+
+from django.conf import settings
+from django.db import transaction
+
+from twistycms.core.utils import sanitize_html
+from twistycms.core import models
+
+class PloneObject:
+    """Retrieve title and description from a Plone page; for subclasses, also
+    retrieve content. soup is the BeautifulSoup object resulting from parsing
+    the Plone html view of the object, with a user with all permissions logged
+    on."""
+    def __init__(self, soup):
+        self.soup = soup
+        self.title = self.soup.find('span',
+                            id='parent-fieldname-title').string.strip()
+        self.description = self.soup.find('span',
+                            id='parent-fieldname-description') .string.strip()
+
+class PlonePage(PloneObject):
+    def __init__(self, soup):
+        PloneObject.__init__(self, soup)
+        self.content = ''.join([unicode(x) for x in
+                self.soup.find('div', id='parent-fieldname-text').contents])
+
+def get_plone_object(soup):
+    """From a BeautifulSoup object created by a Plone object view (with a user
+    with all permissions logged on), determine the type of object and return
+    the object as an instance of the appropriate PloneObject subclass."""
+    if soup.findAll('li', id='contentview-folderContents'):
+        return PloneFolder(soup)   # It's a folder if it has a contents tab
+    body_classes = soup.find('body')['class'].split()
+    if 'template-document_view' in body_classes:
+        return PlonePage(soup)
+    if 'template-image_view' in body_classes:
+        return PloneImage(soup)
+
+@transaction.commit_on_success
+def migrate_object(plone_object, path, request):
+    if isinstance(plone_object, PlonePage):
+        language = models.Language.objects.get(id='en') # FIXME
+        entry = models.PageEntry(request, path)
+        entry.save()
+        nvobject = models.VPage(entry=entry, version_number=1, language=language,
+            format = models.ContentFormat.objects.get(descr='html'),
+            content = sanitize_html(plone_object.content))
+        nvobject.save()
+        nmetatags = models.VObjectMetatags(vobject=nvobject, language=language,
+            title=plone_object.title, description=plone_object.description)
+        nmetatags.save()
+
+html = open('/var/tmp/antonis-www-plone/software-patents-in-europe').read()
+soup = BeautifulSoup(html)
+plone_object = get_plone_object(soup)
+
+# We use HttpRequest as a small hack. Some Entry methods require request to be
+# passed to them, but they hardly use anything but request.user. So we set
+# that and we're OK.
+from django.http import HttpRequest
+from django.contrib.auth.models import User
+request = HttpRequest()
+request.user = User.objects.get(username=OWNER)
+
+path = TARGET_PATH
+entry = models.Entry.objects.get_by_path(request, path)
+if entry:
+    entry.delete()
+
+migrate_object(plone_object, path, request)
