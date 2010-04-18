@@ -6,6 +6,10 @@ TARGET_PATH='antonis'   # Will migrate PLONE_URL to this path, and subobjects
                         # to subpaths. If TARGET_PATH already exists, it and
                         # its subentries are deleted.
 OWNER='admin'           # The objects created will belong to this user.
+DEFAULT_LANGUAGE='en'   # When a Plone page is "language neutral", it will be
+                        # considered to be in this language.
+
+from urllib import urlopen
 
 from BeautifulSoup import BeautifulSoup
 
@@ -15,40 +19,51 @@ from django.db import transaction
 from twistycms.core.utils import sanitize_html
 from twistycms.core import models
 
-class PloneObject:
-    """Retrieve title and description from a Plone page; for subclasses, also
-    retrieve content. soup is the BeautifulSoup object resulting from parsing
-    the Plone html view of the object, with a user with all permissions logged
-    on."""
-    def __init__(self, soup):
+class UnknownPloneObjectType(Exception): pass
+
+class PloneObject(object):
+    def __new__(cls, url):
+        """Don't return a PloneObject; return a subclass object, depending on
+        what we find at the url."""
+        if cls != 'PloneObject':
+            # It's a subclass being created
+            return super(PloneObject, cls, url).__new__(cls, url)
+        soup = BeautifulSoup(urlopen(url).read())
+        if soup.findAll('li', id='contentview-folderContents'):
+            return PloneFolder(url, soup=soup) # It's a folder if it has a contents tab
+        body_classes = soup.find('body')['class'].split()
+        if 'template-document_view' in body_classes:
+            return PlonePage(url, soup=soup)
+        if 'template-image_view' in body_classes:
+            return PloneImage(url, soup=soup)
+        raise UnknownPloneObjectType("Unknown object type at "+url)
+    def __init__(self, url, soup=None):
+        """Retrieve title and description from a Plone page; for subclasses,
+        also retrieve content. soup is the BeautifulSoup object resulting from
+        parsing the url."""
+        self.url = url
+        if not soup:
+            soup = BeautifulSoup(urlopen(url).read())
         self.soup = soup
         self.title = self.soup.find('span',
                             id='parent-fieldname-title').string.strip()
         self.description = self.soup.find('span',
                             id='parent-fieldname-description') .string.strip()
+    def determine_language(self):
+        """Find language of object by going to its edit view and checking
+        the language setting. Return a models.Language object or None if the
+        object is a language neutral object."""
+        # FIXME
+        return models.Language.objects.get(id=DEFAULT_LANGUAGE)
 
 class PlonePage(PloneObject):
-    def __init__(self, soup):
-        PloneObject.__init__(self, soup)
+    def __init__(self, url, soup=None):
+        PloneObject.__init__(self, url, soup=soup)
         self.content = ''.join([unicode(x) for x in
                 self.soup.find('div', id='parent-fieldname-text').contents])
-
-def get_plone_object(soup):
-    """From a BeautifulSoup object created by a Plone object view (with a user
-    with all permissions logged on), determine the type of object and return
-    the object as an instance of the appropriate PloneObject subclass."""
-    if soup.findAll('li', id='contentview-folderContents'):
-        return PloneFolder(soup)   # It's a folder if it has a contents tab
-    body_classes = soup.find('body')['class'].split()
-    if 'template-document_view' in body_classes:
-        return PlonePage(soup)
-    if 'template-image_view' in body_classes:
-        return PloneImage(soup)
-
-@transaction.commit_on_success
-def migrate_object(plone_object, path, request):
-    if isinstance(plone_object, PlonePage):
-        language = models.Language.objects.get(id='en') # FIXME
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        language = self.determine_language()
         entry = models.PageEntry(request, path)
         entry.save()
         nvobject = models.VPage(entry=entry, version_number=1, language=language,
@@ -59,9 +74,43 @@ def migrate_object(plone_object, path, request):
             title=plone_object.title, description=plone_object.description)
         nmetatags.save()
 
-html = open('/var/tmp/antonis-www-plone/software-patents-in-europe').read()
-soup = BeautifulSoup(html)
-plone_object = get_plone_object(soup)
+class PloneFolder(PlonePage):
+    def __init__(self, url, soup=None):
+        PlonePage.__init__(self, url, soup=soup)
+        # Does it have a default view?
+        if not soup.find('a', id='_folderChangeDefaultPage'):
+            self.content = ''
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        # TwistyCMS does not have folders, so we'll become a page. First
+        # of all migrate the page.
+        PlonePage.migrate(self, request, path)
+        # But also migrate the contents of the folder
+        url = self.url
+        if not url.endswith('/'): url += '/'
+        url += 'folder_contents'
+        soup = BeautifulSoup(urlopen(url).read())
+        tr_elements = soup.find('table', id='listing-table')('tbody').contents[1:]
+        for tr in tr_elements:
+            url = tr('a')['href']
+            plone_object = PloneObject(url)
+            plone_object.migrate(request, path)
+
+#def get_html(url):
+#    """Return the HTML given a url. The URL must be http or https, and the
+#    response must be HTML."""
+#    import httplib
+#    from urlparse import urlparse
+#    (scheme, host, path, params, query, fragment) = urlparse(url)
+#    if scheme=='https':
+#        connection_class = httplib.HttpsConnection
+#    elif scheme=='http':
+#        connection_class = httplib.HttpConnection
+#    else:
+#        raise ValueError("Only http and https locations are allowed")
+#    connection = connection_class(host)
+#    connection.request('GET', path)
+#    return connection.getresponse().read()
 
 # We use HttpRequest as a small hack. Some Entry methods require request to be
 # passed to them, but they hardly use anything but request.user. So we set
@@ -71,9 +120,9 @@ from django.contrib.auth.models import User
 request = HttpRequest()
 request.user = User.objects.get(username=OWNER)
 
+plone_object = PloneObject(PLONE_URL)
 path = TARGET_PATH
 entry = models.Entry.objects.get_by_path(request, path)
 if entry:
     entry.delete()
-
-migrate_object(plone_object, path, request)
+plone_object.migrate(request, path)
