@@ -687,7 +687,51 @@ class EditImageForm(forms.Form):
     def render(self):
         return self.as_table()
 
+### Link ###
+
+class LinkEntry(Entry):
+    def process_edit_subform(self, vobject, form):
+        vobject.content=form.cleaned_data['target']
+    def create_edit_subform(self, request, new):
+        if new:
+            result = EditLinkForm()
+        else:
+            result = EditLinkForm(
+                    initial={'target': self.get_vobject(request).target})
+        return result
+    @property
+    def subform_class(self):
+        return EditLinkForm
+    @property
+    def vobject_class(self):
+        return VLink
+    class Meta:
+        db_table = 'cms_linkentry'
+
+class VLink(VObject):
+    target = models.URLField()
+    def end_view(self, request):
+        # FIXME: This should not work like this, it should directly link outside
+        from django.http import HttpResponsePermanentRedirect
+        return HttpResponsePermanentRedirect(self.target)
+    def info_view(self, request):
+        return render_to_response('view_link.html',
+            { 'request': request, 'vobject': self,
+              'primary_buttons': primary_buttons(request, self, 'view'),
+              'secondary_buttons': secondary_buttons(request, self)} )
+    class Meta:
+        db_table = 'cms_vlink'
+
+class EditLinkForm(forms.Form):
+    target = forms.ChoiceField()
+    def __init__(self):
+        self.target.choices = [(e.id, e.spath) for e in Entry.objects.all()]
+    def render(self):
+        return self.as_table()
+
 ### InternalRedirection ###
+
+# FIXME: Should subclass link or something
 
 class InternalRedirectionEntry(Entry):
     def process_edit_subform(self, vobject, form):

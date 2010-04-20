@@ -56,6 +56,8 @@ class PloneObject(object):
             return super(PloneObject, cls).__new__(PlonePage)
         if 'template-image_view' in body_classes:
             return super(PloneObject, cls).__new__(PloneImage)
+        if 'template-link_view' in body_classes:
+            return super(PloneObject, cls).__new__(PloneLink)
         raise UnknownPloneObjectType("Unknown object type at "+url)
     def __init__(self, url, soup=None):
         """Retrieve title and description from a Plone page; for subclasses,
@@ -97,6 +99,25 @@ class PlonePage(PloneObject):
             title=self.title, description=self.description)
         nmetatags.save()
 
+class PloneLink(PloneObject):
+    def __init__(self, url, soup=None):
+        logging.debug("Creating PlonePage for url %s"%(url,))
+        PloneObject.__init__(self, url, soup=soup)
+        self.target = self.soup.find('p', attrs={'class':'documentDescription'}
+                                ).findNextSibling('p').a['href']
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        logging.info("Migrating %s\n" % (self.url,))
+        language = self.determine_language()
+        entry = models.LinkEntry(request, path)
+        entry.save()
+        nvobject = models.VLink(entry=entry, version_number=1, language=language,
+            target = self.target)
+        nvobject.save()
+        nmetatags = models.VObjectMetatags(vobject=nvobject, language=language,
+            title=self.title, description=self.description)
+        nmetatags.save()
+
 class PloneFolder(PlonePage):
     def __init__(self, url, soup=None):
         PlonePage.__init__(self, url, soup=soup)
@@ -116,6 +137,8 @@ class PloneFolder(PlonePage):
         tr_elements = soup.find('table', id='listing-table').tbody('tr')[1:]
         for tr in tr_elements:
             url = tr.a['href']
+            if url.endswith('/folder_contents'):
+                url = url[:-16]
             plone_object = PloneObject(url)
             npath = path + '/' + url.split('/')[-1]
             plone_object.migrate(request, npath)
