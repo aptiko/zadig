@@ -45,16 +45,17 @@ class PloneObject(object):
         what we find at the url."""
         if cls != PloneObject:
             # It's a subclass being created
-            return object.__new__(cls)
+            return super(PloneObject, cls).__new__(cls)
         assert(soup is None)
         soup = BeautifulSoup(get_html(url))
         if soup.findAll('li', id='contentview-folderContents'):
-            return PloneFolder(url, soup=soup) # It's a folder if it has a contents tab
+            # It's a folder if it has a contents tab
+            return super(PloneObject, cls).__new__(PloneFolder)
         body_classes = soup.find('body')['class'].split()
         if 'template-document_view' in body_classes:
-            return PlonePage(url, soup=soup)
+            return super(PloneObject, cls).__new__(PlonePage)
         if 'template-image_view' in body_classes:
-            return PloneImage(url, soup=soup)
+            return super(PloneObject, cls).__new__(PloneImage)
         raise UnknownPloneObjectType("Unknown object type at "+url)
     def __init__(self, url, soup=None):
         """Retrieve title and description from a Plone page; for subclasses,
