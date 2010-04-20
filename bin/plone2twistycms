@@ -78,6 +78,7 @@ class PloneObject(object):
 
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None):
+        logging.debug("Creating PlonePage for url %s"%(url,))
         PloneObject.__init__(self, url, soup=soup)
         self.content = ''.join([unicode(x) for x in
                 self.soup.find('div', id='parent-fieldname-text').contents])
@@ -86,14 +87,13 @@ class PlonePage(PloneObject):
         logging.info("Migrating %s\n" % (self.url,))
         language = self.determine_language()
         entry = models.PageEntry(request, path)
-        logging.debug(path)
         entry.save()
         nvobject = models.VPage(entry=entry, version_number=1, language=language,
             format = models.ContentFormat.objects.get(descr='html'),
-            content = sanitize_html(plone_object.content))
+            content = sanitize_html(self.content))
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject, language=language,
-            title=plone_object.title, description=plone_object.description)
+            title=self.title, description=self.description)
         nmetatags.save()
 
 class PloneFolder(PlonePage):
