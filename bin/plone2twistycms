@@ -81,7 +81,6 @@ class PloneObject(object):
 
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None):
-        logging.debug("Creating PlonePage for url %s"%(url,))
         PloneObject.__init__(self, url, soup=soup)
         self.content = ''.join([unicode(x) for x in
                 self.soup.find('div', id='parent-fieldname-text').contents])
@@ -99,9 +98,26 @@ class PlonePage(PloneObject):
             title=self.title, description=self.description)
         nmetatags.save()
 
+class PloneImage(PloneObject):
+    def __init__(self, url, soup=None):
+        PloneObject.__init__(self, url, soup=soup)
+        self.content =  #FIXME
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        logging.info("Migrating %s\n" % (self.url,))
+        language = self.determine_language()
+        entry = models.PageEntry(request, path)
+        entry.save()
+        nvobject = models.VPage(entry=entry, version_number=1, language=language,
+            format = models.ContentFormat.objects.get(descr='html'),
+            content = sanitize_html(self.content))
+        nvobject.save()
+        nmetatags = models.VObjectMetatags(vobject=nvobject, language=language,
+            title=self.title, description=self.description)
+        nmetatags.save()
+
 class PloneLink(PloneObject):
     def __init__(self, url, soup=None):
-        logging.debug("Creating PlonePage for url %s"%(url,))
         PloneObject.__init__(self, url, soup=soup)
         self.target = self.soup.find('p', attrs={'class':'documentDescription'}
                                 ).findNextSibling('p').a['href']
@@ -137,9 +153,9 @@ class PloneFolder(PlonePage):
         tr_elements = soup.find('table', id='listing-table').tbody('tr')[1:]
         for tr in tr_elements:
             url = tr.a['href']
-            if url.endswith('/folder_contents'):
-                url = url[:-16]
+            if url.endswith('/folder_contents'): url = url[:-16]
             plone_object = PloneObject(url)
+            if url.endswith('/view'): url = url[:-5] # Probably an image 
             npath = path + '/' + url.split('/')[-1]
             plone_object.migrate(request, npath)
 
