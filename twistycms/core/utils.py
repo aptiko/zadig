@@ -80,7 +80,7 @@ class sanitize_html(unicode):
     #  * & Javascript includes (only Netscape 4.x)
     #  * IMG Embedded commands (part I and II)
     # FIXME: Needs unit testing
-    valid_tags = '''p i strong b u a h1 h2 pre br img table thead tbody td
+    valid_tags = '''p i strong em b u a h1 h2 pre br img table thead tbody td
                     tr'''.split()
     valid_attrs = 'href src width height class'.split()
     url_attrs = 'href src'.split()
