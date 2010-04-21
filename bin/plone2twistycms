@@ -46,11 +46,19 @@ class PloneObject(object):
         if cls != PloneObject:
             # It's a subclass being created
             return super(PloneObject, cls).__new__(cls)
+        logging.info("Working on %s" % (url,))
         assert(soup is None)
         soup = BeautifulSoup(get_response(url).read())
-        if soup.findAll('li', id='contentview-folderContents'):
-            # It's a folder if it has a contents tab
-            return super(PloneObject, cls).__new__(PloneFolder)
+        t = soup.find('li', id='contentview-folderContents')
+        if t:
+            # It has a content tab, therefore it could be a folder
+            folder_contents_link = t.a['href']
+            if not url.endswith('/'): url += '/'
+            if folder_contents_link == url + 'folder_contents':
+                # Yes, it's a folder
+                return super(PloneObject, cls).__new__(PloneFolder)
+            # Otherwise, it's probably the default folder view, i.e. a page;
+            # proceed normally
         body_classes = soup.find('body')['class'].split()
         if 'template-document_view' in body_classes:
             return super(PloneObject, cls).__new__(PlonePage)
@@ -68,10 +76,14 @@ class PloneObject(object):
             html = get_response(url).read()
             soup = BeautifulSoup(html)
         self.soup = soup
-        self.title = self.soup.find('span',
+        self.title = self.soup.find(True,
                             id='parent-fieldname-title').string.strip()
-        self.description = self.soup.find('span',
-                            id='parent-fieldname-description') .string.strip()
+        d = self.soup.find(True, id='parent-fieldname-description')
+        # Sometimes (pages) d is a span containing text, sometimes (folders
+        # without default view) it's a div containing p.
+        if d.string: self.description = d.string.strip()
+        else: self.description = d.p.string.strip()
+                            
     def determine_language(self):
         """Find language of object by going to its edit view and checking
         the language setting. Return a models.Language object or None if the
@@ -82,11 +94,11 @@ class PloneObject(object):
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None):
         PloneObject.__init__(self, url, soup=soup)
-        self.content = ''.join([unicode(x) for x in
-                self.soup.find('div', id='parent-fieldname-text').contents])
+        text = self.soup.find('div', id='parent-fieldname-text')
+        if text: self.content = u''.join([unicode(x) for x in text.contents])
+        else: self.content = u''
     @transaction.commit_on_success
     def migrate(self, request, path):
-        logging.info("Migrating %s" % (self.url,))
         language = self.determine_language()
         entry = models.PageEntry(request, path)
         entry.save()
@@ -110,7 +122,6 @@ class PloneImage(PloneObject):
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
         from mimetypes import guess_extension
-        logging.info("Migrating %s" % (self.url,))
         language = self.determine_language()
         entry = models.ImageEntry(request, path)
         entry.save()
@@ -131,7 +142,6 @@ class PloneLink(PloneObject):
                                 ).findNextSibling('p').a['href']
     @transaction.commit_on_success
     def migrate(self, request, path):
-        logging.info("Migrating %s" % (self.url,))
         language = self.determine_language()
         entry = models.LinkEntry(request, path)
         entry.save()
