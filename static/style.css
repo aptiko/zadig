@@ -58,3 +58,6 @@ ul.errorlist { color: red; font-weight: bold; list-style-type: none; margin-left
 
 .floatLeft { float: left; margin: 5px; }
 .floatRight { float: right; margin: 5px; }
+
+pre { background-color: #DEE7EC; border:1px solid #8CACBB; color:Black; font-family:Monaco,"Courier New",Courier,monospace; font-size:100%; overflow:auto; padding:1em; }
+.discreet { color:#76797C; font-size:90%; font-weight:normal; }
