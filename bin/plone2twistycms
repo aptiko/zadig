@@ -22,7 +22,7 @@ import urllib2
 from cookielib import CookieJar
 import logging
 
-from BeautifulSoup import BeautifulSoup
+from BeautifulSoup import BeautifulSoup, Tag
 
 from django.conf import settings
 from django.db import transaction
@@ -99,8 +99,18 @@ class PlonePage(PloneObject):
     def __init__(self, url, soup=None):
         PloneObject.__init__(self, url, soup=soup)
         text = self.soup.find('div', id='parent-fieldname-text')
-        if text: self.content = u''.join([unicode(x) for x in text.contents])
-        else: self.content = u''
+        if not text: self.content = u''
+        else:
+            # Take headings one level up
+            for h2 in text.findAll('h2'):
+                h1 = Tag(self.soup, "h1")
+                h1.insert(0, h2.renderContents())
+                h2.replaceWith(h1)
+            for h3 in text.findAll('h3'):
+                h2 = Tag(self.soup, "h2")
+                h2.insert(0, h3.renderContents())
+                h3.replaceWith(h2)
+            self.content = u''.join([unicode(x) for x in text.contents])
     @transaction.commit_on_success
     def migrate(self, request, path):
         language = self.determine_language()
