@@ -56,15 +56,19 @@ class PloneObject(object):
             if not url.endswith('/'): url += '/'
             if folder_contents_link == url + 'folder_contents':
                 # Yes, it's a folder
+                logging.debug("(It's a folder)")
                 return super(PloneObject, cls).__new__(PloneFolder)
             # Otherwise, it's probably the default folder view, i.e. a page;
             # proceed normally
         body_classes = soup.find('body')['class'].split()
         if 'template-document_view' in body_classes:
+            logging.debug("(It's a page)")
             return super(PloneObject, cls).__new__(PlonePage)
         if 'template-image_view' in body_classes:
+            logging.debug("(It's an image)")
             return super(PloneObject, cls).__new__(PloneImage)
         if 'template-link_view' in body_classes:
+            logging.debug("(It's a link)")
             return super(PloneObject, cls).__new__(PloneLink)
         raise UnknownPloneObjectType("Unknown object type at "+url)
     def __init__(self, url, soup=None):
@@ -168,7 +172,7 @@ class PloneFolder(PlonePage):
         if not url.endswith('/'): url += '/'
         url += 'folder_contents'
         soup = BeautifulSoup(get_response(url).read())
-        tr_elements = soup.find('table', id='listing-table').tbody('tr')[1:]
+        tr_elements = soup.find('table', id='listing-table').tbody('tr')
         for tr in tr_elements:
             url = tr.a['href']
             if url.endswith('/folder_contents'): url = url[:-16]
