@@ -58,8 +58,9 @@ class PloneObject(object):
                 # Yes, it's a folder
                 logging.debug("(It's a folder)")
                 return super(PloneObject, cls).__new__(PloneFolder)
-            # Otherwise, it's probably the default folder view, i.e. a page;
-            # proceed normally
+            # Otherwise, we assume it is the default folder view
+            logging.debug("(It's a default folder view)")
+            return super(PloneObject, cls).__new__(PloneDefaultFolderView)
         body_classes = soup.find('body')['class'].split()
         if 'template-document_view' in body_classes:
             logging.debug("(It's a page)")
@@ -164,6 +165,19 @@ class PloneLink(PloneObject):
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject, language=language,
             title=self.title, description=self.description)
+        nmetatags.save()
+
+class PloneDefaultFolderView(PloneObject):
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        entry = models.InternalRedirectionEntry(request, path)
+        entry.save()
+        nvobject = models.VInternalRedirection(entry=entry, version_number=1,
+            target=entry.container)
+        nvobject.save()
+        nmetatags = models.VObjectMetatags(vobject=nvobject,
+            language=self.determine_language(), title=self.title,
+            description=self.description)
         nmetatags.save()
 
 class PloneFolder(PlonePage):
