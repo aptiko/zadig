@@ -62,7 +62,8 @@ class NavigationNode(template.Node):
         pass
     def render_entry_contents(self, request, entry, current_entry, level):
         result = ''
-        siblings = entry.get_subentries(request)
+        siblings = entry.get_subentries(request).filter(object_class__in=
+            ('PageEntry','LinkEntry'))
         no_sibling_shown_yet = True
         for s in siblings:
             try:
