@@ -73,9 +73,9 @@ class PloneObject(object):
             return super(PloneObject, cls).__new__(PloneLink)
         raise UnknownPloneObjectType("Unknown object type at "+url)
     def __init__(self, url, soup=None):
-        """Retrieve title and description from a Plone page; for subclasses,
-        also retrieve content. soup is the BeautifulSoup object resulting from
-        parsing the url."""
+        """Retrieve title, description and state from a Plone page;
+        for subclasses, also retrieve content. soup is the BeautifulSoup object
+        resulting from parsing the url."""
         self.url = url
         if not soup:
             html = get_response(url).read()
@@ -88,6 +88,8 @@ class PloneObject(object):
         # without default view) it's a div containing p.
         if d.string: self.description = d.string.strip()
         else: self.description = d.p.string.strip()
+        self.state = self.soup.find('dl', id='plone-contentmenu-workflow'
+            ).dt('span')[1].string.strip()
                             
     def determine_language(self):
         """Find language of object by going to its edit view and checking
@@ -116,6 +118,7 @@ class PlonePage(PloneObject):
     def migrate(self, request, path):
         language = self.determine_language()
         entry = models.PageEntry(request, path)
+        entry.state = models.State.objects.get(descr=self.state)
         entry.save()
         nvobject = models.VPage(entry=entry, version_number=1, language=language,
             format = models.ContentFormat.objects.get(descr='html'),
@@ -139,6 +142,7 @@ class PloneImage(PloneObject):
         from mimetypes import guess_extension
         language = self.determine_language()
         entry = models.ImageEntry(request, path)
+        entry.state = models.State.objects.get(descr=self.state)
         entry.save()
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
@@ -159,6 +163,7 @@ class PloneLink(PloneObject):
     def migrate(self, request, path):
         language = self.determine_language()
         entry = models.LinkEntry(request, path)
+        entry.state = models.State.objects.get(descr=self.state)
         entry.save()
         nvobject = models.VLink(entry=entry, version_number=1, language=language,
             target = self.target)
@@ -171,6 +176,7 @@ class PloneDefaultFolderView(PloneObject):
     @transaction.commit_on_success
     def migrate(self, request, path):
         entry = models.InternalRedirectionEntry(request, path)
+        entry.state = models.State.objects.get(descr=self.state)
         entry.save()
         nvobject = models.VInternalRedirection(entry=entry, version_number=1,
             target=entry.container)
