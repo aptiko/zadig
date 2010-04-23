@@ -54,6 +54,12 @@ ul.errorlist { color: red; font-weight: bold; list-style-type: none; margin-left
 .navigationPortlet ul { padding: 0; }
 .navigationLevel1 { margin: 0; }
 .navigationLevel2 { margin-left: 1em; }
+.navigationLevel3 { margin-left: 2em; }
+.navigationLevel4 { margin-left: 3em; }
+.navigationLevel5 { margin-left: 3em; }
+.navigationLevel6 { margin-left: 3em; }
+.navigationLevel7 { margin-left: 3em; }
+.navigationLevel8 { margin-left: 3em; }
 .navigationPortlet a.current { background-color: #dee7ec; border: solid #8cacbb 1px; }
 
 .floatLeft { float: left; margin: 5px; }
