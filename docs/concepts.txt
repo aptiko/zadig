@@ -11,7 +11,9 @@ In TwistyCMS, objects can be contained in other objects. For example,
 you can have page ``/mypage/hobbies``, and it can contain
 ``/mypage/hobbies/django``. There is no separate "folder" object;
 instead, any object can act as a container of other objects, in
-addition to having its own content.
+addition to having its own content. If a page has no content, then it
+shows an index of its contained pages (like Plone does for folders
+when no page has been set as the folder's default view).
 
 .. admonition:: Philosophy
 
