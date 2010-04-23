@@ -251,6 +251,14 @@ VObject
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
+
+   .. attribute:: twistycms.core.models.VObject.rentry
+
+      Use this instead of :attr:`~twistycms.core.models.VObject.entry`
+      and the resulting :class:`~twistycms.core.models.Entry` object
+      will also have a *request* attribute (useful when you want to
+      use a property that requires it to be set, such as
+      :class:`~twistycms.core.models.Entry.subentries`).
       
    .. method:: twistycms.core.models.VObject.end_view(request)
 
