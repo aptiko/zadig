@@ -97,6 +97,29 @@ Entry
          :const:`None` if such an entry does not exist or the user
          does not have permissions to view it.
 
+   :class:`~twistycms.core.models.Entry` objects also have the following properties:
+
+   .. attribute:: twistycms.core.models.Entry.permissions
+
+      This is like
+      :meth:`~twistycms.core.models.Entry.get_permissions()`, using
+      the request object supplied during creation of the
+      :class:`~twistycms.core.models.Entry` object.
+
+   .. attribute:: twistycms.core.models.Entry.vobject
+
+      This is like
+      :meth:`~twistycms.core.models.Entry.get_vobject()`, using the
+      request object supplied during creation of the
+      :class:`~twistycms.core.models.Entry` object.
+
+   .. attribute:: twistycms.core.models.Entry.subentries
+
+      This is like
+      :meth:`~twistycms.core.models.Entry.get_subentries()`, using the
+      request object supplied during creation of the
+      :class:`~twistycms.core.models.Entry` object.
+
    :class:`~twistycms.core.models.Entry` objects also have the following methods:
 
    .. method:: twistycms.core.models.Entry.get_permissions(request)

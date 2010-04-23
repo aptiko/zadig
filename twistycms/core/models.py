@@ -110,6 +110,7 @@ class EntryManager(models.Manager):
                 return None
             if not permissions.VIEW in entry.get_permissions(request):
                 return None
+        entry.request = request
         return entry
 
 class Entry(models.Model):
@@ -127,6 +128,7 @@ class Entry(models.Model):
         # Otherwise, it is likely Django calling us in the default Django way.
         if len(args)!=2 or kwargs:
             result = super(Entry, self).__init__(*args, **kwargs)
+            self.request = None
         else:
             (request, path) = args
             names = path.split('/')
@@ -135,6 +137,7 @@ class Entry(models.Model):
             super(Entry, self).__init__()
             self.container = parent_entry
             self.name = names[-1]
+            self.request = request
             self.__initialize(request)
         if not self.object_class:
             self.object_class = self._meta.object_name
@@ -157,6 +160,9 @@ class Entry(models.Model):
             return self
         else:
             return getattr(self, self.object_class.lower())
+    @property
+    def permissions(self):
+        return self.get_permissions(self.request)
     def get_permissions(self, request):
         if request.user.is_authenticated() and self.owner.pk == request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
@@ -177,6 +183,9 @@ class Entry(models.Model):
                                                               state=self.state):
                 result.add(perm.permission_id)
         return result
+    @property
+    def vobject(self):
+        return self.get_vobject(self.request)
     def get_vobject(self, request, version_number=None):
         latest_vobject = self.vobject_set.order_by('-version_number')[0]
         if version_number is None:
@@ -186,7 +195,9 @@ class Entry(models.Model):
         if vobject.version_number != latest_vobject.version_number \
                 and permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
-        return vobject.descendant
+        a = vobject.descendant
+        a.request = request
+        return a
     @property
     def path(self):
         result = self.name
@@ -206,6 +217,9 @@ class Entry(models.Model):
             if entry.container == self: return True
             entry = entry.container
         return False
+    @property
+    def subentries(self):
+        return self.get_subentries(self.request)
     def get_subentries(self, request):
         parent_permissions = self.get_permissions(request)
         if permissions.VIEW not in parent_permissions:
@@ -456,6 +470,11 @@ class VObject(models.Model):
             return self
         else:
             return getattr(self, self.object_class.lower())
+    @property
+    def rentry(self):
+        entry = self.entry
+        entry.request = self.request
+        return entry
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
     class Meta:

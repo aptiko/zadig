@@ -6,6 +6,15 @@
 <div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
-  {{vobject.content|safe}}
+  {% if vobject.content %}
+    {{vobject.content|safe}}
+  {% else %}
+    <dl class="pageIndex">
+      {% for s in vobject.rentry.subentries %}
+        <dt><a href="{{s.spath}}">{{ s.vobject.metatags.default.title }}</a></dt>
+        <dd>{{ s.vobject.metatags.default.description }}</dd>
+      {% endfor %}
+    </dl>
+  {% endif %}
 </div>
 {% endblock %}
