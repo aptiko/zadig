@@ -11,8 +11,10 @@
   {% else %}
     <dl class="pageIndex">
       {% for s in vobject.rentry.subentries %}
-        <dt><a href="{{s.spath}}">{{ s.vobject.metatags.default.title }}</a></dt>
-        <dd>{{ s.vobject.metatags.default.description }}</dd>
+        {% ifequal s.object_class "PageEntry" %}
+          <dt><a href="{{s.spath}}">{{ s.vobject.metatags.default.title }}</a></dt>
+          <dd>{{ s.vobject.metatags.default.description }}</dd>
+        {% endifequal %}
       {% endfor %}
     </dl>
   {% endif %}
