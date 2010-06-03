@@ -28,6 +28,7 @@ from django.conf import settings
 from django.db import transaction
 
 from twistycms.core.utils import sanitize_html
+from twistycms.core.utils import split_path
 from twistycms.core import models
 
 class UnknownPloneObjectType(Exception): pass
@@ -102,20 +103,39 @@ class PlonePage(PloneObject):
     def __init__(self, url, soup=None):
         PloneObject.__init__(self, url, soup=soup)
         text = self.soup.find('div', id='parent-fieldname-text')
-        if not text: self.content = u''
-        else:
-            # Take headings one level up
-            for h2 in text.findAll('h2'):
-                h1 = Tag(self.soup, "h1")
-                h1.insert(0, h2.renderContents())
-                h2.replaceWith(h1)
-            for h3 in text.findAll('h3'):
-                h2 = Tag(self.soup, "h2")
-                h2.insert(0, h3.renderContents())
-                h3.replaceWith(h2)
-            self.content = u''.join([unicode(x) for x in text.contents])
+        self.content = text
+    def fix_content(self, request, path):
+        """Make several appropriate changes to the HTML read from Plone. On
+        entry self.content is practically a soup; on exit it's a string."""
+
+        # Empty if empty
+        if not self.content:
+            self.content = u''
+            return
+
+        # Take headings one level up
+        for h2 in self.content.findAll('h2'):
+            h1 = Tag(self.soup, "h1")
+            h1.insert(0, h2.renderContents())
+            h2.replaceWith(h1)
+        for h3 in self.content.findAll('h3'):
+            h2 = Tag(self.soup, "h2")
+            h2.insert(0, h3.renderContents())
+            h3.replaceWith(h2)
+
+        # Fix internal references to images
+        for img in self.content.findAll('img'):
+            src = img['src']
+            if src.endswith('/image_preview'): src = src[:-13]
+            if not src.startswith('/'):
+                src = '/'.join(split_path(path)[:-1]) + '/' + src
+            img['src'] = src
+        
+        self.content = u''.join([unicode(x) for x in self.content.contents])
+
     @transaction.commit_on_success
     def migrate(self, request, path):
+        self.fix_content(request, path)
         language = self.determine_language()
         entry = models.PageEntry(request, path)
         entry.state = models.State.objects.get(descr=self.state)
