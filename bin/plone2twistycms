@@ -52,7 +52,7 @@ class PloneObject(object):
         soup = BeautifulSoup(get_response(url).read())
         t = soup.find('li', id='contentview-folderContents')
         if t:
-            # It has a content tab, therefore it could be a folder
+            # It has a contents tab, therefore it could be a folder
             folder_contents_link = t.a['href']
             if not url.endswith('/'): url += '/'
             if folder_contents_link == url + 'folder_contents':
