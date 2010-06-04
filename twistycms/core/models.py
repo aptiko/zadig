@@ -652,7 +652,7 @@ class EditPageForm(forms.Form):
             'convert_urls': False,
             'theme': 'advanced',
             'theme_advanced_blockformats': 'p,h1,h2',
-            'theme_advanced_styles': 'Float Left=floatLeft,Float Right=floatRight',
+            'theme_advanced_styles': 'Float Left=floatLeft,Float Right=floatRight,Align Top=alignTop',
             'theme_advanced_toolbar_location': 'top',
             'theme_advanced_toolbar_align': 'left',
             'theme_advanced_buttons1': 'bold,italic,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect,styleselect',
