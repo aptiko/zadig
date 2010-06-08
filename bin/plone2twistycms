@@ -2,9 +2,11 @@
 """
 This script is in heavy development. Don't expect it to work.
 
-Usage: plone2twistycms auth
+Usage: plone2twistycms auth [lang]
 
-auth is the value the __ac cookie should have.
+auth is the value the __ac cookie should have. If lang is present,
+it is the value of the I18N_LANGUAGE cookie, which defines the
+LinguaPlone language requested.
 
 """
 
@@ -19,7 +21,6 @@ DEFAULT_LANGUAGE='en'   # When a Plone page is "language neutral", it will be
 
 import sys
 import urllib2
-from cookielib import CookieJar
 import logging
 
 from BeautifulSoup import BeautifulSoup, Tag
@@ -37,7 +38,9 @@ def get_response(url):
     """Get the data from the url, which should be Plone. Send the logon cookie
     during the request, to make sure we are logged on to Plone."""
     request = urllib2.Request(url)
-    request.add_header('Cookie', '__ac=%s' % (sys.argv[1],))
+    cookies = '__ac="%s"' % (auth_cookie,)
+    if auth_lang: cookies += '; I18N_LANGUAGE="%s"' % (auth_lang,)
+    request.add_header('Cookie', cookies)
     return urllib2.urlopen(request)
 
 class PloneObject(object):
@@ -90,11 +93,9 @@ class PloneObject(object):
         self.editsoup = editsoup
         self.title = self.soup.find(True,
                             id='parent-fieldname-title').string.strip()
-        d = self.soup.find(True, id='parent-fieldname-description')
-        # Sometimes (pages) d is a span containing text, sometimes (folders
-        # without default view) it's a div containing p.
-        if d.string: self.description = d.string.strip()
-        else: self.description = d.p.string.strip()
+        self.description = self.editsoup.find('textarea', id='description'
+                                                            ).string
+        if not self.description: self.description = ""
         self.state = self.soup.find('dl', id='plone-contentmenu-workflow'
             ).dt('span')[1].string.strip()
                             
@@ -103,9 +104,10 @@ class PloneObject(object):
         contents of its edit view."""
         a = self.editsoup.find('input', attrs={'id': 'excludeFromNav'})
         self.no_nav = 'checked' in [x[0] for x in a.attrs]
-        # FIXME: Don't set default language, read language setting and set to
-        # None if language neutral.
-        self.language = models.Language.objects.get(id=DEFAULT_LANGUAGE)
+        l = self.editsoup.find('select', attrs={'id': 'language'}).find(
+                            'option', attrs={'selected': 'selected'})
+        self.language = models.Language.objects.get(id=l['value'] if l
+                                                    else DEFAULT_LANGUAGE)
 
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None, editsoup=None):
@@ -249,6 +251,9 @@ class PloneFolder(PlonePage):
             plone_object.migrate(request, npath)
 
 logging.basicConfig(level=logging.DEBUG)
+
+auth_cookie = sys.argv[1]
+auth_lang = sys.argv[2] if len(sys.argv)>2 else None
 
 # We use HttpRequest as a small hack. Some Entry methods require request to be
 # passed to them, but they hardly use anything but request.user. So we set
