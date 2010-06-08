@@ -61,10 +61,6 @@ vobject can be a vpage, a vimage, etc.  Developers should be very
 clear about that. The end users should not be bothered, and the word
 **object** should be used for everything.
 
-.. admonition:: Not implemented yet
-
-   Types of objects implemented so far are pages and images.
-
 Metatags
 ========
 
@@ -113,14 +109,6 @@ The titles and description of each object are collectively named
 In this section we have been talking of "objects". To be precise,
 each *entry* has a name, and each *vobject* has a set of metatags
 (i.e. a set of title pairs and a set of descriptions).
-
-.. admonition:: Not implemented yet
-
-   The above details are not entirely implemented yet. Specifically,
-   although the database is designed so that the metatags are
-   multilingual, the user interface currently only provides a single
-   set of metatags, which is in the page's language. In addition, the
-   "don't show in the breadcrumbs" option has not been implemented.
 
 Deletions
 =========
