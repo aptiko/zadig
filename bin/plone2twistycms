@@ -2,22 +2,46 @@
 """
 This script is in heavy development. Don't expect it to work.
 
-Usage: plone2twistycms auth [lang]
+Usage: plone2twistycms config_file
 
-auth is the value the __ac cookie should have. If lang is present,
-it is the value of the I18N_LANGUAGE cookie, which defines the
-LinguaPlone language requested.
+config_file has the following format:
+
+PLONE_URL=...
+TARGET_PATH=...
+
+It is actually a Python program that defines several variables. The variables
+are:
+
+The options are:
+
+  PLONE_URL
+      The topmost Plone url to start converting. That page and all its subpages
+      will be read and converted.
+
+  PLONE_AUTH
+      The value the __ac cookie should have. It must be a user capable of
+      editing all the objects from PLONE_URL downwards.
+
+  PLONE_LANG
+      If present, it is the value of the I18N_LANGUAGE cookie, which defines
+      the LinguaPlone language requested. If absent, no I18N_LANGUAGE cookie
+      is sent.
+
+  TARGET_PATH
+      Will migrate PLONE_URL to this twistycms path, and subobjects to
+      subpaths. If TARGET-PATH already exists, it and its subentries are
+      deleted.
+
+  OWNER
+      The objects created in twistycms will belong to this user.
+
+  DEFAULT_LANGUAGE
+      When a Plone page is "language neutral", it will be considered to be
+      in this language.
+
+All the above except PLONE_LANG are compulsory.
 
 """
-
-PLONE_URL='https://itia.ntua.gr/antonis/'
-                        # Will migrate this and all subobjects of it.
-TARGET_PATH='antonis'   # Will migrate PLONE_URL to this path, and subobjects
-                        # to subpaths. If TARGET_PATH already exists, it and
-                        # its subentries are deleted.
-OWNER='admin'           # The objects created will belong to this user.
-DEFAULT_LANGUAGE='en'   # When a Plone page is "language neutral", it will be
-                        # considered to be in this language.
 
 import sys
 import urllib2
@@ -32,14 +56,18 @@ from twistycms.core.utils import sanitize_html
 from twistycms.core.utils import split_path
 from twistycms.core import models
 
+# Read configuration file
+execfile(sys.argv[1])
+
 class UnknownPloneObjectType(Exception): pass
 
 def get_response(url):
     """Get the data from the url, which should be Plone. Send the logon cookie
     during the request, to make sure we are logged on to Plone."""
     request = urllib2.Request(url)
-    cookies = '__ac="%s"' % (auth_cookie,)
-    if auth_lang: cookies += '; I18N_LANGUAGE="%s"' % (auth_lang,)
+    cookies = '__ac="%s"' % (PLONE_AUTH,)
+    if ('PLONE_LANG' in globals()) and PLONE_LANG:
+        cookies += '; I18N_LANGUAGE="%s"' % (PLONE_LANG,)
     request.add_header('Cookie', cookies)
     return urllib2.urlopen(request)
 
@@ -254,9 +282,6 @@ class PloneFolder(PlonePage):
             plone_object.migrate(request, npath)
 
 logging.basicConfig(level=logging.DEBUG)
-
-auth_cookie = sys.argv[1]
-auth_lang = sys.argv[2] if len(sys.argv)>2 else None
 
 # We use HttpRequest as a small hack. Some Entry methods require request to be
 # passed to them, but they hardly use anything but request.user. So we set
