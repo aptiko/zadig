@@ -81,7 +81,7 @@ class sanitize_html(unicode):
     #  * IMG Embedded commands (part I and II)
     # FIXME: Needs unit testing
     valid_tags = '''p i strong em b u a h1 h2 pre br img table thead tbody td
-                    tr'''.split()
+                    tr ul ol li'''.split()
     valid_attrs = 'href src width height class align'.split()
     url_attrs = 'href src'.split()
     valid_schemes = 'http https ftp mailto'.split()
