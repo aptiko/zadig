@@ -70,3 +70,6 @@ pre { background-color: #DEE7EC; border:1px solid #8CACBB; color:Black; font-fam
 .discreet { color:#76797C; font-size:90%; font-weight:normal; }
 dl.pageIndex dt { font-weight: bold; }
 dl.pageIndex dd { line-height: 1.5em; }
+
+.mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
+.mainContent ul li { margin-bottom: 0.5em; }
