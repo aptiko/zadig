@@ -112,7 +112,10 @@ class PloneObject(object):
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
-        text = self.soup.find('div', id='parent-fieldname-text')
+        # Plone sometimes contains an identical div inside the div, therefore
+        # rather than searching for an assumed single div with a given id,
+        # we pick the innermost.
+        text = self.soup.findAll('div', id='parent-fieldname-text')[-1]
         self.content = text
     def fix_content(self, request, path):
         """Make several appropriate changes to the HTML read from Plone. On
