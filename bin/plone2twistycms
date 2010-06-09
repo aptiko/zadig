@@ -39,7 +39,11 @@ The options are:
       When a Plone page is "language neutral", it will be considered to be
       in this language.
 
-All the above except PLONE_LANG are compulsory.
+  LOG_LEVEL
+      The logging level; one of DEBUG, INFO, WARNING, ERROR, and CRITICAL.
+      Default is WARNING. Don't use CRITICAL, it will miss the errors.
+
+All the above except PLONE_LANG and LOG_LEVEL are compulsory.
 
 """
 
@@ -143,7 +147,8 @@ class PlonePage(PloneObject):
         # Plone sometimes contains an identical div inside the div, therefore
         # rather than searching for an assumed single div with a given id,
         # we pick the innermost.
-        text = self.soup.findAll('div', id='parent-fieldname-text')[-1]
+        divs = self.soup.findAll('div', id='parent-fieldname-text')
+        text = divs[-1] if divs else None
         self.content = text
     def fix_content(self, request, path):
         """Make several appropriate changes to the HTML read from Plone. On
@@ -281,7 +286,8 @@ class PloneFolder(PlonePage):
             npath = path + '/' + url.split('/')[-1]
             plone_object.migrate(request, npath)
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()]
+    if 'LOG_LEVEL' in globals() else logging.WARNING)
 
 # We use HttpRequest as a small hack. Some Entry methods require request to be
 # passed to them, but they hardly use anything but request.user. So we set
