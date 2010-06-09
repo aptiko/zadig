@@ -298,7 +298,8 @@ class Entry(models.Model):
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
         if request.method != 'POST':
-            mainform = EditEntryForm(initial={ 'name': self.name })
+            mainform = EditEntryForm(initial={ 'name': self.name,
+                        'language': self.vobject.language, })
             metatagsformset = self.__create_metatags_formset(request, new)
             subform = self.create_edit_subform(request, new)
             optionsforms = [o['entry_options'](request, self.path)
