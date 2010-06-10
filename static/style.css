@@ -22,6 +22,9 @@ a { color: #436976; }
 
 .mainContent { padding: 1em 1em 2em 1em; font-size: 110%; }
 .mainContent.withButtons { border: solid #74ae0b 1px; }
+.mainContent p { line-height: 1.5em; }
+.mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
+.mainContent ul li { margin-bottom: 0.5em; }
 
 .primaryButtons { background-color: transparent; padding-left: 1em; line-height: normal; margin: 0; list-style: none; border: 1px solid #74ae0b; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; }
 .primaryButtons li { display: inline; padding-top: 0.5em; }
@@ -70,6 +73,3 @@ pre { background-color: #DEE7EC; border:1px solid #8CACBB; color:Black; font-fam
 .discreet { color:#76797C; font-size:90%; font-weight:normal; }
 dl.pageIndex dt { font-weight: bold; }
 dl.pageIndex dd { line-height: 1.5em; }
-
-.mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
-.mainContent ul li { margin-bottom: 0.5em; }
