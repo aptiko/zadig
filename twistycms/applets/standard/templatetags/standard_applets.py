@@ -88,8 +88,13 @@ class NavigationNode(template.Node):
     def render(self, context):
         vobject = context.get('vobject', None)
         request = context['request']
-        result = self.render_entry_contents(request,
-            coremodels.Entry.objects.get_by_path(request, ''),
+        # Find the innermost containing objects that has navigation_toplevel.
+        toplevel_entry = vobject.entry
+        entryoptions = models.EntryOptions.objects.get(entry=toplevel_entry)
+        while toplevel_entry.path!='' and not entryoptions.navigation_toplevel:
+            toplevel_entry = toplevel_entry.container
+            entryoptions = models.EntryOptions.objects.get(entry=toplevel_entry)
+        result = self.render_entry_contents(request, toplevel_entry,
             vobject.entry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet"><dt>%s</dt>
