@@ -88,18 +88,25 @@ class NavigationNode(template.Node):
     def render(self, context):
         vobject = context.get('vobject', None)
         request = context['request']
-        # Find the innermost containing objects that has navigation_toplevel.
+        # Find the innermost containing object that has navigation_toplevel.
         toplevel_entry = vobject.entry
-        entryoptions = models.EntryOptions.objects.get(entry=toplevel_entry)
-        while toplevel_entry.path!='' and not entryoptions.navigation_toplevel:
-            toplevel_entry = toplevel_entry.container
-            entryoptions = models.EntryOptions.objects.get(entry=toplevel_entry)
+        try:
+            while True:
+                if toplevel_entry.path=='': break
+                entryoptions = models.EntryOptions.objects.get(
+                                                        entry=toplevel_entry)
+                if entryoptions.navigation_toplevel: break
+                toplevel_entry = toplevel_entry.container
+        except models.EntryOptions.DoesNotExist:
+            pass
         result = self.render_entry_contents(request, toplevel_entry,
             vobject.entry, 1)
         if result:
-            result = '''<dl class="portlet navigationPortlet"><dt>%s</dt>
-                     <dd class="lastItem">%s</dd></dl>''' % (_(u"Navigation"),
-                     result)
+            result = '''<dl class="portlet navigationPortlet">
+                <dt><a href='%s'>%s</a></dt>
+                <dd class="lastItem">%s</dd></dl>''' % (toplevel_entry.spath,
+                toplevel_entry.get_vobject(request).metatags.default().get_short_title(),
+                result)
         return result
             
 def do_navigation(parser, token):
