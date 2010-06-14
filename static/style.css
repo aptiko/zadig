@@ -53,7 +53,7 @@ ul.errorlist { color: red; font-weight: bold; list-style-type: none; margin-left
 
 .navigationPortlet li { display: block; list-style: none; padding: 0 0 0 1px; margin: 0 0 2px -1px; }
 .navigationPortlet li a { border: solid white 1px; display: block; padding-top: 0.2em; padding-bottom: 0.25em; }
-.navigationPortlet a:hover { background-color: #dee7ec; color: #436976; border: solid #8cacbb 1px; }
+.navigationPortlet li a:hover { background-color: #dee7ec; color: #436976; border: solid #8cacbb 1px; }
 .navigationPortlet ul { padding: 0; }
 .navigationLevel1 { margin: 0; }
 .navigationLevel2 { margin-left: 1em; }
