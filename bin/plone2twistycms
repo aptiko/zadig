@@ -157,12 +157,22 @@ class PloneObject(object):
         # No need to check REMOVE_TARGET at this point, if True then the entry
         # will have already been removed and self.entry at this point will be
         # None.
-        if not self.entry: self.entry = entry_type(request, path)
+        if self.entry:
+            self.entry = self.entry.descendant
+        else:
+            self.entry = entry_type(request, path)
         if not isinstance(self.entry, entry_type):
-            raise Exception('Error creating entry at %s: apparently it '
-                +'already existed and was of different type' % (path,))
+            raise Exception(('Error creating entry at %s: apparently it '
+                +'already existed was type %s rather than %s') % (path,
+                self.entry.__class__.__name__, entry_type.__name__))
         self.entry.state = models.State.objects.get(descr=self.state)
         self.entry.save()
+
+        # Determine the max existing version number
+        self.max_existing_version_number = 0
+        if self.entry.vobject_set.count():
+            self.max_existing_version_number = self.entry.vobject_set.order_by(
+                         '-version_number')[0].version_number
             
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None, editsoup=None):
@@ -204,9 +214,10 @@ class PlonePage(PloneObject):
 
     @transaction.commit_on_success
     def migrate(self, request, path):
-        super(PlonePage, self).migrate(request, path, PageEntry)
+        super(PlonePage, self).migrate(request, path, models.PageEntry)
         self.fix_content(request, path)
-        nvobject = models.VPage(entry=self.entry, version_number=1,
+        nvobject = models.VPage(entry=self.entry,
+            version_number=self.max_existing_version_number+1,
             language=self.language,
             format = models.ContentFormat.objects.get(descr='html'),
             content = sanitize_html(self.content))
@@ -232,10 +243,11 @@ class PloneImage(PloneObject):
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
         from mimetypes import guess_extension
-        super(PlonePage, self).migrate(request, path, ImageEntry)
+        super(PloneImage, self).migrate(request, path, models.ImageEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VImage(entry=self.entry, version_number=1)
+        nvobject = models.VImage(entry=self.entry,
+                            version_number=self.max_existing_version_number+1)
         nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.save()
         f.close()
@@ -251,8 +263,9 @@ class PloneLink(PloneObject):
                                 ).findNextSibling('p').a['href']
     @transaction.commit_on_success
     def migrate(self, request, path):
-        super(PlonePage, self).migrate(request, path, LinkEntry)
-        nvobject = models.VLink(entry=self.entry, version_number=1,
+        super(PloneLink, self).migrate(request, path, models.LinkEntry)
+        nvobject = models.VLink(entry=self.entry,
+            version_number=self.max_existing_version_number+1,
             language=self.language, target = self.target)
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
@@ -263,8 +276,10 @@ class PloneLink(PloneObject):
 class PloneDefaultFolderView(PloneObject):
     @transaction.commit_on_success
     def migrate(self, request, path):
-        super(PlonePage, self).migrate(request, path, InternalRedirectionEntry)
-        nvobject = models.VInternalRedirection(entry=entry, version_number=1,
+        super(PloneDefaultFolderView, self).migrate(request, path,
+                                            models.InternalRedirectionEntry)
+        nvobject = models.VInternalRedirection(entry=self.entry,
+            version_number=self.max_existing_version_number+1,
             target=entry.container)
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
@@ -282,7 +297,7 @@ class PloneFolder(PlonePage):
     def migrate(self, request, path):
         # TwistyCMS does not have folders, so we'll become a page. First
         # of all migrate the page.
-        PlonePage.migrate(self, request, path)
+        super(PloneFolder, self).migrate(request, path)
         # But also migrate the contents of the folder
         url = self.url
         if not url.endswith('/'): url += '/'
