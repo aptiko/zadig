@@ -14,33 +14,41 @@ options are:
 The options are:
 
   PLONE_URL
-      The topmost Plone url to start converting. That page and all its subpages
-      will be read and converted.
+      The topmost Plone url to start converting. That page and all its
+      subpages will be read and converted.
 
   PLONE_AUTH
-      The value the __ac cookie should have. It must be a user capable of
-      editing all the objects from PLONE_URL downwards.
+      The value the __ac cookie should have. It must be a user capable
+      of editing all the objects from PLONE_URL downwards.
 
   PLONE_LANG
-      If present, it is the value of the I18N_LANGUAGE cookie, which defines
-      the LinguaPlone language requested. If absent, no I18N_LANGUAGE cookie
-      is sent.
+      If present, it is the value of the I18N_LANGUAGE cookie, which
+      defines the LinguaPlone language requested. If absent, no
+      I18N_LANGUAGE cookie is sent.
 
   TARGET_PATH
       Will migrate PLONE_URL to this twistycms path, and subobjects to
-      subpaths. If TARGET_PATH already exists, it and its subentries are
-      deleted.
+      subpaths.
+
+  REMOVE_TARGET
+      Specifies what happens if TARGET_PATH already exists. If True,
+      the TARGET_PATH and its subentries are deleted before migration;
+      if False (the default), its content is overwritten, as is the
+      content of any already existing subentry. When such overwriting
+      occurs, the existing object and the overwriting object must be
+      of the same type, or an exception is raised.
 
   OWNER
       The objects created in twistycms will belong to this user.
 
   DEFAULT_LANGUAGE
-      When a Plone page is "language neutral", it will be considered to be
-      in this language.
+      When a Plone page is "language neutral", it will be considered
+      to be in this language.
 
   LOG_LEVEL
-      The logging level; one of DEBUG, INFO, WARNING, ERROR, and CRITICAL.
-      Default is WARNING. Don't use CRITICAL, it will miss the errors.
+      The logging level; one of DEBUG, INFO, WARNING, ERROR, and
+      CRITICAL.  Default is WARNING. Don't use CRITICAL, it will miss
+      the errors.
 
 All the above except PLONE_LANG and LOG_LEVEL are compulsory.
 
