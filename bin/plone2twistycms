@@ -50,7 +50,8 @@ The options are:
       CRITICAL.  Default is WARNING. Don't use CRITICAL, it will miss
       the errors.
 
-All the above except PLONE_LANG and LOG_LEVEL are compulsory.
+All the above except PLONE_LANG, TARGET_PATH and LOG_LEVEL are
+compulsory.
 
 """
 
@@ -138,9 +139,12 @@ class PloneObject(object):
         self.state = self.soup.find('dl', id='plone-contentmenu-workflow'
             ).dt('span')[1].string.strip()
                             
-    def determine_settings(self):
-        """Find language and other settings of object by going checking the
-        contents of its edit view."""
+    def migrate(self, request, path, entry_type):
+        """This is always called from a subclass and does a little common part
+        of the job at the beginning, most important of which is to create
+        and save the entry."""
+        # Find language and other settings of object by checking the contents of
+        # its edit view.
         a = self.editsoup.find('input', attrs={'id': 'excludeFromNav'})
         self.no_nav = 'checked' in [x[0] for x in a.attrs]
         l = self.editsoup.find('select', attrs={'id': 'language'}).find(
@@ -148,6 +152,18 @@ class PloneObject(object):
         self.language = models.Language.objects.get(id=l['value'] if l
                                                     else DEFAULT_LANGUAGE)
 
+        # Prepare and save the entry
+        self.entry = models.Entry.objects.get_by_path(request, path)
+        # No need to check REMOVE_TARGET at this point, if True then the entry
+        # will have already been removed and self.entry at this point will be
+        # None.
+        if not self.entry: self.entry = entry_type(request, path)
+        if not isinstance(self.entry, entry_type):
+            raise Exception('Error creating entry at %s: apparently it '
+                +'already existed and was of different type' % (path,))
+        self.entry.state = models.State.objects.get(descr=self.state)
+        self.entry.save()
+            
 class PlonePage(PloneObject):
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
@@ -188,12 +204,9 @@ class PlonePage(PloneObject):
 
     @transaction.commit_on_success
     def migrate(self, request, path):
+        super(PlonePage, self).migrate(request, path, PageEntry)
         self.fix_content(request, path)
-        self.determine_settings()
-        entry = models.PageEntry(request, path)
-        entry.state = models.State.objects.get(descr=self.state)
-        entry.save()
-        nvobject = models.VPage(entry=entry, version_number=1,
+        nvobject = models.VPage(entry=self.entry, version_number=1,
             language=self.language,
             format = models.ContentFormat.objects.get(descr='html'),
             content = sanitize_html(self.content))
@@ -204,7 +217,7 @@ class PlonePage(PloneObject):
         nmetatags.save()
         # FIXME: Should be in superclass, other types also have no_nav
         from twistycms.applets.standard.models import EntryOptions
-        options = EntryOptions(entry=entry, no_navigation=self.no_nav)
+        options = EntryOptions(entry=self.entry, no_navigation=self.no_nav)
         options.save()
 
 class PloneImage(PloneObject):
@@ -219,14 +232,11 @@ class PloneImage(PloneObject):
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
         from mimetypes import guess_extension
-        self.determine_settings()
-        entry = models.ImageEntry(request, path)
-        entry.state = models.State.objects.get(descr=self.state)
-        entry.save()
+        super(PlonePage, self).migrate(request, path, ImageEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VImage(entry=entry, version_number=1)
-        nvobject.content.save('%s-0001%s'%(entry.name, extension), f)
+        nvobject = models.VImage(entry=self.entry, version_number=1)
+        nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.save()
         f.close()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
@@ -241,11 +251,8 @@ class PloneLink(PloneObject):
                                 ).findNextSibling('p').a['href']
     @transaction.commit_on_success
     def migrate(self, request, path):
-        self.determine_settings()
-        entry = models.LinkEntry(request, path)
-        entry.state = models.State.objects.get(descr=self.state)
-        entry.save()
-        nvobject = models.VLink(entry=entry, version_number=1,
+        super(PlonePage, self).migrate(request, path, LinkEntry)
+        nvobject = models.VLink(entry=self.entry, version_number=1,
             language=self.language, target = self.target)
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
@@ -256,10 +263,7 @@ class PloneLink(PloneObject):
 class PloneDefaultFolderView(PloneObject):
     @transaction.commit_on_success
     def migrate(self, request, path):
-        self.determine_settings()
-        entry = models.InternalRedirectionEntry(request, path)
-        entry.state = models.State.objects.get(descr=self.state)
-        entry.save()
+        super(PlonePage, self).migrate(request, path, InternalRedirectionEntry)
         nvobject = models.VInternalRedirection(entry=entry, version_number=1,
             target=entry.container)
         nvobject.save()
@@ -307,6 +311,6 @@ request.user = User.objects.get(username=OWNER)
 plone_object = PloneObject(PLONE_URL)
 path = TARGET_PATH
 entry = models.Entry.objects.get_by_path(request, path)
-if entry:
+if entry and ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
     entry.delete()
 plone_object.migrate(request, path)
