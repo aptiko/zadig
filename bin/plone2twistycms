@@ -1,16 +1,15 @@
 #!/usr/bin/python
 """
-This script is in heavy development. Don't expect it to work.
+plone2twistycms converts a Plone site to a twistycms site. It does so
+by visiting the Plone site on the web. The script must log on the
+Plone site as a user who has edit permissions on all pages (the
+administrator for example).
 
 Usage: plone2twistycms config_file
 
-config_file has the following format:
-
-PLONE_URL=...
-TARGET_PATH=...
-
-It is actually a Python program that defines several variables. The variables
-are:
+The config_file a collection of lines of the form "OPTION=value".  It
+is actually a Python program that defines several variables. The
+options are:
 
 The options are:
 
@@ -29,7 +28,7 @@ The options are:
 
   TARGET_PATH
       Will migrate PLONE_URL to this twistycms path, and subobjects to
-      subpaths. If TARGET-PATH already exists, it and its subentries are
+      subpaths. If TARGET_PATH already exists, it and its subentries are
       deleted.
 
   OWNER
