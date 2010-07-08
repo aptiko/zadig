@@ -27,6 +27,7 @@ class permissions:
 
 class Language(models.Model):
     id = models.CharField(max_length=5, primary_key=True)
+    descr = models.CharField(max_length=63)
     def __unicode__(self):
         return self.id
     class Meta:
