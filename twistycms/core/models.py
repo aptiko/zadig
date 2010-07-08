@@ -711,7 +711,7 @@ class EditImageForm(forms.Form):
 
 class LinkEntry(Entry):
     def process_edit_subform(self, vobject, form):
-        vobject.content=form.cleaned_data['target']
+        vobject.target = form.cleaned_data['target']
     def create_edit_subform(self, request, new):
         if new:
             result = EditLinkForm()
