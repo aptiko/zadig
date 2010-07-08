@@ -743,9 +743,7 @@ class VLink(VObject):
         db_table = 'cms_vlink'
 
 class EditLinkForm(forms.Form):
-    target = forms.ChoiceField()
-    def __init__(self):
-        self.target.choices = [(e.id, e.spath) for e in Entry.objects.all()]
+    target = forms.URLField()
     def render(self):
         return self.as_table()
 
@@ -787,7 +785,9 @@ class VInternalRedirection(VObject):
 
 class EditInternalRedirectionForm(forms.Form):
     target = forms.ChoiceField()
-    def __init__(self):
-        self.target.choices = [(e.id, e.spath) for e in Entry.objects.all()]
+    def __init__(self, **kwargs):
+        super(EditInternalRedirectionForm, self).__init__(**kwargs)
+        EditInternalRedirectionForm.fields['target'].choices = [(e.id, e.spath)
+                                            for e in Entry.objects.all()]
     def render(self):
         return self.as_table()
