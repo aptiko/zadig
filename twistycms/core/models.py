@@ -226,7 +226,7 @@ class Entry(models.Model):
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
         if permissions.EDIT in parent_permissions:
-            return subentries
+            return list(subentries)
         result = []
         for s in subentries:
             if permissions.SEARCH in s.get_permissions(request):
