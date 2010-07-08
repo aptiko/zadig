@@ -753,7 +753,7 @@ class EditLinkForm(forms.Form):
 
 class InternalRedirectionEntry(Entry):
     def process_edit_subform(self, vobject, form):
-        vobject.content=form.cleaned_data['target']
+        vobject.target = form.cleaned_data['target']
     def create_edit_subform(self, request, new):
         if new:
             result = EditInternalRedirectionForm()
@@ -786,8 +786,8 @@ class VInternalRedirection(VObject):
 class EditInternalRedirectionForm(forms.Form):
     target = forms.ChoiceField()
     def __init__(self, **kwargs):
+        EditInternalRedirectionForm.base_fields['target'].choices = [
+                                (e.id, e.spath) for e in Entry.objects.all()]
         super(EditInternalRedirectionForm, self).__init__(**kwargs)
-        EditInternalRedirectionForm.fields['target'].choices = [(e.id, e.spath)
-                                            for e in Entry.objects.all()]
     def render(self):
         return self.as_table()

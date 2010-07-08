@@ -280,7 +280,7 @@ class PloneDefaultFolderView(PloneObject):
                                             models.InternalRedirectionEntry)
         nvobject = models.VInternalRedirection(entry=self.entry,
             version_number=self.max_existing_version_number+1,
-            target=entry.container)
+            target=self.entry.container)
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
             language=self.language, title=self.title,
