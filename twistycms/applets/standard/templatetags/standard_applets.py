@@ -1,6 +1,7 @@
 # coding: UTF-8
 from django import template
 from django.utils.translation import ugettext as _
+import settings
 
 from twistycms.core import models as coremodels
 from twistycms.core import utils
@@ -35,6 +36,33 @@ def do_breadcrumbs(parser, token):
     return BreadcrumbsNode()
 
 register.tag('breadcrumbs', do_breadcrumbs)
+
+### Language tools ###
+
+class LanguageToolsNode(template.Node):
+    def __init__(self):
+        pass
+    def render(self, context):
+        request = context['request']
+        result = '<div onMouseOver="showShowables(this)" '+\
+                                        'onMouseOut="hideShowables(this)">'
+        result += '<ul>' 
+        for lang in settings.LANGUAGES:
+            result += '<li %s><a href="%s?set_language=%s">%s</a></li>' % (
+                'class="active"' if request.session['language']==lang else "",
+                request.path, lang,
+                coremodels.Language.objects.get(id=lang).descr)
+        result += '</ul>'
+        result += _('<p class="showable">The preferred language is %s. Only '+
+            'pages in the preferred language are shown.</p>') % (coremodels.
+            Language.objects.get(id=request.session['language']).descr,)
+        result += '</div>'
+        return result
+
+def do_language_tools(parser, token):
+    return LanguageToolsNode()
+
+register.tag('language_tools', do_language_tools)
 
 ### Login ###
 

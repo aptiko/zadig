@@ -12,6 +12,7 @@
   </title>
   <link rel="stylesheet" type="text/css" href="/static/style.css"
         title="style" />
+  <script src="/static/utils.js"></script>
   <script src="/static/twisty.js"></script>
   {% block extrahead %}{% endblock %}
 </head>
@@ -22,8 +23,13 @@
     <div id="portalPersonaltools">
       {% login %}
     </div>
-    <div id="portalBreadcrumbs">
-      {% trans "You are here: " %}{% breadcrumbs %}
+    <div id="toolLine">
+        <div id="portalBreadcrumbs">
+          {% trans "You are here: " %}{% breadcrumbs %}
+        </div>
+        <div id="languageTools">
+          {% language_tools %}
+        </div>
     </div>
   </div>
   <table id="portalColumns">

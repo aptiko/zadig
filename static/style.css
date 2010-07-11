@@ -1,10 +1,16 @@
 body { font: 69% "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif; background-color: white; color: black; margin: 0; padding: 0; }
 a { color: #436976; }
 #portalTop { margin: 0; padding: 0; background: transparent; }
-#portalPersonaltools { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.6em; padding: 0 3em 0 3em; margin: 0; text-align: right; text-transform: none; list-style-type: none; list-style-image: none list-style-position: outside; }
+#portalPersonaltools { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.6em; padding: 0 3em 0 3em; margin: 0; text-align: right; list-style-type: none; list-style-image: none; list-style-position: outside; }
 
-#portalBreadcrumbs { border-bottom: solid #8cacbb 1px; padding-left: 2em; padding-right: 2em; text-transform: none; line-height: 1.6em; }
-#portalBreadcrumbs a { text-decoration: none; }
+#toolLine { border-bottom: solid #8cacbb 1px; padding-left: 2em; padding-right: 2em; line-height: 1.6em; }
+#toolLine a { text-decoration: none; }
+#portalBreadcrumbs { display: inline; }
+#languageTools { display: inline; float: right; }
+#languageTools ul { display: inline; }
+#languageTools ul li { display: inline; padding-right: 0.75em; }
+#languageTools li.active { font-weight: bold; }
+#languageTools .showable { margin: 0; padding: 0; width: 30em; z-index: 3; background-color: white; position: absolute; right: -1px; border: 1px #8cacbb solid; border-top: none; visibility: hidden; }
 
 #leftColumn { vertical-align: top; padding: 2em 0 1em 2em; }
 #rightColumn { vertical-align: top; padding: 2em 2em 1em 0; }
