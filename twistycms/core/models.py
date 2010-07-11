@@ -407,7 +407,7 @@ class Entry(models.Model):
         subentries = self.subentries
         vobject = self.vobject
         for s in subentries[:]:
-            if 'language' in dir(s.vobject) and s.vobject.language and \
+            if s.vobject.language and \
                         s.vobject.language.id!=get_preferred_language(request):
                 subentries.remove(s)
         if request.method == 'POST':

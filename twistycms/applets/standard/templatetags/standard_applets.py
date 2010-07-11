@@ -100,7 +100,7 @@ class NavigationNode(template.Node):
                 if entryoptions.no_navigation: continue
             except models.EntryOptions.DoesNotExist:
                 pass
-            if 'language' in dir(v) and \
+            if v.language and \
                         v.language.id!=get_preferred_language(request) and \
                         s.id!=current_entry.id and \
                         not s.contains(current_entry):
