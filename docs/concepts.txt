@@ -93,7 +93,7 @@ If ``/mypage/fr`` is the French version of ``/mypage``, then you don't
 want the breadcrumbs to show "Mon Page -> Mon Page"; you want simply
 "Mon Page". For this, each object has the option to not show in the
 breadcrumbs, and this is generally for pages that are a kind of
-"folder defaults" in languages different from the containing objects'
+"folder defaults" in languages different from the containing object's
 language.
 
 Except for the name and title pairs, an object can also have a
