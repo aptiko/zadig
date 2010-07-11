@@ -6,6 +6,4 @@ class GeneralMiddleware(object):
             lang = request.GET['set_language']
             if lang in settings.LANGUAGES:
                 request.session['language'] = lang
-            if not 'language' in request.session:
-                request.session['language'] = settings.LANGUAGES[0]
         return None

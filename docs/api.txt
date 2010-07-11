@@ -401,6 +401,12 @@ The functions below are in module twistycms.core.utils.
    request.path, but does not include any directive like ``__edit__``
    and so on.
 
+.. function:: twistycms.core.utils.get_preferred_language(request)
+
+   Return the id of the language selected by the user (found in the
+   session), or the default language if the user has not selected a
+   language.
+
 .. function:: twistycms.core.utils.primary_buttons(request, vobject, selected_view)
 
    Return a list of dictionaries, where each dictionary is a primary

@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 import settings
 
 from twistycms.core import models as coremodels
-from twistycms.core import utils
+from twistycms.core.utils import get_current_path, get_preferred_language
 from twistycms.applets.standard import models
 
 register = template.Library()
@@ -73,9 +73,9 @@ class LoginNode(template.Node):
         request = context['request']
         if not request.user.is_authenticated():
             return _(u'<a href="%s__login__/">Login</a>' %
-                utils.get_current_path(request),)
+                get_current_path(request),)
         return _(u'Welcome %s. <a href="%s__logout__/">Logout</a>' %
-            (request.user, utils.get_current_path(request)))
+            (request.user, get_current_path(request)))
 
 def do_login(parser, token):
     return LoginNode()
@@ -94,11 +94,17 @@ class NavigationNode(template.Node):
                                 if x.object_class in ('PageEntry','LinkEntry')]
         no_sibling_shown_yet = True
         for s in siblings:
+            v = s.vobject
             try:
                 entryoptions = models.EntryOptions.objects.get(entry=s)
                 if entryoptions.no_navigation: continue
             except models.EntryOptions.DoesNotExist:
                 pass
+            if 'language' in dir(v) and \
+                        v.language.id!=get_preferred_language(request) and \
+                        s.id!=current_entry.id and \
+                        not s.contains(current_entry):
+                continue
             if no_sibling_shown_yet:
                 no_sibling_shown_yet = False
                 result += '<ul class="navigationLevel%d">' % (level,)

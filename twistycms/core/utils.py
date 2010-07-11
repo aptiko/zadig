@@ -3,6 +3,7 @@
 import re
 
 from django.utils.translation import ugettext as _
+import settings
 
 def split_path(path):
     if path=='' or path=='/': return ['',]
@@ -23,6 +24,10 @@ def get_current_path(request):
     result = '/' + '/'.join(path_items)
     if result != '/': result += '/'
     return result
+
+def get_preferred_language(request):
+    return request.session['language'] if 'language' in request.session else \
+                                                        settings.LANGUAGES[0]
 
 def primary_buttons(request, vobject, selected_view):
     from twistycms.core.models import permissions

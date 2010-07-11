@@ -15,8 +15,8 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-from twistycms.core.utils import primary_buttons
-from twistycms.core.utils import secondary_buttons
+from twistycms.core.utils import primary_buttons, secondary_buttons, \
+                                                    get_preferred_language
 
 class permissions:
     VIEW=1
@@ -404,8 +404,12 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
     def contents_view(self, request):
-        subentries = self.get_subentries(request)
-        vobject = self.get_vobject(request)
+        subentries = self.subentries
+        vobject = self.vobject
+        for s in subentries[:]:
+            if 'language' in dir(s.vobject) and s.vobject.language and \
+                        s.vobject.language.id!=get_preferred_language(request):
+                subentries.remove(s)
         if request.method == 'POST':
             move_item_form = MoveItemForm(request.POST)
             if move_item_form.is_valid():
