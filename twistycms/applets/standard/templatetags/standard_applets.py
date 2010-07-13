@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 import settings
 
 from twistycms.core import models as coremodels
-from twistycms.core.utils import get_current_path, get_preferred_language
+from twistycms.core.utils import get_current_path
 from twistycms.applets.standard import models
 
 register = template.Library()
@@ -53,9 +53,11 @@ class LanguageToolsNode(template.Node):
                 request.path, lang,
                 coremodels.Language.objects.get(id=lang).descr)
         result += '</ul>'
-        result += _('<p class="showable">The preferred language is %s. Only '+
-            'pages in the preferred language are shown.</p>') % (coremodels.
-            Language.objects.get(id=request.session['language']).descr,)
+        result += _('<p class="showable">The preferred language is %s; the '+
+                    'effective language is %s.</p>') % (coremodels.Language.
+                    objects.get(id=request.preferred_language).descr,
+                    coremodels.Language.objects.get(
+                                id=request.effective_language).descr)
         result += '</div>'
         return result
 
@@ -101,7 +103,7 @@ class NavigationNode(template.Node):
             except models.EntryOptions.DoesNotExist:
                 pass
             if v.language and \
-                        v.language.id!=get_preferred_language(request) and \
+                        v.language.id!=request.effective_language and \
                         s.id!=current_entry.id and \
                         not s.contains(current_entry):
                 continue

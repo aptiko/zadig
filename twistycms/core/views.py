@@ -11,23 +11,35 @@ from django.db import transaction
 
 from twistycms.core import models
 
+def _set_languages(request, vobject):
+    """Set preferred and effective language."""
+    import settings
+    request.preferred_language = request.session['language'] \
+                    if 'language' in request.session else settings.LANGUAGES[0]
+    request.effective_language = vobject.language.id if vobject.language \
+                                                else request.preferred_language
+
 def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
+    _set_languages(request, vobject)
     return vobject.end_view(request)
 
 def info_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
+    _set_languages(request, vobject)
     return vobject.info_view(request)
 
 def edit_entry(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
+    _set_languages(request, vobject)
     entry = vobject.entry.descendant
     return entry.edit_view(request)
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
+    _set_languages(request, parent_vobject)
     parent_entry = parent_vobject.entry.descendant
     new_entry_class = eval('models.%sEntry' % (entry_type,))
     entry = new_entry_class(container=parent_entry)
@@ -35,10 +47,12 @@ def new_entry(request, parent_path, entry_type):
 
 def entry_contents(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
+    _set_languages(request, entry.vobject)
     return entry.contents_view(request)
 
 def entry_history(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
+    _set_languages(request, entry.vobject)
     return entry.history_view(request)
 
 def change_state(request, path, new_state_id):
@@ -64,6 +78,7 @@ class LoginForm(forms.Form):
 
 def login(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
+    _set_languages(request, vobject)
     message = ''
     if request.method!='POST':
         form = LoginForm()

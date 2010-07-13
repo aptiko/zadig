@@ -15,8 +15,7 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-from twistycms.core.utils import primary_buttons, secondary_buttons, \
-                                                    get_preferred_language
+from twistycms.core.utils import primary_buttons, secondary_buttons
 
 class permissions:
     VIEW=1
@@ -406,10 +405,6 @@ class Entry(models.Model):
     def contents_view(self, request):
         subentries = self.subentries
         vobject = self.vobject
-        for s in subentries[:]:
-            if s.vobject.language and \
-                        s.vobject.language.id!=get_preferred_language(request):
-                subentries.remove(s)
         if request.method == 'POST':
             move_item_form = MoveItemForm(request.POST)
             if move_item_form.is_valid():

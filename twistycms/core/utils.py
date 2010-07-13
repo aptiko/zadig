@@ -25,10 +25,6 @@ def get_current_path(request):
     if result != '/': result += '/'
     return result
 
-def get_preferred_language(request):
-    return request.session['language'] if 'language' in request.session else \
-                                                        settings.LANGUAGES[0]
-
 def primary_buttons(request, vobject, selected_view):
     from twistycms.core.models import permissions
     if not vobject:
