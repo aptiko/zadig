@@ -110,6 +110,36 @@ In this section we have been talking of "objects". To be precise,
 each *entry* has a name, and each *vobject* has a set of metatags
 (i.e. a set of title pairs and a set of descriptions).
 
+Languages
+=========
+
+The user can select the **preferred language** from the language
+selector, which on the default template is on the top left, below
+login. However, the **effective language** is determined by the object
+being viewed. If the object being viewed is in a specific language
+(e.g. it is a page in Greek), then the effective language is the
+object's language (Greek in our case); but if the object has no
+associated language (e.g. it is an image), then the effective language
+is the preferred language.
+
+The translatable strings (i.e. the elements of the user interface) are
+shown in the effective language, except for messages that intend to
+notify the user about the languages chosen and why what he sees is in
+another language (this is so that the user understands at least that
+message).
+
+An object in a specific language can have alternative versions, that
+is, other related objects in alternative languages. For example, for a
+page in English there may exist a page in Greek, and the two can be
+related in the sense that the system knows that they display the same
+content in different languages. In that case, when the user changes
+the preferred language, the system transfers him to the alternative
+page (which, thus, becomes also the effective language). When an
+object exists in the preferred language and in another language, the
+navigation shows only the preferred language; but if an object exists
+in a language which is not the preferred language and does not have an
+equivalent in the preferred language, the navigation shows it anyway.
+
 Deletions
 =========
 
