@@ -7,7 +7,6 @@ from django import forms
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 import django.contrib.auth
-from django.db import transaction
 
 from twistycms.core import models
 
@@ -104,7 +103,6 @@ def cut(request, path):
     request.session['cut_entries'] = [entry.id]
     return info_view(request, path)
 
-@transaction.commit_on_success
 def paste(request, path):
     target_entry = models.Entry.objects.get_by_path(request, path)
     for entry_id in request.session['cut_entries']:

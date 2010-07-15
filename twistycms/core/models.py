@@ -1,6 +1,5 @@
 import mimetypes
 
-from django.db import transaction
 from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -100,6 +99,12 @@ class Workflow(models.Model):
     class Meta:
         db_table = 'cms_workflow'
 
+class MultilingualGroup(models.Model):
+    def __unicode__(self):
+        return unicode(self.id)
+    class Meta:
+        db_table = 'cms_multilingualgroup'
+
 class EntryManager(models.Manager):
     def get_by_path(self, request, path):
         entry=None
@@ -121,6 +126,8 @@ class Entry(models.Model):
     seq = models.PositiveIntegerField()
     owner = models.ForeignKey(django.contrib.auth.models.User)
     state = models.ForeignKey(State)
+    multilingual_group = models.ForeignKey(MultilingualGroup, blank=True,
+                                                                null=True)
     objects = EntryManager()
     def __init__(self, *args, **kwargs):
         # If called with only two arguments, then it is someone calling the
@@ -232,36 +239,29 @@ class Entry(models.Model):
             if permissions.SEARCH in s.get_permissions(request):
                 result.append(s)
         return result
-    @transaction.commit_manually
     def reorder(self, request, source_seq, target_seq):
         if permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
-        try:
-            subentries = self.all_subentries.order_by('seq').all()
-            s = source_seq
-            t = target_seq
-            n = len(subentries)
-            if s<1 or s>n or t<1 or t>n+1 or s==t:
-                raise Exception(_("Invalid reordering operation"))
-            subentries[s-1].seq = 32767
+        subentries = self.all_subentries.order_by('seq').all()
+        s = source_seq
+        t = target_seq
+        n = len(subentries)
+        if s<1 or s>n or t<1 or t>n+1 or s==t:
+            raise Exception(_("Invalid reordering operation"))
+        subentries[s-1].seq = 32767
+        subentries[s-1].save()
+        if t>s:
+            for i in range(source_seq+1, t):
+                subentries[i-1].seq = i-1
+                subentries[i-1].save()
+            subentries[s-1].seq = t-1
             subentries[s-1].save()
-            if t>s:
-                for i in range(source_seq+1, t):
-                    subentries[i-1].seq = i-1
-                    subentries[i-1].save()
-                subentries[s-1].seq = t-1
-                subentries[s-1].save()
-            else:
-                for i in range(s-1, t-1, -1):
-                    subentries[i-1].seq = i+1
-                    subentries[i-1].save()
-                subentries[s-1].seq = t
-                subentries[s-1].save()
-        except:
-            transaction.rollback()
-            raise
         else:
-            transaction.commit()
+            for i in range(s-1, t-1, -1):
+                subentries[i-1].seq = i+1
+                subentries[i-1].save()
+            subentries[s-1].seq = t
+            subentries[s-1].save()
     @property
     def template_name(self):
         return 'edit_entry.html'
@@ -293,7 +293,6 @@ class Entry(models.Model):
                 title=m['title'], short_title=m['short_title'],
                 description=m['description'])
             nmetatags.save()
-    @transaction.commit_on_success
     def edit_view(self, request, new=False):
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
@@ -345,7 +344,6 @@ class Entry(models.Model):
                         primary_buttons(request, not new and vobject, 'edit'),
                 'secondary_buttons':
                     not new and secondary_buttons(request, vobject) or []})
-    @transaction.commit_on_success
     def rename(self, request, newname):
         if not self.container:
             raise ValueError(_("The root page cannot be renamed"))
@@ -370,7 +368,6 @@ class Entry(models.Model):
             language=nvobject.language,
             title=_("Redirection"))
         nmetatags.save()
-    @transaction.commit_on_success
     def move(self, request, target_entry):
         if not self.container:
             raise ValueError(_("The root page cannot be moved"))
