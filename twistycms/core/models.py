@@ -131,6 +131,23 @@ class MultilingualGroup(models.Model):
         db_table = 'cms_multilingualgroup'
 
 
+class _check_multilingual_group(object):
+    """Called whenever one needs to verify the integrity of specified
+    multilingual group. What it actually does is postpone this check for
+    commit time."""
+    # FIXME: This implementation is not thread-safe.
+    groups_to_check = set()
+    def __init__(self, mgid):
+        self.groups_to_check.add(mgid)
+
+
+def _check_pending_multilingual_groups(sender, **kwargs):
+    for mgid in _check_multilingual_group.groups_to_check:
+        MultilingualGroup.objects.get(id=mgid).check()
+from django.core.signals import request_finished
+request_finished.connect(_check_pending_multilingual_groups)
+
+
 class EntryManager(models.Manager):
     def get_by_path(self, request, path):
         entry=None
@@ -144,6 +161,7 @@ class EntryManager(models.Manager):
         entry.request = request
         return entry
 
+
 class Entry(models.Model):
     object_class = models.CharField(max_length=100)
     container = models.ForeignKey('self', related_name="all_subentries",
@@ -155,6 +173,7 @@ class Entry(models.Model):
     multilingual_group = models.ForeignKey(MultilingualGroup, blank=True,
                                                                 null=True)
     objects = EntryManager()
+
     def __init__(self, *args, **kwargs):
         # If called with only two arguments, then it is someone calling the
         # twistyCMS API, and the two arguments are request and path.
@@ -174,6 +193,7 @@ class Entry(models.Model):
             self.__initialize(request)
         if not self.object_class:
             self.object_class = self._meta.object_name
+
     def __initialize(self, request):
         """Set all other attributes of a newly created Entry, when only
         container has been set."""
@@ -187,15 +207,35 @@ class Entry(models.Model):
         self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
+
+    def save(self, *args, **kwargs):
+        if self.multilingual_group:
+            _check_multilingual_group(self.multilingual_group.id):
+        # If this is an update, also check the multilingual group to which 
+        # this entry originally belonged. FIXME: This solution is a bit ugly;
+        # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
+        if self.id:
+            original_mg = Entry.objects.get(id=self.id).multilingual_group
+            if original_mg:
+                _check_multilingual_group(original_mg.id):
+        return super(Entry, self).save(args, kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.multilingual_group:
+            _check_multilingual_group(self.multilingual_group.id):
+        return super(Entry, self).delete(args, kwargs)
+
     @property
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
         else:
             return getattr(self, self.object_class.lower())
+
     @property
     def permissions(self):
         return self.get_permissions(self.request)
+
     def get_permissions(self, request):
         if request.user.is_authenticated() and self.owner.pk == request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
@@ -216,9 +256,11 @@ class Entry(models.Model):
                                                               state=self.state):
                 result.add(perm.permission_id)
         return result
+
     @property
     def vobject(self):
         return self.get_vobject(self.request)
+
     def get_vobject(self, request, version_number=None):
         latest_vobject = self.vobject_set.order_by('-version_number')[0]
         if version_number is None:
@@ -231,6 +273,7 @@ class Entry(models.Model):
         a = vobject.descendant
         a.request = request
         return a
+
     @property
     def path(self):
         result = self.name
@@ -239,20 +282,24 @@ class Entry(models.Model):
             entry = entry.container
             result = entry.name + '/' + result
         return result
+
     @property
     def spath(self):
         result = '/' + self.path + '/'
         if result == '//':
             result = '/'
         return result
+
     def contains(self, entry):
         while entry:
             if entry.container == self: return True
             entry = entry.container
         return False
+
     @property
     def subentries(self):
         return self.get_subentries(self.request)
+
     def get_subentries(self, request):
         parent_permissions = self.get_permissions(request)
         if permissions.VIEW not in parent_permissions:
@@ -265,6 +312,7 @@ class Entry(models.Model):
             if permissions.SEARCH in s.get_permissions(request):
                 result.append(s)
         return result
+
     def reorder(self, request, source_seq, target_seq):
         if permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
@@ -288,9 +336,11 @@ class Entry(models.Model):
                 subentries[i-1].save()
             subentries[s-1].seq = t
             subentries[s-1].save()
+
     @property
     def template_name(self):
         return 'edit_entry.html'
+
     def __create_metatags_formset(self, request, new):
         """Return a formset of metatags forms, as many as existing metatag sets
         plus one if there is another available language. Called by edit_view()
@@ -310,6 +360,7 @@ class Entry(models.Model):
             if remaining_langs:
                 initial.append({ 'language': remaining_langs.pop() })
         return MetatagsFormSet(initial=initial)
+
     def __process_metatags_formset(self, vobject, metatagsformset):
         for m in metatagsformset.cleaned_data:
             if not (m['title'] or m['short_title'] or m['description']):
@@ -319,6 +370,7 @@ class Entry(models.Model):
                 title=m['title'], short_title=m['short_title'],
                 description=m['description'])
             nmetatags.save()
+
     def edit_view(self, request, new=False):
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
@@ -370,6 +422,7 @@ class Entry(models.Model):
                         primary_buttons(request, not new and vobject, 'edit'),
                 'secondary_buttons':
                     not new and secondary_buttons(request, vobject) or []})
+
     def rename(self, request, newname):
         if not self.container:
             raise ValueError(_("The root page cannot be renamed"))
@@ -394,6 +447,7 @@ class Entry(models.Model):
             language=nvobject.language,
             title=_("Redirection"))
         nmetatags.save()
+
     def move(self, request, target_entry):
         if not self.container:
             raise ValueError(_("The root page cannot be moved"))
@@ -425,6 +479,7 @@ class Entry(models.Model):
             language=nvobject.language,
             title=_("Redirection"))
         nmetatags.save()
+
     def contents_view(self, request):
         subentries = self.subentries
         vobject = self.vobject
@@ -442,12 +497,14 @@ class Entry(models.Model):
                   'subentries': subentries, 'move_item_form': move_item_form,
                   'primary_buttons': primary_buttons(request, vobject, 'contents'),
                   'secondary_buttons': secondary_buttons(request, vobject)})
+
     def history_view(self, request):
         vobject = self.get_vobject(request)
         return render_to_response('entry_history.html',
                 { 'request': request, 'vobject': vobject,
                   'primary_buttons': primary_buttons(request, vobject, 'history'),
                   'secondary_buttons': secondary_buttons(request, vobject)})
+
     def __unicode__(self):
         result = self.name
         container = self.container
@@ -455,11 +512,13 @@ class Entry(models.Model):
             result = container.name + '/' + result
             container = container.container
         return result
+
     class Meta:
         unique_together = (('container', 'name'),
                            ('container', 'seq'))
         db_table = 'cms_entry'
         ordering = ('container__id', 'seq')
+
 
 class EntryPermission(models.Model):
     entry = models.ForeignKey(Entry)
@@ -477,6 +536,7 @@ class VObjectManager(models.Manager):
         entry = Entry.objects.get_by_path(request, path)
         return entry.get_vobject(request, version_number)
 
+
 class VObject(models.Model):
     object_class = models.CharField(max_length=100)
     entry = models.ForeignKey(Entry, related_name="vobject_set")
@@ -486,19 +546,10 @@ class VObject(models.Model):
     objects = VObjectManager()
 
     def save(self, *args, **kwargs):
-
-        def check_integrity_of_multilingual_group(self):
-            if not self.entry.multilingual_group: return
-            if not self.language:
-                raise ValidationError(_(u"The entry (id=%d) belongs to a "
-                    "multilingual group (id=%d) but the vobject does not "
-                    "specify a language") % (self.entry.id,
-                    self.entry.multilingual_group.id)
-
-            
         if not self.object_class:
             self.object_class = self._meta.object_name
-        check_integrity_of_multilingual_group(self)
+        if self.entry.multilingual_group:
+            _check_multilingual_group(self.entry.multilingual_group.id):
         return super(VObject, self).save(args, kwargs)
 
     @property
@@ -507,18 +558,22 @@ class VObject(models.Model):
             return self
         else:
             return getattr(self, self.object_class.lower())
+
     @property
     def rentry(self):
         entry = self.entry
         entry.request = self.request
         return entry
+
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
+
     class Meta:
         ordering = ('entry', 'version_number')
         unique_together = ('entry', 'version_number')
         db_table = 'cms_vobject'
         permissions = (("view", "View"),)
+
 
 class MetatagManager(models.Manager):
     def default(self):
