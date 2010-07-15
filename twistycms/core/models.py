@@ -3,7 +3,7 @@ import mimetypes
 from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
@@ -99,11 +99,36 @@ class Workflow(models.Model):
     class Meta:
         db_table = 'cms_workflow'
 
+
 class MultilingualGroup(models.Model):
+
+    def check(self):
+        entries = list(self.entry_set)
+        if len(entries)==1:
+            raise ValidationError(_(u"The MultilingualGroup (id=%d) contains "
+                "only one Entry (id=%d)") % (self.id, entries[0].id))
+        if not len(entries):
+            raise ValidationError(_(u"The MultilingualGroup (id=%d) does not "
+                "contain any Entry") % (self.id,))
+        languages_in_group = set()
+        for entry in entries:
+            latest_vobject = entry.vobject_set.order_by('-version_number')[0]
+            if not latest_vobject.language:
+                raise ValidationError(_(u"The MultilingualGroup (id=%d) "
+                    "contains Entry (id=%d) which does not have a language") %
+                    (self.id, entry.id))
+            if latest_vobject.language.id in languages_in_group:
+                raise ValidationError(_(u"The MultilingualGroup (id=%d) "
+                    "contains multiple occurrences of language %s (the "
+                    "entries are %s)") % (self.id, latest_vobject.language.id,
+                    ', '.join([str(x) for x in entries])))
+
     def __unicode__(self):
         return unicode(self.id)
+
     class Meta:
         db_table = 'cms_multilingualgroup'
+
 
 class EntryManager(models.Manager):
     def get_by_path(self, request, path):
@@ -458,10 +483,23 @@ class VObject(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     language = models.ForeignKey(Language, blank=True, null=True)
     objects = VObjectManager()
+
     def save(self, *args, **kwargs):
+
+        def check_integrity_of_multilingual_group(self):
+            if not self.entry.multilingual_group: return
+            if not self.language:
+                raise ValidationError(_(u"The entry (id=%d) belongs to a "
+                    "multilingual group (id=%d) but the vobject does not "
+                    "specify a language") % (self.entry.id,
+                    self.entry.multilingual_group.id)
+
+            
         if not self.object_class:
             self.object_class = self._meta.object_name
+        check_integrity_of_multilingual_group(self)
         return super(VObject, self).save(args, kwargs)
+
     @property
     def descendant(self):
         if self._meta.object_name == self.object_class:
