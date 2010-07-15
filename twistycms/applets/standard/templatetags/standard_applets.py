@@ -49,7 +49,7 @@ class LanguageToolsNode(template.Node):
         result += '<ul>' 
         for lang in settings.LANGUAGES:
             result += '<li %s><a href="%s?set_language=%s">%s</a></li>' % (
-                'class="active"' if request.session['language']==lang else "",
+                'class="active"' if request.effective_language==lang else "",
                 request.path, lang,
                 coremodels.Language.objects.get(id=lang).descr)
         result += '</ul>'
