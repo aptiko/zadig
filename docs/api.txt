@@ -62,6 +62,12 @@ Entry
       A foreign key to :class:`~twistycms.core.models.State`, indicating the state of
       the entry.
 
+   .. attribute:: twistycms.core.models.Entry.multilingual_group
+
+      A foreign key to
+      :class:`~twistycms.core.models.MultilingualGroup`, indicating
+      the multilingual group, if any, to which the entry belongs.
+
    :class:`~twistycms.core.models.Entry` objects also have the
    following properties:
 
@@ -366,6 +372,16 @@ Other models
    A lookup storing content formats, such as "text/html" or
    "text/x-rst". Has only a :attr:`descr` field.
 
+.. class:: twistycms.core.models.MultilingualGroup
+
+   Stores the multilingual groups. It has no field besides id, as it
+   is only used to group multilingual entries together through their
+   :attr:`~twistycms.core.models.Entry.multilingual_group` field. It
+   has a :meth:`check()` method, which checks for integrity: it checks
+   that there are no multiple language occurrences in the group, makes
+   other similar checks, and raises
+   :exc:`~django.core.exceptions.ValidationError` if a check fails.
+
 .. class:: twistycms.core.models.Page(VObject)
 
    Inherits :class:`~twistycms.core.models.VObject` and designates a page. Has
@@ -382,6 +398,7 @@ Other models
    Inherits :class:`~twistycms.core.models.VObject` and designates an image. Has
    attribute :attr:`content`, an image field.
 
+   
 Utility functions
 =================
 
