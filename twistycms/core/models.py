@@ -122,6 +122,7 @@ class MultilingualGroup(models.Model):
                     "contains multiple occurrences of language %s (the "
                     "entries are %s)") % (self.id, latest_vobject.language.id,
                     ', '.join([str(x) for x in entries])))
+            languages_in_group.add(latest_vobject.language.id)
 
     def __unicode__(self):
         return unicode(self.id)
