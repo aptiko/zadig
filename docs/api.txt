@@ -126,6 +126,12 @@ Entry
       request object supplied during creation of the
       :class:`~twistycms.core.models.Entry` object.
 
+   .. attribute:: twistycms.core.models.Entry.alt_lang_entries
+
+      A list with the alternative language entries. The order in this
+      list is the order with which languages are listed in
+      ``settings.LANGUAGES``.
+
    :class:`~twistycms.core.models.Entry` objects also have the following methods:
 
    .. method:: twistycms.core.models.Entry.get_permissions(request)

@@ -338,6 +338,18 @@ class Entry(models.Model):
             subentries[s-1].save()
 
     @property
+    def alt_lang_entries(self):
+        def cmp(x, y):
+            xi = settings.LANGUAGES.index(x.language.id)
+            yi = settings.LANGUAGES.index(y.language.id)
+            return yi-xi
+        if not self.multilingual_group:
+            return []
+        result = list([self.multilingual_group.entry_set])
+        result.sort(cmp)
+        return result
+
+    @property
     def template_name(self):
         return 'edit_entry.html'
 
@@ -376,7 +388,10 @@ class Entry(models.Model):
                                                         if o['entry_options']]
         if request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
-                        'language': self.vobject.language, })
+                        'language': self.vobject.language,
+                        'altlang': self.alt_lang_entries[0].spath
+                            if self.alt_lang_entries else '',
+                        })
             metatagsformset = self.__create_metatags_formset(request, new)
             subform = self.create_edit_subform(request, new)
             optionsforms = [o['entry_options'](request, self.path)
@@ -603,6 +618,7 @@ class EditEntryForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
+    altlang = forms.CharField()
 
 class MetatagsForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])

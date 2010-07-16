@@ -16,6 +16,10 @@
            <label for="id_language">{% trans "Language:" %}</label>
            {{mainform.language}}
       </td>
+      <td>{{ mainform.altlang.errors }}
+           <label for="id_altlang">{% trans "Alternative:" %}</label>
+           {{mainform.altlang}}
+      </td>
     </tr>
   </table>
   <table>
