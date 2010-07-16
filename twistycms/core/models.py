@@ -210,19 +210,19 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         if self.multilingual_group:
-            _check_multilingual_group(self.multilingual_group.id):
+            _check_multilingual_group(self.multilingual_group.id)
         # If this is an update, also check the multilingual group to which 
         # this entry originally belonged. FIXME: This solution is a bit ugly;
         # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
         if self.id:
             original_mg = Entry.objects.get(id=self.id).multilingual_group
             if original_mg:
-                _check_multilingual_group(original_mg.id):
+                _check_multilingual_group(original_mg.id)
         return super(Entry, self).save(args, kwargs)
 
     def delete(self, *args, **kwargs):
         if self.multilingual_group:
-            _check_multilingual_group(self.multilingual_group.id):
+            _check_multilingual_group(self.multilingual_group.id)
         return super(Entry, self).delete(args, kwargs)
 
     @property
@@ -549,7 +549,7 @@ class VObject(models.Model):
         if not self.object_class:
             self.object_class = self._meta.object_name
         if self.entry.multilingual_group:
-            _check_multilingual_group(self.entry.multilingual_group.id):
+            _check_multilingual_group(self.entry.multilingual_group.id)
         return super(VObject, self).save(args, kwargs)
 
     @property
