@@ -397,7 +397,8 @@ class Entry(models.Model):
             optionsforms = [o['entry_options'](request, self.path)
                                                         for o in applet_options]
         else:
-            mainform = EditEntryForm(request.POST)
+            mainform = EditEntryForm(request.POST, request=request,
+                                                        current_entry=self)
             metatagsformset = MetatagsFormSet(request.POST)
             subform = self.subform_class(request.POST, request.FILES)
             optionsforms = [o['EntryOptionsForm'](request.POST)
@@ -614,11 +615,47 @@ class VObjectMetatags(models.Model):
         db_table = 'cms_vobjectmetatags'
     objects = MetatagManager()
 
+
 class EditEntryForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
     altlang = forms.CharField()
+
+    def __init__(self, *args, **kwargs):
+        """We keep a pointer to 'request' and 'entry' if the caller supplies
+        it, in order to use it when we clean."""
+        if 'request' in kwargs:
+            self.request = kwargs['request']
+            del(kwargs['request'])
+            self.current_entry = kwargs['current_entry']
+            del(kwargs['current_entry'])
+        super(EditEntryForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        c = self.cleaned_data
+        c['altlang'] = c['altlang'].strip()
+        if c['altlang']:
+            if not c['language']:
+                raise forms.ValidationError(_(u"Specify a language, or "
+                    "don't specify an alternative language"))
+            e = Entry.objects.get_by_path(self.request, c['altlang'])
+            if e is None:
+                raise forms.ValidationError(_(u"The object specified as "
+                    "alternative language does not exist, or you do not have "
+                    "permission to view it."))
+            if e.id==self.current_entry.id:
+                raise forms.ValidationError(_(u"Specify a different object "
+                    "as alternative language, not this object."))
+            if not e.vobject.language:
+                raise forms.ValidationError(_(u"The object you specified as "
+                    "alternative language does not have a language defined."))
+            if e.vobject.language.id==c['language']:
+                raise forms.ValidationError(_(u"The object you specified as "
+                    "alternative language has the same language as this "
+                    "object"))
+        return c
+
 
 class MetatagsForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
