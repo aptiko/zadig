@@ -103,7 +103,7 @@ class Workflow(models.Model):
 class MultilingualGroup(models.Model):
 
     def check(self):
-        entries = list(self.entry_set)
+        entries = list(self.entry_set.all())
         if len(entries)==1:
             raise ValidationError(_(u"The MultilingualGroup (id=%d) contains "
                 "only one Entry (id=%d)") % (self.id, entries[0].id))
@@ -383,6 +383,19 @@ class Entry(models.Model):
                 description=m['description'])
             nmetatags.save()
 
+    def __set_altlang(self, request, altlang):
+        """Sets multilingual_group so that the entry specified by altlang is
+        an alternative language entry."""
+        e = Entry.objects.get_by_path(request, altlang)
+        if e.multilingual_group:
+            self.multilingual_group = e.multilingual_group
+        else:
+            amultilingual_group = MultilingualGroup()
+            amultilingual_group.save()
+            self.multilingual_group = amultilingual_group
+            e.multilingual_group = amultilingual_group
+            e.save()
+
     def edit_view(self, request, new=False):
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
@@ -412,7 +425,9 @@ class Entry(models.Model):
                 if new:
                     self.__initialize(request)
                     self.name = mainform.cleaned_data['name']
-                    self.save()
+                self.__set_altlang(request,
+                                        mainform.cleaned_data['altlang'])
+                self.save()
                 nvobject = self.vobject_class(entry=self,
                     version_number=new and 1 or (
                                 self.get_vobject(request).version_number + 1),
