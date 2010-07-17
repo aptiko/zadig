@@ -55,9 +55,13 @@ class LanguageToolsNode(template.Node):
             for e in alt_lang_entries:
                 if e.vobject.language.id==lang:
                     target = e.spath
-            result += '<li %s><a href="%s?set_language=%s">%s</a></li>' % (
-                'class="active"' if request.effective_language==lang else "",
-                target, lang, coremodels.Language.objects.get(id=lang).descr)
+            result += '<li class="%s %s %s"><a href="%s?set_language=%s">%s' \
+                      '</a></li>' % (
+                      'effective' if request.effective_language==lang else "",
+                      'preferred' if request.preferred_language==lang else "",
+                      'available' if target!=request.path else "",
+                      target, lang,
+                      coremodels.Language.objects.get(id=lang).descr)
         result += '</ul>'
         result += _('<p class="showable">The preferred language is %s; the '+
                     'effective language is %s.</p>') % (coremodels.Language.

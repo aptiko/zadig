@@ -9,7 +9,12 @@ a { color: #436976; }
 #languageTools { display: inline; float: right; }
 #languageTools ul { display: inline; }
 #languageTools ul li { display: inline; padding-right: 0.75em; }
-#languageTools li.active { font-weight: bold; }
+#languageTools a { color: #96E2EC }
+#languageTools li { color: #96E2EC }
+#languageTools li.effective { font-weight: bold; color: #436976 }
+#languageTools li.available a { color: #436976 }
+#languageTools li.effective a { color: #436976 }
+#languageTools li.preferred { text-decoration: underline; }
 #languageTools .showable { margin: 0; padding: 0; width: 30em; z-index: 3; background-color: white; position: absolute; right: -1px; border: 1px #8cacbb solid; border-top: none; visibility: hidden; }
 
 #leftColumn { vertical-align: top; padding: 2em 0 1em 2em; }
