@@ -340,12 +340,12 @@ class Entry(models.Model):
     @property
     def alt_lang_entries(self):
         def cmp(x, y):
-            xi = settings.LANGUAGES.index(x.language.id)
-            yi = settings.LANGUAGES.index(y.language.id)
+            xi = settings.LANGUAGES.index(x.vobject.language.id)
+            yi = settings.LANGUAGES.index(y.vobject.language.id)
             return yi-xi
         if not self.multilingual_group:
             return []
-        result = list([self.multilingual_group.entry_set])
+        result = list(self.multilingual_group.entry_set.all())
         result.sort(cmp)
         return result
 

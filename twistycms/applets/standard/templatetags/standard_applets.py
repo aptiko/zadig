@@ -44,14 +44,20 @@ class LanguageToolsNode(template.Node):
         pass
     def render(self, context):
         request = context['request']
+        vobject = context.get('vobject', None)
+        entry = vobject.entry if vobject else None
+        alt_lang_entries = entry.alt_lang_entries if entry else []
         result = '<div onMouseOver="showShowables(this)" '+\
                                         'onMouseOut="hideShowables(this)">'
         result += '<ul>' 
         for lang in settings.LANGUAGES:
+            target = request.path
+            for e in alt_lang_entries:
+                if e.vobject.language.id==lang:
+                    target = e.spath
             result += '<li %s><a href="%s?set_language=%s">%s</a></li>' % (
                 'class="active"' if request.effective_language==lang else "",
-                request.path, lang,
-                coremodels.Language.objects.get(id=lang).descr)
+                target, lang, coremodels.Language.objects.get(id=lang).descr)
         result += '</ul>'
         result += _('<p class="showable">The preferred language is %s; the '+
                     'effective language is %s.</p>') % (coremodels.Language.
