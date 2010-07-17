@@ -635,7 +635,7 @@ class EditEntryForm(forms.Form):
     language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
-    altlang = forms.CharField()
+    altlang = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
         """We keep a pointer to 'request' and 'entry' if the caller supplies
