@@ -47,27 +47,43 @@ class LanguageToolsNode(template.Node):
         vobject = context.get('vobject', None)
         entry = vobject.entry if vobject else None
         alt_lang_entries = entry.alt_lang_entries if entry else []
-        result = '<div onMouseOver="showShowables(this)" '+\
+        result = u'<div onMouseOver="showShowables(this)" '+\
                                         'onMouseOut="hideShowables(this)">'
-        result += '<ul>' 
+        result += u'<ul>' 
+        preferred_lang_id = request.preferred_language
+        effective_lang_id = request.effective_language
+        preferred_lang_name = coremodels.Language.objects.get(
+                                                    id=preferred_lang_id).descr
+        effective_lang_name = coremodels.Language.objects.get(
+                                                    id=effective_lang_id).descr
+        object_available_in_preferred_lang = False
         for lang in settings.LANGUAGES:
             target = request.path
             for e in alt_lang_entries:
                 if e.vobject.language.id==lang:
                     target = e.spath
-            result += '<li class="%s %s %s"><a href="%s?set_language=%s">%s' \
+                    if lang==preferred_lang_id:
+                        object_available_in_preferred_lang = True
+            result += u'<li class="%s %s %s"><a href="%s?set_language=%s">%s' \
                       '</a></li>' % (
-                      'effective' if request.effective_language==lang else "",
-                      'preferred' if request.preferred_language==lang else "",
+                      'effective' if effective_lang_id==lang else "",
+                      'preferred' if preferred_lang_id==lang else "",
                       'available' if target!=request.path else "",
-                      target, lang,
+                      target, lang, 
                       coremodels.Language.objects.get(id=lang).descr)
-        result += '</ul>'
-        result += _('<p class="showable">The preferred language is %s; the '+
-                    'effective language is %s.</p>') % (coremodels.Language.
-                    objects.get(id=request.preferred_language).descr,
-                    coremodels.Language.objects.get(
-                                id=request.effective_language).descr)
+        result += u'</ul><p class="showable">'
+        result += _(u'Your preferred language is set to %s (click on another '
+                    'language to change it).') % (preferred_lang_name,)
+        if preferred_lang_id!=effective_lang_id:
+            result += _(u' However, the object you are viewing is in %s') % (
+                        effective_lang_name,)
+            if object_available_in_preferred_lang:
+                result += _(u'; click "%s" to view it in %s.') % (
+                    preferred_lang_name, preferred_lang_name)
+            else:
+                result += _(u', and it is not available in %s.') % (
+                    preferred_lang_name,)
+        result += u'</p>'
         result += '</div>'
         return result
 
