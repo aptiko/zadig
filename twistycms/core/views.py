@@ -31,9 +31,8 @@ def info_view(request, path, version_number=None):
     return vobject.info_view(request)
 
 def edit_entry(request, path):
-    vobject = models.VObject.objects.get_by_path(request, path)
-    _set_languages(request, vobject)
-    entry = vobject.entry.descendant
+    entry = models.Entry.objects.get_by_path(request, path).descendant
+    _set_languages(request, entry.vobject)
     return entry.edit_view(request)
 
 def new_entry(request, parent_path, entry_type):

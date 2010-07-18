@@ -2,8 +2,8 @@ import mimetypes
 
 from django.core import urlresolvers
 from django.core.urlresolvers import reverse
-from django.db import models
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.db import models, IntegrityError
+from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
@@ -105,20 +105,20 @@ class MultilingualGroup(models.Model):
     def check(self):
         entries = list(self.entry_set.all())
         if len(entries)==1:
-            raise ValidationError(_(u"The MultilingualGroup (id=%d) contains "
+            raise IntegrityError(_(u"The MultilingualGroup (id=%d) contains "
                 "only one Entry (id=%d)") % (self.id, entries[0].id))
         if not len(entries):
-            raise ValidationError(_(u"The MultilingualGroup (id=%d) does not "
+            raise IntegrityError(_(u"The MultilingualGroup (id=%d) does not "
                 "contain any Entry") % (self.id,))
         languages_in_group = set()
         for entry in entries:
             latest_vobject = entry.vobject_set.order_by('-version_number')[0]
             if not latest_vobject.language:
-                raise ValidationError(_(u"The MultilingualGroup (id=%d) "
+                raise IntegrityError(_(u"The MultilingualGroup (id=%d) "
                     "contains Entry (id=%d) which does not have a language") %
                     (self.id, entry.id))
             if latest_vobject.language.id in languages_in_group:
-                raise ValidationError(_(u"The MultilingualGroup (id=%d) "
+                raise IntegrityError(_(u"The MultilingualGroup (id=%d) "
                     "contains multiple occurrences of language %s (the "
                     "entries are %s)") % (self.id, latest_vobject.language.id,
                     ', '.join([str(x) for x in entries])))
@@ -131,21 +131,11 @@ class MultilingualGroup(models.Model):
         db_table = 'cms_multilingualgroup'
 
 
-class _check_multilingual_group(object):
+def _check_multilingual_group(request, mgid):
     """Called whenever one needs to verify the integrity of specified
     multilingual group. What it actually does is postpone this check for
-    commit time."""
-    # FIXME: This implementation is not thread-safe.
-    groups_to_check = set()
-    def __init__(self, mgid):
-        self.groups_to_check.add(mgid)
-
-
-def _check_pending_multilingual_groups(sender, **kwargs):
-    for mgid in _check_multilingual_group.groups_to_check:
-        MultilingualGroup.objects.get(id=mgid).check()
-from django.core.signals import request_finished
-request_finished.connect(_check_pending_multilingual_groups)
+    commit time (the middleware makes the check)."""
+    request.multilingual_groups_to_check.add(mgid)
 
 
 class EntryManager(models.Manager):
@@ -210,19 +200,19 @@ class Entry(models.Model):
 
     def save(self, *args, **kwargs):
         if self.multilingual_group:
-            _check_multilingual_group(self.multilingual_group.id)
+            _check_multilingual_group(self.request, self.multilingual_group.id)
         # If this is an update, also check the multilingual group to which 
         # this entry originally belonged. FIXME: This solution is a bit ugly;
         # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
         if self.id:
             original_mg = Entry.objects.get(id=self.id).multilingual_group
             if original_mg:
-                _check_multilingual_group(original_mg.id)
+                _check_multilingual_group(self.request, original_mg.id)
         return super(Entry, self).save(args, kwargs)
 
     def delete(self, *args, **kwargs):
         if self.multilingual_group:
-            _check_multilingual_group(self.multilingual_group.id)
+            _check_multilingual_group(self.request, self.multilingual_group.id)
         return super(Entry, self).delete(args, kwargs)
 
     @property
@@ -230,7 +220,9 @@ class Entry(models.Model):
         if self._meta.object_name == self.object_class:
             return self
         else:
-            return getattr(self, self.object_class.lower())
+            a = getattr(self, self.object_class.lower())
+            a.request = self.request
+            return a
 
     @property
     def permissions(self):
@@ -580,7 +572,8 @@ class VObject(models.Model):
         if not self.object_class:
             self.object_class = self._meta.object_name
         if self.entry.multilingual_group:
-            _check_multilingual_group(self.entry.multilingual_group.id)
+            _check_multilingual_group(self.request,
+                                            self.entry.multilingual_group.id)
         return super(VObject, self).save(args, kwargs)
 
     @property
@@ -588,7 +581,9 @@ class VObject(models.Model):
         if self._meta.object_name == self.object_class:
             return self
         else:
-            return getattr(self, self.object_class.lower())
+            a = getattr(self, self.object_class.lower())
+            a.request = self.request
+            return a
 
     @property
     def rentry(self):
