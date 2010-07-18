@@ -262,9 +262,8 @@ class Entry(models.Model):
         if vobject.version_number != latest_vobject.version_number \
                 and permissions.EDIT not in self.get_permissions(request):
             raise PermissionDenied(_(u"Permission denied"))
-        a = vobject.descendant
-        a.request = request
-        return a
+        vobject.request = request
+        return vobject.descendant
 
     @property
     def path(self):
@@ -425,6 +424,7 @@ class Entry(models.Model):
                                 self.get_vobject(request).version_number + 1),
                     language=Language.objects.get(
                                        id=mainform.cleaned_data['language']))
+                nvobject.request = self.request #FIXME: should supply at creation time
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)

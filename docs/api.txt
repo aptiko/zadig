@@ -240,7 +240,9 @@ VObject
    
    .. attribute:: twistycms.core.models.VObject.entry
 
-      Foreign key to ::class:`~twistycms.core.models.Entry`.
+      Foreign key to ::class:`~twistycms.core.models.Entry`. Note that
+      you should avoid using this attribute; instead, use
+      :attr:`~twistycms.core.models.VObject.rentry`.
 
    .. attribute:: twistycms.core.models.VObject.version_number
 
