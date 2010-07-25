@@ -374,9 +374,7 @@ class Entry(models.Model):
                 description=m['description'])
             nmetatags.save()
 
-    def __set_altlang(self, request, altlang):
-        """Sets multilingual_group so that the entry specified by altlang is
-        an alternative language entry."""
+    def set_altlang(self, request, altlang):
         e = Entry.objects.get_by_path(request, altlang)
         if e.multilingual_group:
             self.multilingual_group = e.multilingual_group
@@ -416,8 +414,7 @@ class Entry(models.Model):
                 if new:
                     self.__initialize(request)
                     self.name = mainform.cleaned_data['name']
-                self.__set_altlang(request,
-                                        mainform.cleaned_data['altlang'])
+                self.set_altlang(request, mainform.cleaned_data['altlang'])
                 self.save()
                 nvobject = self.vobject_class(entry=self,
                     version_number=new and 1 or (
