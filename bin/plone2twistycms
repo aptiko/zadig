@@ -151,13 +151,15 @@ class PloneObject(object):
         of the job at the beginning, most important of which is to create
         and save the entry."""
         # Find language and other settings of object by checking the contents of
-        # its edit view.
+        # its various views.
         a = self.editsoup.find('input', attrs={'id': 'excludeFromNav'})
         self.no_nav = 'checked' in [x[0] for x in a.attrs]
         l = self.editsoup.find('select', attrs={'id': 'language'}).find(
                             'option', attrs={'selected': 'selected'})
         self.language = models.Language.objects.get(id=l['value'] if l
                                                     else DEFAULT_LANGUAGE)
+        f = self.translationsoup.find('form', attrs={'name': 'deleteLanguage'})
+        alternative_lang = f.a['href']
 
         # Prepare and save the entry
         self.entry = models.Entry.objects.get_by_path(request, path)
@@ -173,6 +175,7 @@ class PloneObject(object):
                 +'already existed was type %s rather than %s') % (path,
                 self.entry.__class__.__name__, entry_type.__name__))
         self.entry.state = models.State.objects.get(descr=self.state)
+        self.entry.set_altlang(request, alternative_lang)
         self.entry.save()
 
         # Determine the max existing version number
