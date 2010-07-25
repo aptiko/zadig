@@ -116,7 +116,7 @@ class PloneObject(object):
             logging.debug("(It's a link)")
             return super(PloneObject, cls).__new__(PloneLink)
         raise UnknownPloneObjectType("Unknown object type at "+url)
-    def __init__(self, url, soup=None, editsoup=None):
+    def __init__(self, url, soup=None, editsoup=None, translationsoup=None):
         """Retrieve title, description and state from a Plone page;
         for subclasses, also retrieve content. soup is the BeautifulSoup object
         resulting from parsing the url. editsoup is the soup resulting from
@@ -126,11 +126,18 @@ class PloneObject(object):
             html = get_response(url).read()
             soup = BeautifulSoup(html)
         if not editsoup:
-            editurl = soup.find('li', attrs={'id': 'contentview-edit'}).a['href']
+            editurl = soup.find('li', attrs={'id': 'contentview-edit'}
+                                                                    ).a['href']
             html = get_response(editurl).read()
             editsoup = BeautifulSoup(html)
+        if not translationsoup:
+            translationsurl = soup.find('a', attrs={
+                                        'id': '_manage_translations' })['href']
+            html = get_response(translationsurl).read()
+            translationsoup = BeautifulSoup(html)
         self.soup = soup
         self.editsoup = editsoup
+        self.translationsoup = translationsoup
         self.title = self.soup.find(True,
                             id='parent-fieldname-title').string.strip()
         self.description = self.editsoup.find('textarea', id='description'
