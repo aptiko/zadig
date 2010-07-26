@@ -220,11 +220,28 @@ Entry
 
       Set :attr:`~twistycms.core.models.Entry.multilingual_group` so
       that the entry specified by *altpath* is an alternative language
-      entry. *altpath* is a path to another entry. Depending on
-      circumstances, the method may do nothing, or it may change the
-      :attr:`~twistycms.core.models.Entry.multilingual_group` for this
-      entry, or for the entry specified by *altpath*, or create a new
-      multilingual group, as needed.
+      entry. *altpath* is a path to another entry.
+      
+      Note that this method will rarely, if ever return an error: it
+      tries to be smart and do the right thing. Maybe it's too smart.
+      One case where it raises an exception is if this entry and the
+      other entry are in the same language or they don't have a
+      language specified.
+
+      If the entry specified by *altpath* does not exist or is
+      inaccessible, the method does nothing. 
+
+      If one of the entries involved (say A) is already in a
+      multilingual group, and the other entry (say B) is not, it adds
+      B to the multilingual group of A, unless there is already an
+      entry with that language in the group; in that case, it removes
+      A from the group and creates a new multilingual group for A and
+      B.
+
+      If both entries are already in multilingual groups, it attempts
+      to join these groups together; but again, if there are language
+      conflicts, it removes one or both of the entries from their old
+      groups as needed.
 
    .. method:: twistycms.core.models.Entry.add_details(vobject, form)
 

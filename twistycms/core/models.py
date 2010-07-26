@@ -376,6 +376,12 @@ class Entry(models.Model):
 
     def set_altlang(self, request, altlang):
         e = Entry.objects.get_by_path(request, altlang)
+        if not e: return
+        if not self.vobject.language or not e.vobject.language:
+            raise IntegrityError(_(
+                u'One of the two objects does not have a language specified'))
+        if self.vobject.language.id == e.vobject.language.id:
+            raise IntegrityError(_(u'The two objects are in the same language'))
         if e.multilingual_group:
             self.multilingual_group = e.multilingual_group
         else:
