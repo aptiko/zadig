@@ -213,7 +213,7 @@ class Entry(models.Model):
     def delete(self, *args, **kwargs):
         if self.multilingual_group:
             _check_multilingual_group(self.request, self.multilingual_group.id)
-        return super(Entry, self).delete(args, kwargs)
+        return super(Entry, self).delete(*args, **kwargs)
 
     @property
     def descendant(self):
