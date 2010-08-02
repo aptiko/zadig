@@ -159,7 +159,7 @@ class PloneObject(object):
         self.language = models.Language.objects.get(id=l['value'] if l
                                                     else DEFAULT_LANGUAGE)
         f = self.translationsoup.find('form', attrs={'name': 'deleteLanguage'})
-        alternative_lang = f.a['href']
+        alternative_lang = f.a['href'] if f else None
 
         # Prepare and save the entry
         self.entry = models.Entry.objects.get_by_path(request, path)
@@ -175,7 +175,8 @@ class PloneObject(object):
                 +'already existed was type %s rather than %s') % (path,
                 self.entry.__class__.__name__, entry_type.__name__))
         self.entry.state = models.State.objects.get(descr=self.state)
-        self.entry.set_altlang(request, alternative_lang)
+        if alternative_lang:
+            self.entry.set_altlang(request, alternative_lang)
         self.entry.save()
 
         # Determine the max existing version number
