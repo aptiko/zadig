@@ -325,6 +325,7 @@ class PloneDefaultFolderView(PloneObject):
             language=self.language, title=self.title,
             description=self.description)
         nmetatags.save()
+        self.alternative_lang = None
         self.post_migrate(request, path, models.InternalRedirectionEntry)
 
 class PloneFolder(PlonePage):
