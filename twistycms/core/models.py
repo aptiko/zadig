@@ -135,6 +135,8 @@ def _check_multilingual_group(request, mgid):
     """Called whenever one needs to verify the integrity of specified
     multilingual group. What it actually does is postpone this check for
     commit time (the middleware makes the check)."""
+    if not 'multilingual_groups_to_check' in request.__dict__:
+        request.multilingual_groups_to_check = set()
     request.multilingual_groups_to_check.add(mgid)
 
 
@@ -377,9 +379,12 @@ class Entry(models.Model):
     def set_altlang(self, request, altlang):
         e = Entry.objects.get_by_path(request, altlang)
         if not e: return
-        if not self.vobject.language or not e.vobject.language:
+        if not self.vobject.language:
             raise IntegrityError(_(
-                u'One of the two objects does not have a language specified'))
+                u'self.vobject does not have a language specified'))
+        if not e.vobject.language:
+            raise IntegrityError(_(
+                u'The altlang vobject does not have a language specified'))
         if self.vobject.language.id == e.vobject.language.id:
             raise IntegrityError(_(u'The two objects are in the same language'))
         if e.multilingual_group:
