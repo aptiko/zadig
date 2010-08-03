@@ -16,6 +16,7 @@ import twistycms.core
 
 from twistycms.core.utils import primary_buttons, secondary_buttons
 
+
 class permissions:
     VIEW=1
     EDIT=2
@@ -23,38 +24,41 @@ class permissions:
     DELETE=4
     SEARCH=5
 
+
 class Language(models.Model):
     id = models.CharField(max_length=5, primary_key=True)
     descr = models.CharField(max_length=63)
+
     def __unicode__(self):
         return self.id
+
     class Meta:
         db_table = 'cms_language'
 
+
 class Permission(models.Model):
     descr = models.CharField(max_length=31)
+
     def __unicode__(self):
         return self.descr
+
     class Meta:
         db_table = 'cms_permission'
 
+
 class Lentity(models.Model):
-    """A Lentity represents either a user or a group, and is used whenever any
-    of the two can be used; for example, a certain permission can be given
-    either to a user or to a group.  Either user, or group, or special, must
-    be not null; the other two must be null. If user is not null, the Lentity
-    represents a user. If group is not null, the Lentity represents a group. If
-    special is 1, it represents the anonymous user, and if special is 2, it
-    represents all valid users (the logged on user)."""
     user = models.ForeignKey(django.contrib.auth.models.User, null=True)
     group = models.ForeignKey(django.contrib.auth.models.Group, null=True)
     special = models.PositiveSmallIntegerField(null=True)
+
     def __unicode__(self):
         return "user=%s, group=%s, special=%s" % (str(self.user),
             str(self.group), str(self.special))
+
     class Meta:
         unique_together = ('user', 'group')
         db_table = "cms_lentity"
+
     def save(self, force_insert=False, force_update=False):
         """Verify integrity before saving."""
         if (not self.user and not self.group and self.special in (1, 2)) \
@@ -63,17 +67,22 @@ class Lentity(models.Model):
             return super(Lentity, self).save(force_insert, force_update)
         raise Exception("Invalid Lentity: " + self.__unicode__())
 
+
 class State(models.Model):
     descr = models.CharField(max_length=31)
+
     def __unicode__(self):
         return self.descr
+
     class Meta:
         db_table = 'cms_state'
+
 
 class StatePermission(models.Model):
     state = models.ForeignKey(State)
     lentity = models.ForeignKey(Lentity)
     permission = models.ForeignKey(Permission)
+
     def __unicode__(self):
         return "state=%s, %s, permission=%s" (self.state, self.lentity,
                                                             self.permission)
@@ -81,21 +90,27 @@ class StatePermission(models.Model):
         unique_together = ('lentity', 'permission')
         db_table = 'cms_statepermission'
 
+
 class StateTransition(models.Model):
     source_state = models.ForeignKey(State, related_name='source_rules')
     target_state = models.ForeignKey(State, related_name='target_rules')
+
     def __unicode__(self):
         return "%s => %s" % (self.source_state, self.target_state)
+
     class Meta:
         unique_together = ('source_state', 'target_state')
         db_table = 'cms_statetransition'
+
 
 class Workflow(models.Model):
     name = models.CharField(max_length=127, unique=True)
     states = models.ManyToManyField(State)
     state_transitions = models.ManyToManyField(StateTransition)
+
     def __unicode__(self):
         return self.name
+
     class Meta:
         db_table = 'cms_workflow'
 
@@ -141,6 +156,7 @@ def _check_multilingual_group(request, mgid):
 
 
 class EntryManager(models.Manager):
+
     def get_by_path(self, request, path):
         entry=None
         for name in utils.split_path(path):
@@ -558,14 +574,18 @@ class EntryPermission(models.Model):
     entry = models.ForeignKey(Entry)
     lentity = models.ForeignKey(Lentity)
     permission = models.ForeignKey(Permission)
+
     def __unicode__(self):
         return "entry=%s, %s, permission=%s" (self.entry, self.lentity,
                                                             self.permission)
+
     class Meta:
         unique_together = ('lentity', 'permission')
         db_table = 'cms_entrypermission'
 
+
 class VObjectManager(models.Manager):
+
     def get_by_path(self, request, path, version_number=None):
         entry = Entry.objects.get_by_path(request, path)
         return entry.get_vobject(request, version_number)
@@ -613,6 +633,7 @@ class VObject(models.Model):
 
 
 class MetatagManager(models.Manager):
+
     def default(self):
         first_metatags = self.all()[0]
         vobject_language = first_metatags.vobject.language
@@ -620,21 +641,25 @@ class MetatagManager(models.Manager):
         if a: return a[0]
         return first_metatags
 
+
 class VObjectMetatags(models.Model):
     vobject = models.ForeignKey(VObject, related_name="metatags")
     language = models.ForeignKey(Language)
     title = models.CharField(max_length=250)
     short_title = models.CharField(max_length=250, blank=True)
     description = models.TextField(blank=True)
+    objects = MetatagManager()
+
     def __unicode(self):
         return '%s %s metatags' % (self.vobject.__unicode__(),
                                    self.language)
+
     def get_short_title(self):
         return self.short_title or self.title
+
     class Meta:
         unique_together = ('vobject', 'language')
         db_table = 'cms_vobjectmetatags'
-    objects = MetatagManager()
 
 
 class EditEntryForm(forms.Form):
@@ -686,6 +711,7 @@ class MetatagsForm(forms.Form):
                 VObjectMetatags._meta.get_field('short_title').max_length)
     description = forms.CharField(widget=forms.Textarea(
         attrs={'cols':'40', 'rows': '5'}), required=False)
+
     def clean(self):
         c = self.cleaned_data
         if not c['title'] and (c['short_title'] or c['description']):
@@ -693,8 +719,11 @@ class MetatagsForm(forms.Form):
                     +"title or description, you must also specify a title"))
         return c
 
+
 from django.forms.formsets import BaseFormSet, formset_factory
+
 class BaseMetatagsFormSet(BaseFormSet):
+
     def clean(self):
         used_langs = []
         for f in self.forms:
@@ -716,6 +745,7 @@ class BaseMetatagsFormSet(BaseFormSet):
                    'title':       _(u'Title'),
                    'short_title': _(u'Short title'),
                    'description': _(u'Description')}
+
     def as_wide_table(self):
         from django.utils.safestring import mark_safe
         from django.forms.forms import BoundField
@@ -741,13 +771,16 @@ class BaseMetatagsFormSet(BaseFormSet):
                 result += u'<tr><th>%s:</th><td>%s</td><td>%s</td>' % (
                     self.fieldlabels[lname], lbf, rbf)
         return mark_safe(result)
+
 MetatagsFormSet = formset_factory(MetatagsForm, formset=BaseMetatagsFormSet,
                                                                         extra=0)
+
 
 class MoveItemForm(forms.Form):
     move_object = forms.IntegerField()
     before_object = forms.IntegerField()
     num_of_objects = forms.IntegerField(widget=forms.HiddenInput)
+
     def clean(self):
         s = self.cleaned_data['move_object']
         t = self.cleaned_data['before_object']
@@ -765,16 +798,22 @@ class MoveItemForm(forms.Form):
               +"this would leave it in the same position"))
         return self.cleaned_data
 
+
 ### Page ###
+
 
 class ContentFormat(models.Model):
     descr = models.CharField(max_length=20)
+
     def __unicode__(self):
         return self.descr
+
     class Meta:
         db_table = 'cms_contentformat'
 
+
 class PageEntry(Entry):
+
     def create_edit_subform(self, request, new):
         if new:
             result = EditPageForm()
@@ -782,33 +821,43 @@ class PageEntry(Entry):
             result = EditPageForm(
                     initial={'content': self.get_vobject(request).content})
         return result
+
     def process_edit_subform(self, vobject, form):
         vobject.format=ContentFormat.objects.get(descr='html')
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
+
     @property
     def template_name(self):
         return 'edit_page.html'
+
     @property
     def subform_class(self):
         return EditPageForm
+
     @property
     def vobject_class(self):
         return VPage
+
     class Meta:
         db_table = 'cms_pageentry'
+
 
 class VPage(VObject):
     format = models.ForeignKey(ContentFormat)
     content = models.TextField(blank=True)
+
     def end_view(self, request):
         return render_to_response('view_page.html', { 'request': request,
             'vobject': self,
             'primary_buttons': primary_buttons(request, self, 'view'),
             'secondary_buttons': secondary_buttons(request, self)})
+
     def info_view(self, request):
         return self.end_view(request)
+
     class Meta:
         db_table = 'cms_vpage'
+
 
 class EditPageForm(forms.Form):
     from tinymce.widgets import TinyMCE
@@ -826,12 +875,16 @@ class EditPageForm(forms.Form):
             'theme_advanced_buttons3': '',
             'popup_css': '/static/tinymce_popup.css',
         }), required=False)
+
     def render(self):
         return self['content']
 
+
 ### Image ###
 
+
 class ImageEntry(Entry):
+
     def create_edit_subform(self, request, new):
         if new:
             result = EditImageForm()
@@ -839,19 +892,25 @@ class ImageEntry(Entry):
             result = EditImageForm(
                     initial={'content': self.get_vobject(request).content})
         return result
+
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
+
     @property
     def subform_class(self):
         return EditImageForm
+
     @property
     def vobject_class(self):
         return VImage
+
     class Meta:
         db_table = 'cms_imageentry'
 
+
 class VImage(VObject):
     content = models.ImageField(upload_to="images")
+
     def end_view(self, request):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
@@ -859,24 +918,32 @@ class VImage(VObject):
         response = HttpResponse(wrapper, content_type=content_type)
         response['Content-length'] = self.content.size
         return response
+
     def info_view(self, request):
         return render_to_response('view_image.html', { 'request': request,
             'vobject': self,
             'primary_buttons': primary_buttons(request, self, 'view'),
             'secondary_buttons': secondary_buttons(request, self)})
+
     class Meta:
         db_table = 'cms_vimage'
 
+
 class EditImageForm(forms.Form):
     content = forms.ImageField()
+
     def render(self):
         return self.as_table()
 
+
 ### Link ###
 
+
 class LinkEntry(Entry):
+
     def process_edit_subform(self, vobject, form):
         vobject.target = form.cleaned_data['target']
+
     def create_edit_subform(self, request, new):
         if new:
             result = EditLinkForm()
@@ -884,41 +951,53 @@ class LinkEntry(Entry):
             result = EditLinkForm(
                     initial={'target': self.get_vobject(request).target})
         return result
+
     @property
     def subform_class(self):
         return EditLinkForm
+
     @property
     def vobject_class(self):
         return VLink
+
     class Meta:
         db_table = 'cms_linkentry'
 
+
 class VLink(VObject):
     target = models.URLField()
+
     def end_view(self, request):
         # FIXME: This should not work like this, it should directly link outside
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target)
+
     def info_view(self, request):
         return render_to_response('view_link.html',
             { 'request': request, 'vobject': self,
               'primary_buttons': primary_buttons(request, self, 'view'),
               'secondary_buttons': secondary_buttons(request, self)} )
+
     class Meta:
         db_table = 'cms_vlink'
 
+
 class EditLinkForm(forms.Form):
     target = forms.URLField()
+
     def render(self):
         return self.as_table()
+
 
 ### InternalRedirection ###
 
 # FIXME: Should subclass link or something
 
 class InternalRedirectionEntry(Entry):
+
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
+
     def create_edit_subform(self, request, new):
         if new:
             result = EditInternalRedirectionForm()
@@ -926,33 +1005,43 @@ class InternalRedirectionEntry(Entry):
             result = EditInternalRedirectionForm(
                     initial={'target': self.get_vobject(request).target})
         return result
+
     @property
     def subform_class(self):
         return EditInternalRedirectionForm
+
     @property
     def vobject_class(self):
         return VInternalRedirection
+
     class Meta:
         db_table = 'cms_internalredirectionentry'
 
+
 class VInternalRedirection(VObject):
     target = models.ForeignKey(Entry)
+
     def end_view(self, request):
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
+
     def info_view(self, request):
         return render_to_response('view_internalredirection.html',
             { 'request': request, 'vobject': self,
               'primary_buttons': primary_buttons(request, self, 'view'),
               'secondary_buttons': secondary_buttons(request, self)} )
+
     class Meta:
         db_table = 'cms_vinternalredirection'
 
+
 class EditInternalRedirectionForm(forms.Form):
     target = forms.ChoiceField()
+
     def __init__(self, *args, **kwargs):
         EditInternalRedirectionForm.base_fields['target'].choices = [
                                 (e.id, e.spath) for e in Entry.objects.all()]
         super(EditInternalRedirectionForm, self).__init__(*args, **kwargs)
+
     def render(self):
         return self.as_table()
