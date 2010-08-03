@@ -377,6 +377,9 @@ class Entry(models.Model):
             nmetatags.save()
 
     def set_altlang(self, request, altlang):
+        if not altlang:
+            self.multilingual_group = None
+            return
         e = Entry.objects.get_by_path(request, altlang)
         if not e: return
         if not self.vobject.language:
@@ -915,7 +918,7 @@ class EditLinkForm(forms.Form):
 
 class InternalRedirectionEntry(Entry):
     def process_edit_subform(self, vobject, form):
-        vobject.target = form.cleaned_data['target']
+        vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
     def create_edit_subform(self, request, new):
         if new:
             result = EditInternalRedirectionForm()
@@ -947,9 +950,9 @@ class VInternalRedirection(VObject):
 
 class EditInternalRedirectionForm(forms.Form):
     target = forms.ChoiceField()
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         EditInternalRedirectionForm.base_fields['target'].choices = [
                                 (e.id, e.spath) for e in Entry.objects.all()]
-        super(EditInternalRedirectionForm, self).__init__(**kwargs)
+        super(EditInternalRedirectionForm, self).__init__(*args, **kwargs)
     def render(self):
         return self.as_table()
