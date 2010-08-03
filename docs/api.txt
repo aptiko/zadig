@@ -27,6 +27,52 @@ Entry
    exception is raised. If other entries with the same parent entry
    exist, the entry is added as the last sibling.
    
+   The default manager for :class:`~twistycms.core.models.Entry` has a
+   peculiarity:
+
+   .. attribute:: twistycms.core.models.Entry.objects
+
+      The default manager has the following additional method:
+
+      .. method:: get_by_path(request, path)
+
+         Return the entry at the specified path, or
+         :const:`None` if such an entry does not exist or the user
+         does not have permissions to view it.
+
+         Generally you should much prefer to use the above method
+         when retrieving Entries, because it will take care of
+         permissions at a low level.
+
+   .. _request-object:
+
+   :class:`~twistycms.core.models.Entry` objects need to be aware of
+   the *request* object all the time. They use the *request* object
+   for two purposes: (1) they use ``request.user`` to check whether
+   the user has permissions to do various operations; (2) they store
+   information for later usage in the *request* object; for example,
+   they create an attribute at the *request* object that holds a list
+   of multilingual groups that will be checked for integrity on
+   commit.
+
+   Therefore, if you create an :class:`~twistycms.core.models.Entry`
+   object in any way other than by using the normal constructor or
+   :meth:`~twistycms.core.models.Entry.objects.get_by_path()`, then
+   manually assign the request object, as in the following example::
+
+      e = Entry.objects.get(id=my_id)
+      e.request = request
+
+   If you are not using the API in the context of a web server (for
+   example if you are creating a command-line utility), and therefore
+   you don't have a request object, create one and make certain it has
+   a *user* attribute::
+
+      from django.http import HttpRequest
+      from django.contrib.auth.models import User
+      request = HttpRequest()
+      request.user = User.objects.get(username=MY_USERNAME)
+
    :class:`~twistycms.core.models.Entry` objects have the following attributes:
 
    .. attribute:: twistycms.core.models.Entry.container
@@ -93,38 +139,22 @@ Entry
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
       
-   .. attribute:: twistycms.core.models.Entry.objects
-
-      The default manager has the following additional method:
-
-      .. method:: get_by_path(request, path)
-
-         Return the entry at the specified path, or
-         :const:`None` if such an entry does not exist or the user
-         does not have permissions to view it.
-
    :class:`~twistycms.core.models.Entry` objects also have the following properties:
 
    .. attribute:: twistycms.core.models.Entry.permissions
 
-      This is like
-      :meth:`~twistycms.core.models.Entry.get_permissions()`, using
-      the request object supplied during creation of the
-      :class:`~twistycms.core.models.Entry` object.
+      Return the permissions the logged on user has on the entry.
 
    .. attribute:: twistycms.core.models.Entry.vobject
 
-      This is like
-      :meth:`~twistycms.core.models.Entry.get_vobject()`, using the
-      request object supplied during creation of the
-      :class:`~twistycms.core.models.Entry` object.
+      This is the same as
+      :meth:`~twistycms.core.models.Entry.get_vobject()` without an
+      argument.
 
    .. attribute:: twistycms.core.models.Entry.subentries
 
-      This is like
-      :meth:`~twistycms.core.models.Entry.get_subentries()`, using the
-      request object supplied during creation of the
-      :class:`~twistycms.core.models.Entry` object.
+      A list of :class:`~twistycms.core.models.Entry` objects, which are the
+      subentries which the user has permission to search, in order.
 
    .. attribute:: twistycms.core.models.Entry.alt_lang_entries
 
@@ -134,11 +164,7 @@ Entry
 
    :class:`~twistycms.core.models.Entry` objects also have the following methods:
 
-   .. method:: twistycms.core.models.Entry.get_permissions(request)
-
-      Return the permissions the logged on user has on the entry.
-
-   .. method:: twistycms.core.models.Entry.get_vobject(request[, version_number])
+   .. method:: twistycms.core.models.Entry.get_vobject([version_number])
 
       Return the entry's vobject; actually returns a
       :class:`~twistycms.core.models.VObject` descendant. If *version_number*
@@ -152,12 +178,7 @@ Entry
       *entry*, or the parent of its parent, or any ancenstor, and
       :const:`False` otherwise.
 
-   .. method:: twistycms.core.models.Entry.get_subentries(request)
-
-      Return a list of :class:`~twistycms.core.models.Entry` objects, which are the
-      subentries which the user has permission to search, in order.
-
-   .. method:: twistycms.core.models.Entry.reorder(request, source_seq, target_seq)
+   .. method:: twistycms.core.models.Entry.reorder(source_seq, target_seq)
 
       Move the subentry with :samp:`seq={source_seq}` before subentry
       with :samp:`seq={target_seq}`.  *source_seq* and *target_seq*
@@ -173,10 +194,11 @@ Entry
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
-   .. method:: twistycms.core.models.Entry.edit_view(request[, new=False])
+   .. method:: twistycms.core.models.Entry.edit_view([new=False])
 
       Return a :class:`django.http.HttpResponse` object with the edit
-      view of the vobject. Depending on the contents of *request*, it
+      view of the vobject. Depending on the contents of the
+      :ref:`request object <request-object>`, it
       either processes a submitted form (either modifying the entry or
       finding an error in the submitted form) and returns the
       response, or it returns a page with a form for editing the
@@ -190,33 +212,34 @@ Entry
       :attr:`~twistycms.core.models.Entry.container` must have been
       set to the entry of which the new entry will be a child; the
       other attributes are irrelevant.  Depending on the contents of
-      *request*, the method will then either process a submitted form
+      the :ref:`request object <request-object>`, the method will then
+      either process a submitted form
       (either creating the entry or finding an error in the submitted
       form) and return the response, or return a page with a (mostly
       empty) form for filling in the entry.
 
-   .. method:: twistycms.core.models.Entry.contents_view(request)
+   .. method:: twistycms.core.models.Entry.contents_view()
 
       Return a :class:`django.http.HttpResponse` object with the
       contents view of the entry.
 
-   .. method:: twistycms.core.models.Entry.history_view(request)
+   .. method:: twistycms.core.models.Entry.history_view()
 
       Return a :class:`django.http.HttpResponse` object with the
       history view of the entry.
 
-   .. method:: twistycms.core.models.Entry.rename(request, newname)
+   .. method:: twistycms.core.models.Entry.rename(newname)
 
       Rename the entry to the specified new name; it also creates a
       new redirection entry with the old name.
 
-   .. method:: twistycms.core.models.Entry.move(request, target_entry)
+   .. method:: twistycms.core.models.Entry.move(target_entry)
 
       Move the entry from its current container to *target_entry*,
       which will be the new container. Also create a new redirection
       entry at the old location. Verifies permissions to do all that.
 
-   .. method:: twistycms.core.models.Entry.set_altlang(request, altpath)
+   .. method:: twistycms.core.models.Entry.set_altlang(altpath)
 
       Set :attr:`~twistycms.core.models.Entry.multilingual_group` so
       that the entry specified by *altpath* is an alternative language
@@ -297,16 +320,14 @@ VObject
 
       Use this instead of :attr:`~twistycms.core.models.VObject.entry`
       and the resulting :class:`~twistycms.core.models.Entry` object
-      will also have a *request* attribute (useful when you want to
-      use a property that requires it to be set, such as
-      :class:`~twistycms.core.models.Entry.subentries`).
+      will also have the :ref:`request object <request-object>` set.
       
-   .. method:: twistycms.core.models.VObject.end_view(request)
+   .. method:: twistycms.core.models.VObject.end_view()
 
       Return a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
 
-   .. method:: twistycms.core.models.VObject.info_view(request)
+   .. method:: twistycms.core.models.VObject.info_view()
 
       Returns a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
@@ -450,7 +471,7 @@ The functions below are in module twistycms.core.utils.
 .. function:: twistycms.core.utils.get_current_path(request)
 
    Return the path to the current entry. This is something like
-   request.path, but does not include any directive like ``__edit__``
+   ``request.path``, but does not include any directive like ``__edit__``
    and so on.
 
 .. function:: twistycms.core.utils.get_preferred_language(request)
