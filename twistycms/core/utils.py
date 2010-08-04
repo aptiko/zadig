@@ -25,23 +25,6 @@ def get_current_path(request):
     if result != '/': result += '/'
     return result
 
-def primary_buttons(vobject, selected_view):
-    from twistycms.core.models import permissions
-    if not vobject:
-        return [{ 'name': _(u'new'), 'href': '', 'selected': True }]
-    if vobject.rentry.permissions.intersection(
-            set((permissions.EDIT, permissions.ADMIN))) == set():
-        return []
-    href_prefix = ''
-    if re.search(r'__[a-zA-Z]+__/$', vobject.request.path): href_prefix = '../'
-    result = []
-    for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
-        href_suffix = '__' + x + '__/'
-        if x == _(u'view'): href_suffix = ''
-        href = href_prefix + href_suffix
-        result.append({ 'name': x, 'href': href, 'selected': x==selected_view })
-    return result
-
 def secondary_buttons(vobject):
     from twistycms.core.models import permissions
     if not vobject: return []

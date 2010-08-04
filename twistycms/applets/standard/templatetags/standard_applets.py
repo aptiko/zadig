@@ -193,3 +193,46 @@ def do_navigation(parser, token):
 
 
 register.tag('navigation', do_navigation)
+
+
+### Primary buttons ###
+
+
+class PrimaryButtonsNode(template.Node):
+    def __init__(self, selected_view):
+        self.selected_view = selected_view
+    def render(self, context):
+        from twistycms.core.models import permissions
+        import re
+        vobject = context['vobject']
+        if not vobject:
+            return '<ul class="primaryButtons">' \
+               '<li class="selected"><a href="">%s</a></li></ul>' % _(u'new')
+        if vobject.rentry.permissions.intersection(
+                set((permissions.EDIT, permissions.ADMIN))) == set():
+            return ''
+        href_prefix = ''
+        if re.search(r'__[a-zA-Z]+__/$', vobject.request.path):
+            href_prefix = '../'
+        result = '<ul class="primaryButtons">'
+        for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
+            href_suffix = '__' + x + '__/'
+            if x == _(u'view'): href_suffix = ''
+            href = href_prefix + href_suffix
+            result += '<li %s><a href="%s">%s</a></li>' % (
+                'class="selected"' if x==self.selected_view else '', href, x)
+        result += '</ul>'
+        return result
+
+
+
+def do_primary_buttons(parser, token):
+    a = token.split_contents()
+    if len(a)!= 2:
+        raise template.TemplateSyntaxError, \
+            "%r tag requires a single argument" % a[0]
+    selected_view = a[1]
+    return PrimaryButtonsNode(selected_view)
+
+
+register.tag('primary_buttons', do_primary_buttons)

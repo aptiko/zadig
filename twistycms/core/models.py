@@ -14,7 +14,7 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-from twistycms.core.utils import primary_buttons, secondary_buttons
+from twistycms.core.utils import secondary_buttons
 
 
 class permissions:
@@ -471,8 +471,6 @@ class Entry(models.Model):
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms,
-                'primary_buttons': primary_buttons(
-                                                not new and vobject, 'edit'),
                 'secondary_buttons': not new and secondary_buttons(vobject) or
                                                                         []})
 
@@ -551,14 +549,12 @@ class Entry(models.Model):
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': primary_buttons(vobject, 'contents'),
                   'secondary_buttons': secondary_buttons(vobject)})
 
     def history_view(self):
         vobject = self.vobject
         return render_to_response('entry_history.html',
                 { 'vobject': vobject,
-                  'primary_buttons': primary_buttons(vobject, 'history'),
                   'secondary_buttons': secondary_buttons(vobject)})
 
     def __unicode__(self):
@@ -854,7 +850,6 @@ class VPage(VObject):
 
     def end_view(self):
         return render_to_response('view_page.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self, 'view'),
             'secondary_buttons': secondary_buttons(self)})
 
     def info_view(self):
@@ -926,7 +921,6 @@ class VImage(VObject):
 
     def info_view(self):
         return render_to_response('view_image.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self, 'view'),
             'secondary_buttons': secondary_buttons(self)})
 
     class Meta:
@@ -978,7 +972,6 @@ class VLink(VObject):
 
     def info_view(self):
         return render_to_response('view_link.html', { 'vobject': self,
-              'primary_buttons': primary_buttons(self, 'view'),
               'secondary_buttons': secondary_buttons(self)} )
 
     class Meta:
@@ -1031,7 +1024,6 @@ class VInternalRedirection(VObject):
     def info_view(self):
         return render_to_response('view_internalredirection.html',
             { 'vobject': self,
-              'primary_buttons': primary_buttons(self, 'view'),
               'secondary_buttons': secondary_buttons(self)} )
 
     class Meta:

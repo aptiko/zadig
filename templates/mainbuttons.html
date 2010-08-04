@@ -1,11 +1,3 @@
-{% for b in primary_buttons %}
-    {% if forloop.first %}<ul class="primaryButtons">{% endif %}
-    <li {% if b.selected %}class="selected"{%endif%}>
-      <a href="{{b.href}}" >{{b.name}}</a>
-    </li>
-    {% if forloop.last %}</ul>{% endif %}
-{% endfor %}
-
 {% for b in secondary_buttons %}
   {% if forloop.first %}<ul class="secondaryButtons">{% endif %}
   <li>
