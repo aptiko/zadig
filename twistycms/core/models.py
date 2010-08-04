@@ -546,10 +546,16 @@ class Entry(models.Model):
                 t = move_item_form.cleaned_data['before_object']
                 self.reorder(s, t)
         else:
+            items_formset = ContentsFormSet(initial=[
+                            { 'select_object': False } for x in subentries ])
+            import sys
+            sys.stderr.write(items_formset.as_table())
             move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject,
+                  'subentries_with_formset': map(lambda x,y: (x,y), subentries,
+                                                        items_formset.forms),
                   'subentries': subentries, 'move_item_form': move_item_form,
                   'primary_buttons': primary_buttons(vobject, 'contents'),
                   'secondary_buttons': secondary_buttons(vobject)})
@@ -780,6 +786,13 @@ class BaseMetatagsFormSet(BaseFormSet):
 
 MetatagsFormSet = formset_factory(MetatagsForm, formset=BaseMetatagsFormSet,
                                                                         extra=0)
+
+
+class ContentsItemForm(forms.Form):
+    select_object = forms.BooleanField(required=False)
+
+ContentsFormSet = formset_factory(ContentsItemForm, extra=0)
+
 
 
 class MoveItemForm(forms.Form):
