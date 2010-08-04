@@ -11,8 +11,7 @@ class EntryOptionsForm(forms.Form):
     navigation_toplevel = forms.BooleanField(required=False,
                         label=u"Show this page as top level in navigation")
 
-def entry_options(request, path, form=None):
-    entry = coremodels.Entry.objects.get_by_path(request, path)
+def entry_options(entry, form=None):
     try:
         entryoptions = models.EntryOptions.objects.get(entry=entry)
     except models.EntryOptions.DoesNotExist:

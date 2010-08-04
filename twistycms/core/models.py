@@ -429,7 +429,7 @@ class Entry(models.Model):
                         })
             metatagsformset = self.__create_metatags_formset(new)
             subform = self.create_edit_subform(new)
-            optionsforms = [o['entry_options'](self.path)
+            optionsforms = [o['entry_options'](self)
                                                     for o in applet_options]
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
@@ -459,7 +459,7 @@ class Entry(models.Model):
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
                 for o,f in map(lambda x,y:(x,y), applet_options, optionsforms):
-                    o['entry_options'](self.path, f)
+                    o['entry_options'](self, f)
                 if mainform.cleaned_data['name'] != self.name:
                     self.rename(mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
