@@ -238,8 +238,6 @@ class Entry(models.Model):
             return self
         else:
             a = getattr(self, self.object_class.lower())
-            # FIXME: Also set other attributes besides request. Better make a
-            # function that does that.
             a.request = self.request
             return a
 
@@ -447,7 +445,7 @@ class Entry(models.Model):
                                             self.vobject.version_number + 1),
                     language=Language.objects.get(
                                        id=mainform.cleaned_data['language']))
-                nvobject.request = self.request #FIXME: should supply at creation time
+                nvobject.request = self.request
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
@@ -495,6 +493,8 @@ class Entry(models.Model):
         nmetatags.save()
 
     def move(self, target_entry):
+        if 'request' not in target_entry.__dict__:
+            target_entry.request = self.request
         if not self.container:
             raise ValueError(_("The root page cannot be moved"))
         if self.container.id == target_entry.id:
@@ -502,7 +502,6 @@ class Entry(models.Model):
         for nsibling in target_entry.all_subentries.all():
             if nsibling.name == self.name:
                 raise ValueError(_("Cannot move; an entry with the same name at the target location already exists"))
-        # FIXME: Does target_entry really have the request object?
         if (permissions.EDIT not in target_entry.permissions) \
                 or (permissions.DELETE not in self.permissions):
             raise PermissionDenied(_("Permission denied"))
@@ -512,7 +511,6 @@ class Entry(models.Model):
         self.container = target_entry
         self.save()
         nentry = InternalRedirectionEntry(container=oldcontainer)
-        # FIXME: Should the following be done at __initialize?
         nentry.request = self.request
         nentry.__initialize()
         nentry.seq = oldseq
