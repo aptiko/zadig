@@ -25,11 +25,8 @@ class BreadcrumbsNode(template.Node):
                     vobject.metatags.default().get_short_title(), result)
             else:
                 result = vobject.metatags.default().get_short_title()
-            container = vobject.entry.container
-            if container:
-                vobject = container.get_vobject(context['request'])
-            else:
-                vobject = None
+            container = vobject.rentry.container
+            vobject = container.vobject if container else None
         return result
 
 def do_breadcrumbs(parser, token):
@@ -43,22 +40,22 @@ class LanguageToolsNode(template.Node):
     def __init__(self):
         pass
     def render(self, context):
-        request = context['request']
         vobject = context.get('vobject', None)
-        entry = vobject.entry if vobject else None
+        if not vobject: return ''
+        entry = vobject.rentry
         alt_lang_entries = entry.alt_lang_entries if entry else []
         result = u'<div onMouseOver="showShowables(this)" '+\
                                         'onMouseOut="hideShowables(this)">'
         result += u'<ul>' 
-        preferred_lang_id = request.preferred_language
-        effective_lang_id = request.effective_language
+        preferred_lang_id = vobject.request.preferred_language
+        effective_lang_id = vobject.request.effective_language
         preferred_lang_name = coremodels.Language.objects.get(
                                                     id=preferred_lang_id).descr
         effective_lang_name = coremodels.Language.objects.get(
                                                     id=effective_lang_id).descr
         object_available_in_preferred_lang = False
         for lang in settings.LANGUAGES:
-            target = request.path
+            target = vobject.request.path
             for e in alt_lang_entries:
                 if e.vobject.language.id==lang:
                     target = e.spath
@@ -68,7 +65,7 @@ class LanguageToolsNode(template.Node):
                       '</a></li>' % (
                       'effective' if effective_lang_id==lang else "",
                       'preferred' if preferred_lang_id==lang else "",
-                      'available' if target!=request.path else "",
+                      'available' if target!=vobject.request.path else "",
                       target, lang, 
                       coremodels.Language.objects.get(id=lang).descr)
         result += u'</ul><p class="showable">'
@@ -98,7 +95,7 @@ class LoginNode(template.Node):
     def __init__(self):
         pass
     def render(self, context):
-        request = context['request']
+        request = context['vobject'].request
         if not request.user.is_authenticated():
             return _(u'<a href="%s__login__/">Login</a>' %
                 get_current_path(request),)
@@ -116,9 +113,9 @@ register.tag('login', do_login)
 class NavigationNode(template.Node):
     def __init__(self):
         pass
-    def render_entry_contents(self, request, entry, current_entry, level):
+    def render_entry_contents(self, entry, current_entry, level):
         result = ''
-        siblings = [x for x in entry.get_subentries(request)
+        siblings = [x for x in entry.subentries
                                 if x.object_class in ('PageEntry','LinkEntry')]
         no_sibling_shown_yet = True
         for s in siblings:
@@ -129,7 +126,7 @@ class NavigationNode(template.Node):
             except models.EntryOptions.DoesNotExist:
                 pass
             if v.language and \
-                        v.language.id!=request.effective_language and \
+                        v.language.id!=entry.request.effective_language and \
                         s.id!=current_entry.id and \
                         not s.contains(current_entry):
                 continue
@@ -140,18 +137,16 @@ class NavigationNode(template.Node):
                 s.state.descr.replace(' ',''),
                 s.id==current_entry.id and 'current' or '',
                 s.spath,
-                s.get_vobject(request).metatags.default().get_short_title())
+                s.vobject.metatags.default().get_short_title())
             if s.contains(current_entry) or s.id==current_entry.id:
-                result += self.render_entry_contents(request, s, current_entry,
-                                                                    level+1)
+                result += self.render_entry_contents(s, current_entry, level+1)
             result += '</li>'
         if result: result += '</ul>'
         return result
     def render(self, context):
         vobject = context.get('vobject', None)
-        request = context['request']
         # Find the innermost containing object that has navigation_toplevel.
-        toplevel_entry = vobject.entry
+        toplevel_entry = vobject.rentry
         try:
             while True:
                 if toplevel_entry.path=='': break
@@ -161,13 +156,12 @@ class NavigationNode(template.Node):
                 toplevel_entry = toplevel_entry.container
         except models.EntryOptions.DoesNotExist:
             pass
-        result = self.render_entry_contents(request, toplevel_entry,
-            vobject.entry, 1)
+        result = self.render_entry_contents(toplevel_entry, vobject.rentry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet">
                 <dt><a href='%s'>%s</a></dt>
                 <dd class="lastItem">%s</dd></dl>''' % (toplevel_entry.spath,
-                toplevel_entry.get_vobject(request).metatags.default().get_short_title(),
+                toplevel_entry.vobject.metatags.default().get_short_title(),
                 result)
         return result
             

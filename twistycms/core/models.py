@@ -169,9 +169,6 @@ class EntryManager(models.Manager):
                 return None
         return entry
 
-# FIXME: should not need to pass request object to the template, it's already
-# in entry or vobject.
-
 class Entry(models.Model):
     object_class = models.CharField(max_length=100)
     container = models.ForeignKey('self', related_name="all_subentries",
@@ -464,7 +461,7 @@ class Entry(models.Model):
         else:
             vobject = self.vobject
         return render_to_response(self.template_name,
-              { 'request': self.request, 'vobject': vobject,
+              { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms,
                 'primary_buttons': primary_buttons(self.request,
@@ -545,7 +542,7 @@ class Entry(models.Model):
             move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
-                { 'request': self.request, 'vobject': vobject,
+                { 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
                   'primary_buttons': primary_buttons(self.request,
                                                     vobject, 'contents'),
@@ -555,7 +552,7 @@ class Entry(models.Model):
     def history_view(self):
         vobject = self.vobject
         return render_to_response('entry_history.html',
-                { 'request': self.request, 'vobject': vobject,
+                { 'vobject': vobject,
                   'primary_buttons': primary_buttons(self.request,
                                                         vobject, 'history'),
                   'secondary_buttons': secondary_buttons(self.request,
@@ -853,8 +850,7 @@ class VPage(VObject):
     content = models.TextField(blank=True)
 
     def end_view(self):
-        return render_to_response('view_page.html', { 'request': self.request,
-            'vobject': self,
+        return render_to_response('view_page.html', { 'vobject': self,
             'primary_buttons': primary_buttons(self.request, self, 'view'),
             'secondary_buttons': secondary_buttons(self.request, self)})
 
@@ -926,8 +922,7 @@ class VImage(VObject):
         return response
 
     def info_view(self):
-        return render_to_response('view_image.html', { 'request': self.request,
-            'vobject': self,
+        return render_to_response('view_image.html', { 'vobject': self,
             'primary_buttons': primary_buttons(self.request, self, 'view'),
             'secondary_buttons': secondary_buttons(self.request, self)})
 
@@ -979,8 +974,7 @@ class VLink(VObject):
         return HttpResponsePermanentRedirect(self.target)
 
     def info_view(self):
-        return render_to_response('view_link.html',
-            { 'request': self.request, 'vobject': self,
+        return render_to_response('view_link.html', { 'vobject': self,
               'primary_buttons': primary_buttons(self.request, self, 'view'),
               'secondary_buttons': secondary_buttons(self.request, self)} )
 
@@ -1033,7 +1027,7 @@ class VInternalRedirection(VObject):
 
     def info_view(self):
         return render_to_response('view_internalredirection.html',
-            { 'request': self.request, 'vobject': self,
+            { 'vobject': self,
               'primary_buttons': primary_buttons(self.request, self, 'view'),
               'secondary_buttons': secondary_buttons(self.request, self)} )
 
