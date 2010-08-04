@@ -164,11 +164,13 @@ class EntryManager(models.Manager):
                 entry = self.get(name=name, container=entry)
             except Entry.DoesNotExist:
                 return None
-            if not permissions.VIEW in entry.get_permissions(request):
+            entry.request = request
+            if not permissions.VIEW in entry.permissions:
                 return None
-        entry.request = request
         return entry
 
+# FIXME: should not need to pass request object to the template, it's already
+# in entry or vobject.
 
 class Entry(models.Model):
     object_class = models.CharField(max_length=100)
@@ -198,20 +200,20 @@ class Entry(models.Model):
             self.container = parent_entry
             self.name = names[-1]
             self.request = request
-            self.__initialize(request)
+            self.__initialize()
         if not self.object_class:
             self.object_class = self._meta.object_name
 
-    def __initialize(self, request):
+    def __initialize(self):
         """Set all other attributes of a newly created Entry, when only
         container has been set."""
-        if not permissions.EDIT in self.container.get_permissions(request):
+        if not permissions.EDIT in self.container.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         self.seq = 1
         siblings = Entry.objects.filter(container=self.container)
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
-        self.owner = request.user
+        self.owner = self.request.user
         self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
@@ -239,23 +241,23 @@ class Entry(models.Model):
             return self
         else:
             a = getattr(self, self.object_class.lower())
+            # FIXME: Also set other attributes besides request. Better make a
+            # function that does that.
             a.request = self.request
             return a
 
     @property
     def permissions(self):
-        return self.get_permissions(self.request)
-
-    def get_permissions(self, request):
-        if request.user.is_authenticated() and self.owner.pk == request.user.pk:
+        if request.user.is_authenticated() and \
+                                        self.owner.pk == self.request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
                 permissions.DELETE, permissions.SEARCH))
         result = set()
-        if request.user.is_authenticated():
-            lentities = [Lentity.objects.get(user=request.user),
+        if self.request.user.is_authenticated():
+            lentities = [Lentity.objects.get(user=self.request.user),
                          Lentity.objects.get(special=2)]
             lentities.append(Lentity.objects.filter(
-                                          group__in=request.user.groups.all()))
+                                  group__in=self.request.user.groups.all()))
         else:
             lentities = [Lentity.objects.get(special=1)]
         for lentity in lentities:
@@ -269,18 +271,18 @@ class Entry(models.Model):
 
     @property
     def vobject(self):
-        return self.get_vobject(self.request)
+        return self.get_vobject()
 
-    def get_vobject(self, request, version_number=None):
+    def get_vobject(self, version_number=None):
         latest_vobject = self.vobject_set.order_by('-version_number')[0]
         if version_number is None:
             vobject = latest_vobject
         else:
             vobject = self.vobject_set.get(version_number=version_number)
         if vobject.version_number != latest_vobject.version_number \
-                and permissions.EDIT not in self.get_permissions(request):
+                and permissions.EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        vobject.request = request
+        vobject.request = self.request
         return vobject.descendant
 
     @property
@@ -307,10 +309,7 @@ class Entry(models.Model):
 
     @property
     def subentries(self):
-        return self.get_subentries(self.request)
-
-    def get_subentries(self, request):
-        parent_permissions = self.get_permissions(request)
+        parent_permissions = self.get_permissions(self.request)
         if permissions.VIEW not in parent_permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
@@ -318,12 +317,12 @@ class Entry(models.Model):
             return list(subentries)
         result = []
         for s in subentries:
-            if permissions.SEARCH in s.get_permissions(request):
+            if permissions.SEARCH in s.permissions:
                 result.append(s)
         return result
 
-    def reorder(self, request, source_seq, target_seq):
-        if permissions.EDIT not in self.get_permissions(request):
+    def reorder(self, source_seq, target_seq):
+        if permissions.EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
         s = source_seq
@@ -362,16 +361,16 @@ class Entry(models.Model):
     def template_name(self):
         return 'edit_entry.html'
 
-    def __create_metatags_formset(self, request, new):
+    def __create_metatags_formset(self, new):
         """Return a formset of metatags forms, as many as existing metatag sets
         plus one if there is another available language. Called by edit_view()
         method. """
         initial = []
         if new:
-            vobject = self.container.get_vobject(request).descendant
+            vobject = self.container.vobject.descendant
             initial.append({ 'language': vobject.language.id })
         else:
-            vobject = self.get_vobject(request).descendant
+            vobject = self.vobject.descendant
             used_langs = []
             for m in vobject.metatags.all():
                 initial.append({'language': m.language.id, 'title': m.title,
@@ -392,11 +391,11 @@ class Entry(models.Model):
                 description=m['description'])
             nmetatags.save()
 
-    def set_altlang(self, request, altlang):
+    def set_altlang(self, altlang):
         if not altlang:
             self.multilingual_group = None
             return
-        e = Entry.objects.get_by_path(request, altlang)
+        e = Entry.objects.get_by_path(self.request, altlang)
         if not e: return
         if not self.vobject.language:
             raise IntegrityError(_(
@@ -415,26 +414,26 @@ class Entry(models.Model):
             e.multilingual_group = amultilingual_group
             e.save()
 
-    def edit_view(self, request, new=False):
+    def edit_view(self, new=False):
         applet_options = [o for o in twistycms.core.applet_options
                                                         if o['entry_options']]
-        if request.method != 'POST':
+        if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
                         'language': self.vobject.language,
                         'altlang': self.alt_lang_entries[0].spath
                             if self.alt_lang_entries else '',
                         })
-            metatagsformset = self.__create_metatags_formset(request, new)
-            subform = self.create_edit_subform(request, new)
-            optionsforms = [o['entry_options'](request, self.path)
-                                                        for o in applet_options]
+            metatagsformset = self.__create_metatags_formset(new)
+            subform = self.create_edit_subform(new)
+            optionsforms = [o['entry_options'](self.path)
+                                                    for o in applet_options]
         else:
-            mainform = EditEntryForm(request.POST, request=request,
+            mainform = EditEntryForm(self.request.POST, request=self.request,
                                                         current_entry=self)
-            metatagsformset = MetatagsFormSet(request.POST)
-            subform = self.subform_class(request.POST, request.FILES)
-            optionsforms = [o['EntryOptionsForm'](request.POST)
-                                                        for o in applet_options]
+            metatagsformset = MetatagsFormSet(self.request.POST)
+            subform = self.subform_class(self.request.POST, self.request.FILES)
+            optionsforms = [o['EntryOptionsForm'](self.request.POST)
+                                                    for o in applet_options]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
@@ -442,13 +441,13 @@ class Entry(models.Model):
                 [o.is_valid() for o in optionsforms])
             if all_forms_are_valid:
                 if new:
-                    self.__initialize(request)
+                    self.__initialize()
                     self.name = mainform.cleaned_data['name']
-                self.set_altlang(request, mainform.cleaned_data['altlang'])
+                self.set_altlang(mainform.cleaned_data['altlang'])
                 self.save()
                 nvobject = self.vobject_class(entry=self,
                     version_number=new and 1 or (
-                                self.get_vobject(request).version_number + 1),
+                                            self.vobject.version_number + 1),
                     language=Language.objects.get(
                                        id=mainform.cleaned_data['language']))
                 nvobject.request = self.request #FIXME: should supply at creation time
@@ -456,24 +455,24 @@ class Entry(models.Model):
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
                 for o,f in map(lambda x,y:(x,y), applet_options, optionsforms):
-                    o['entry_options'](request, self.path, f)
+                    o['entry_options'](self.path, f)
                 if mainform.cleaned_data['name'] != self.name:
-                    self.rename(request, mainform.cleaned_data['name'])
+                    self.rename(mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
         if new:
-            vobject = self.container.get_vobject(request)
+            vobject = self.container.vobject
         else:
-            vobject = self.get_vobject(request)
+            vobject = self.vobject
         return render_to_response(self.template_name,
-              { 'request': request, 'vobject': vobject,
+              { 'request': self.request, 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms,
-                'primary_buttons': 
-                        primary_buttons(request, not new and vobject, 'edit'),
-                'secondary_buttons':
-                    not new and secondary_buttons(request, vobject) or []})
+                'primary_buttons': primary_buttons(self.request,
+                                                not new and vobject, 'edit'),
+                'secondary_buttons': not new and secondary_buttons(
+                                            self.request, vobject) or []})
 
-    def rename(self, request, newname):
+    def rename(self, newname):
         if not self.container:
             raise ValueError(_("The root page cannot be renamed"))
         for sibling in self.container.all_subentries.all():
@@ -484,12 +483,12 @@ class Entry(models.Model):
         self.name = newname
         self.save()
         nentry = InternalRedirectionEntry(container=self.container)
-        nentry.__initialize(request)
+        nentry.__initialize()
         nentry.name = oldname
         nentry.save()
         nvobject = VInternalRedirection(entry=nentry,
             version_number=1,
-            language=self.get_vobject(request).language,
+            language=self.vobject.language,
             target=self)
         nvobject.save()
         nmetatags = VObjectMetatags(
@@ -498,7 +497,7 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
 
-    def move(self, request, target_entry):
+    def move(self, target_entry):
         if not self.container:
             raise ValueError(_("The root page cannot be moved"))
         if self.container.id == target_entry.id:
@@ -506,8 +505,9 @@ class Entry(models.Model):
         for nsibling in target_entry.all_subentries.all():
             if nsibling.name == self.name:
                 raise ValueError(_("Cannot move; an entry with the same name at the target location already exists"))
-        if (permissions.EDIT not in target_entry.get_permissions(request)) \
-                or (permissions.DELETE not in self.get_permissions(request)):
+        # FIXME: Does target_entry really have the request object?
+        if (permissions.EDIT not in target_entry.permissions) \
+                or (permissions.DELETE not in self.permissions):
             raise PermissionDenied(_("Permission denied"))
         oldcontainer = self.container
         oldseq = self.seq
@@ -515,13 +515,15 @@ class Entry(models.Model):
         self.container = target_entry
         self.save()
         nentry = InternalRedirectionEntry(container=oldcontainer)
-        nentry.__initialize(request)
+        # FIXME: Should the following be done at __initialize?
+        nentry.request = self.request
+        nentry.__initialize()
         nentry.seq = oldseq
         nentry.name = self.name
         nentry.save()
         nvobject = VInternalRedirection(entry=nentry,
             version_number=1,
-            language=self.get_vobject(request).language,
+            language=self.vobject.language,
             target=self)
         nvobject.save()
         nmetatags = VObjectMetatags(
@@ -530,30 +532,34 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
 
-    def contents_view(self, request):
+    def contents_view(self):
         subentries = self.subentries
         vobject = self.vobject
-        if request.method == 'POST':
-            move_item_form = MoveItemForm(request.POST)
+        if self.request.method == 'POST':
+            move_item_form = MoveItemForm(self.request.POST)
             if move_item_form.is_valid():
                 s = move_item_form.cleaned_data['move_object']
                 t = move_item_form.cleaned_data['before_object']
-                self.reorder(request, s, t)
+                self.reorder(s, t)
         else:
             move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
-                { 'request': request, 'vobject': vobject,
+                { 'request': self.request, 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': primary_buttons(request, vobject, 'contents'),
-                  'secondary_buttons': secondary_buttons(request, vobject)})
+                  'primary_buttons': primary_buttons(self.request,
+                                                    vobject, 'contents'),
+                  'secondary_buttons': secondary_buttons(self.request,
+                                                                vobject)})
 
-    def history_view(self, request):
-        vobject = self.get_vobject(request)
+    def history_view(self):
+        vobject = self.vobject
         return render_to_response('entry_history.html',
-                { 'request': request, 'vobject': vobject,
-                  'primary_buttons': primary_buttons(request, vobject, 'history'),
-                  'secondary_buttons': secondary_buttons(request, vobject)})
+                { 'request': self.request, 'vobject': vobject,
+                  'primary_buttons': primary_buttons(self.request,
+                                                        vobject, 'history'),
+                  'secondary_buttons': secondary_buttons(self.request,
+                                                        vobject)})
 
     def __unicode__(self):
         result = self.name
@@ -588,7 +594,7 @@ class VObjectManager(models.Manager):
 
     def get_by_path(self, request, path, version_number=None):
         entry = Entry.objects.get_by_path(request, path)
-        return entry.get_vobject(request, version_number)
+        return entry.get_vobject(version_number)
 
 
 class VObject(models.Model):
@@ -814,12 +820,12 @@ class ContentFormat(models.Model):
 
 class PageEntry(Entry):
 
-    def create_edit_subform(self, request, new):
+    def create_edit_subform(self, new):
         if new:
             result = EditPageForm()
         else:
             result = EditPageForm(
-                    initial={'content': self.get_vobject(request).content})
+                    initial={'content': self.vobject.content})
         return result
 
     def process_edit_subform(self, vobject, form):
@@ -846,14 +852,14 @@ class VPage(VObject):
     format = models.ForeignKey(ContentFormat)
     content = models.TextField(blank=True)
 
-    def end_view(self, request):
-        return render_to_response('view_page.html', { 'request': request,
+    def end_view(self):
+        return render_to_response('view_page.html', { 'request': self.request,
             'vobject': self,
-            'primary_buttons': primary_buttons(request, self, 'view'),
-            'secondary_buttons': secondary_buttons(request, self)})
+            'primary_buttons': primary_buttons(self.request, self, 'view'),
+            'secondary_buttons': secondary_buttons(self.request, self)})
 
-    def info_view(self, request):
-        return self.end_view(request)
+    def info_view(self):
+        return self.end_view()
 
     class Meta:
         db_table = 'cms_vpage'
@@ -885,12 +891,12 @@ class EditPageForm(forms.Form):
 
 class ImageEntry(Entry):
 
-    def create_edit_subform(self, request, new):
+    def create_edit_subform(self, new):
         if new:
             result = EditImageForm()
         else:
             result = EditImageForm(
-                    initial={'content': self.get_vobject(request).content})
+                    initial={'content': self.vobject.content})
         return result
 
     def process_edit_subform(self, vobject, form):
@@ -911,7 +917,7 @@ class ImageEntry(Entry):
 class VImage(VObject):
     content = models.ImageField(upload_to="images")
 
-    def end_view(self, request):
+    def end_view(self):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -919,11 +925,11 @@ class VImage(VObject):
         response['Content-length'] = self.content.size
         return response
 
-    def info_view(self, request):
-        return render_to_response('view_image.html', { 'request': request,
+    def info_view(self):
+        return render_to_response('view_image.html', { 'request': self.request,
             'vobject': self,
-            'primary_buttons': primary_buttons(request, self, 'view'),
-            'secondary_buttons': secondary_buttons(request, self)})
+            'primary_buttons': primary_buttons(self.request, self, 'view'),
+            'secondary_buttons': secondary_buttons(self.request, self)})
 
     class Meta:
         db_table = 'cms_vimage'
@@ -944,12 +950,12 @@ class LinkEntry(Entry):
     def process_edit_subform(self, vobject, form):
         vobject.target = form.cleaned_data['target']
 
-    def create_edit_subform(self, request, new):
+    def create_edit_subform(self, new):
         if new:
             result = EditLinkForm()
         else:
             result = EditLinkForm(
-                    initial={'target': self.get_vobject(request).target})
+                    initial={'target': self.vobject.target})
         return result
 
     @property
@@ -967,16 +973,16 @@ class LinkEntry(Entry):
 class VLink(VObject):
     target = models.URLField()
 
-    def end_view(self, request):
-        # FIXME: This should not work like this, it should directly link outside
+    def end_view(self):
+        # FIXME: This should not work like this, should directly link outside
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target)
 
-    def info_view(self, request):
+    def info_view(self):
         return render_to_response('view_link.html',
-            { 'request': request, 'vobject': self,
-              'primary_buttons': primary_buttons(request, self, 'view'),
-              'secondary_buttons': secondary_buttons(request, self)} )
+            { 'request': self.request, 'vobject': self,
+              'primary_buttons': primary_buttons(self.request, self, 'view'),
+              'secondary_buttons': secondary_buttons(self.request, self)} )
 
     class Meta:
         db_table = 'cms_vlink'
@@ -998,12 +1004,12 @@ class InternalRedirectionEntry(Entry):
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
 
-    def create_edit_subform(self, request, new):
+    def create_edit_subform(self, new):
         if new:
             result = EditInternalRedirectionForm()
         else:
             result = EditInternalRedirectionForm(
-                    initial={'target': self.get_vobject(request).target})
+                    initial={'target': self.vobject.target})
         return result
 
     @property
@@ -1021,15 +1027,15 @@ class InternalRedirectionEntry(Entry):
 class VInternalRedirection(VObject):
     target = models.ForeignKey(Entry)
 
-    def end_view(self, request):
+    def end_view(self):
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
 
-    def info_view(self, request):
+    def info_view(self):
         return render_to_response('view_internalredirection.html',
-            { 'request': request, 'vobject': self,
-              'primary_buttons': primary_buttons(request, self, 'view'),
-              'secondary_buttons': secondary_buttons(request, self)} )
+            { 'request': self.request, 'vobject': self,
+              'primary_buttons': primary_buttons(self.request, self, 'view'),
+              'secondary_buttons': secondary_buttons(self.request, self)} )
 
     class Meta:
         db_table = 'cms_vinternalredirection'
