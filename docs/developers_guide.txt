@@ -21,7 +21,7 @@ empty ``__init__.py`` file, an empty ``models.py`` file, and a
 
 In ``myapplet.py``, add Django code that implements a template tag
 (we'll assume ``myapplettag``). If the applet is a portlet, make sure
-that the tag output conforms to the portlet specification:
+that the tag output conforms to the portlet specification::
 
     <dl class="portlet">
       <dt>Portlet title</dt>
@@ -90,3 +90,51 @@ form *EditSnailForm*.
 .. admonition:: Work in progress
 
    There's obviously more to write here.
+
+.. _request-object:
+
+The request object
+==================
+
+:class:`~twistycms.core.models.Entry` and
+:class:`~twistycms.core.models.VObject` objects need to be aware of
+the *request* object all the time. They use the *request* object
+for two purposes: (1) they use ``request.user`` to check whether
+the user has permissions to do various operations; (2) they store
+information for later usage in the *request* object; for example,
+they create an attribute at the *request* object that holds a list
+of multilingual groups that will be checked for integrity on
+commit.
+
+Usually you create :class:`~twistycms.core.models.Entry` objects by
+calling the :meth:`~twistycms.core.models.Entry.objects.get_by_path()`
+method of the default manager, or by using the default constructor, in
+which case you supply the *request* object; the entry returned will
+have a *request* attribute with the supplied object. Likewise, the
+usual way to get to a :class:`~twistycms.core.models.VObject` object,
+is via the :attr:`~twistycms.core.models.Entry.vobject` property or
+the :meth:`~twistycms.core.models.Entry.get_vobject()` method of an
+:class:`~twistycms.core.models.Entry` object; the returned object will
+have the *request* attribute assigned.  If you have a
+:class:`~twistycms.core.models.VObject` and you need to get to its
+entry, use the :attr:`~twistycms.core.models.VObject.rentry` property
+rather than the :attr:`~twistycms.core.models.VObject.entry`
+attribute, which will also assign the *request* object to the returned
+entry.
+
+If you need to create an entry or vobject in any way other than the
+normal ways provided by the API, then manually assign the request
+object, as in the following example::
+
+  e = Entry.objects.get(id=my_id)
+  e.request = request
+
+If you are not using the API in the context of a web server (for
+example if you are creating a command-line utility), and therefore
+you don't have a request object, create one and make certain it has
+a *user* attribute::
+
+  from django.http import HttpRequest
+  from django.contrib.auth.models import User
+  request = HttpRequest()
+  request.user = User.objects.get(username=MY_USERNAME)
