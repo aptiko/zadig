@@ -9,11 +9,15 @@ from twistycms.applets.standard import models
 
 register = template.Library()
 
+
 ### Breadcrumbs ###
 
+
 class BreadcrumbsNode(template.Node):
+
     def __init__(self):
         pass
+
     def render(self, context):
         result = ''
         vobject = context.get('vobject', None)
@@ -29,16 +33,22 @@ class BreadcrumbsNode(template.Node):
             vobject = container.vobject if container else None
         return result
 
+
 def do_breadcrumbs(parser, token):
     return BreadcrumbsNode()
 
+
 register.tag('breadcrumbs', do_breadcrumbs)
+
 
 ### Language tools ###
 
+
 class LanguageToolsNode(template.Node):
+
     def __init__(self):
         pass
+
     def render(self, context):
         vobject = context.get('vobject', None)
         if not vobject: return ''
@@ -84,16 +94,22 @@ class LanguageToolsNode(template.Node):
         result += '</div>'
         return result
 
+
 def do_language_tools(parser, token):
     return LanguageToolsNode()
 
+
 register.tag('language_tools', do_language_tools)
+
 
 ### Login ###
 
+
 class LoginNode(template.Node):
+
     def __init__(self):
         pass
+
     def render(self, context):
         request = context['vobject'].request
         if not request.user.is_authenticated():
@@ -102,17 +118,22 @@ class LoginNode(template.Node):
         return _(u'Welcome %s. <a href="%s__logout__/">Logout</a>' %
             (request.user, get_current_path(request)))
 
+
 def do_login(parser, token):
     return LoginNode()
+
 
 register.tag('login', do_login)
 
 
 ### Navigation ###
 
+
 class NavigationNode(template.Node):
+
     def __init__(self):
         pass
+
     def render_entry_contents(self, entry, current_entry, level):
         result = ''
         siblings = [x for x in entry.subentries
@@ -143,6 +164,7 @@ class NavigationNode(template.Node):
             result += '</li>'
         if result: result += '</ul>'
         return result
+
     def render(self, context):
         vobject = context.get('vobject', None)
         # Find the innermost containing object that has navigation_toplevel.
@@ -165,7 +187,9 @@ class NavigationNode(template.Node):
                 result)
         return result
             
+
 def do_navigation(parser, token):
     return NavigationNode()
+
 
 register.tag('navigation', do_navigation)
