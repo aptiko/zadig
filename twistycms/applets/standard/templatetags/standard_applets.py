@@ -25,7 +25,7 @@ class BreadcrumbsNode(template.Node):
                     vobject.metatags.default().get_short_title(), result)
             else:
                 result = vobject.metatags.default().get_short_title()
-            container = vobject.rentry.container
+            container = vobject.rentry.rcontainer
             vobject = container.vobject if container else None
         return result
 
@@ -153,7 +153,7 @@ class NavigationNode(template.Node):
                 entryoptions = models.EntryOptions.objects.get(
                                                         entry=toplevel_entry)
                 if entryoptions.navigation_toplevel: break
-                toplevel_entry = toplevel_entry.container
+                toplevel_entry = toplevel_entry.rcontainer
         except models.EntryOptions.DoesNotExist:
             pass
         result = self.render_entry_contents(toplevel_entry, vobject.rentry, 1)

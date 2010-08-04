@@ -46,17 +46,24 @@ Entry
 
    .. attribute:: twistycms.core.models.Entry.container
 
-      A foreign key to :class:`~twistycms.core.models.Entry` (that is, to self). It
-      indicates which entry contains the entry. This attribute can be
-      null; there is one and only one entry that has a
-      null :attr:`~twistycms.core.models.Entry.container`, and it is the root entry.
+      A foreign key to :class:`~twistycms.core.models.Entry` (that is,
+      to self). It indicates which entry contains the entry. This
+      attribute can be null; there is one and only one entry that has
+      a null :attr:`~twistycms.core.models.Entry.container`, and it is
+      the root entry.
+
+      You should generally not use this attribute; use the
+      :attr:`~twistycms.core.models.Entry.rcontainer` property
+      instead.
 
       The *related_name* of this attribute is ``all_subentries``.
       Therefore, if you have an entry ``myentry``, then
       ``myentry.all_subentries`` is the list of entries contained in
       ``myentry``. You should not, however, use ``all_subentries``, unless
       you have a good reason to do so; instead, use 
-      :meth:`~twistycms.core.models.Entry.subentries`, which checks permissions.
+      :meth:`~twistycms.core.models.Entry.subentries`, which checks
+      permissions and which assigns the :ref:`request object
+      <request-object>` to the subentries.
 
    .. attribute:: twistycms.core.models.Entry.name
 
@@ -107,6 +114,13 @@ Entry
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
+
+   .. attribute:: twistycms.core.models.Entry.rcontainer
+
+      Use this instead of
+      :attr:`~twistycms.core.models.Entry.container``
+      and the resulting :class:`~twistycms.core.models.Entry` object
+      will also have the :ref:`request object <request-object>` set.
       
    :class:`~twistycms.core.models.Entry` objects also have the following properties:
 

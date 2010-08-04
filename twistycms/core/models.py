@@ -204,10 +204,10 @@ class Entry(models.Model):
     def __initialize(self):
         """Set all other attributes of a newly created Entry, when only
         container has been set."""
-        if not permissions.EDIT in self.container.permissions:
+        if not permissions.EDIT in self.rcontainer.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         self.seq = 1
-        siblings = Entry.objects.filter(container=self.container)
+        siblings = Entry.objects.filter(container=self.rcontainer)
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
         self.owner = self.request.user
@@ -233,6 +233,13 @@ class Entry(models.Model):
         return super(Entry, self).delete(*args, **kwargs)
 
     @property
+    def rcontainer(self):
+        result = self.container
+        if result:
+            result.request = self.request
+        return result
+
+    @property
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
@@ -243,7 +250,7 @@ class Entry(models.Model):
 
     @property
     def permissions(self):
-        if request.user.is_authenticated() and \
+        if self.request.user.is_authenticated() and \
                                         self.owner.pk == self.request.user.pk:
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
                 permissions.DELETE, permissions.SEARCH))
@@ -284,8 +291,8 @@ class Entry(models.Model):
     def path(self):
         result = self.name
         entry = self
-        while entry.container and entry.container.name:
-            entry = entry.container
+        while entry.rcontainer and entry.rcontainer.name:
+            entry = entry.rcontainer
             result = entry.name + '/' + result
         return result
 
@@ -298,18 +305,20 @@ class Entry(models.Model):
 
     def contains(self, entry):
         while entry:
-            if entry.container == self: return True
-            entry = entry.container
+            if entry.rcontainer == self: return True
+            entry = entry.rcontainer
         return False
 
     @property
     def subentries(self):
-        parent_permissions = self.get_permissions(self.request)
+        parent_permissions = self.permissions
         if permissions.VIEW not in parent_permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        subentries = self.all_subentries.order_by('seq').all()
+        subentries = list(self.all_subentries.order_by('seq').all())
+        for s in subentries:
+            s.request = self.request
         if permissions.EDIT in parent_permissions:
-            return list(subentries)
+            return subentries
         result = []
         for s in subentries:
             if permissions.SEARCH in s.permissions:
@@ -362,7 +371,7 @@ class Entry(models.Model):
         method. """
         initial = []
         if new:
-            vobject = self.container.vobject.descendant
+            vobject = self.rcontainer.vobject.descendant
             initial.append({ 'language': vobject.language.id })
         else:
             vobject = self.vobject.descendant
@@ -455,20 +464,20 @@ class Entry(models.Model):
                     self.rename(mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__view__/')
         if new:
-            vobject = self.container.vobject
+            vobject = self.rcontainer.vobject
         else:
             vobject = self.vobject
         return render_to_response(self.template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms,
-                'primary_buttons': primary_buttons(self.request,
+                'primary_buttons': primary_buttons(
                                                 not new and vobject, 'edit'),
-                'secondary_buttons': not new and secondary_buttons(
-                                            self.request, vobject) or []})
+                'secondary_buttons': not new and secondary_buttons(vobject) or
+                                                                        []})
 
     def rename(self, newname):
-        if not self.container:
+        if not self.rcontainer:
             raise ValueError(_("The root page cannot be renamed"))
         for sibling in self.container.all_subentries.all():
             if sibling.id == self.id: continue
@@ -477,7 +486,7 @@ class Entry(models.Model):
         oldname = self.name
         self.name = newname
         self.save()
-        nentry = InternalRedirectionEntry(container=self.container)
+        nentry = InternalRedirectionEntry(container=self.rcontainer)
         nentry.__initialize()
         nentry.name = oldname
         nentry.save()
@@ -495,9 +504,9 @@ class Entry(models.Model):
     def move(self, target_entry):
         if 'request' not in target_entry.__dict__:
             target_entry.request = self.request
-        if not self.container:
+        if not self.rcontainer:
             raise ValueError(_("The root page cannot be moved"))
-        if self.container.id == target_entry.id:
+        if self.rcontainer.id == target_entry.id:
             return
         for nsibling in target_entry.all_subentries.all():
             if nsibling.name == self.name:
@@ -505,7 +514,7 @@ class Entry(models.Model):
         if (permissions.EDIT not in target_entry.permissions) \
                 or (permissions.DELETE not in self.permissions):
             raise PermissionDenied(_("Permission denied"))
-        oldcontainer = self.container
+        oldcontainer = self.rcontainer
         oldseq = self.seq
         self.seq = target_entry.all_subentries.count() + 1
         self.container = target_entry
@@ -542,26 +551,22 @@ class Entry(models.Model):
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject,
                   'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': primary_buttons(self.request,
-                                                    vobject, 'contents'),
-                  'secondary_buttons': secondary_buttons(self.request,
-                                                                vobject)})
+                  'primary_buttons': primary_buttons(vobject, 'contents'),
+                  'secondary_buttons': secondary_buttons(vobject)})
 
     def history_view(self):
         vobject = self.vobject
         return render_to_response('entry_history.html',
                 { 'vobject': vobject,
-                  'primary_buttons': primary_buttons(self.request,
-                                                        vobject, 'history'),
-                  'secondary_buttons': secondary_buttons(self.request,
-                                                        vobject)})
+                  'primary_buttons': primary_buttons(vobject, 'history'),
+                  'secondary_buttons': secondary_buttons(vobject)})
 
     def __unicode__(self):
         result = self.name
-        container = self.container
+        container = self.rcontainer
         while container:
             result = container.name + '/' + result
-            container = container.container
+            container = container.rcontainer
         return result
 
     class Meta:
@@ -849,8 +854,8 @@ class VPage(VObject):
 
     def end_view(self):
         return render_to_response('view_page.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self.request, self, 'view'),
-            'secondary_buttons': secondary_buttons(self.request, self)})
+            'primary_buttons': primary_buttons(self, 'view'),
+            'secondary_buttons': secondary_buttons(self)})
 
     def info_view(self):
         return self.end_view()
@@ -921,8 +926,8 @@ class VImage(VObject):
 
     def info_view(self):
         return render_to_response('view_image.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self.request, self, 'view'),
-            'secondary_buttons': secondary_buttons(self.request, self)})
+            'primary_buttons': primary_buttons(self, 'view'),
+            'secondary_buttons': secondary_buttons(self)})
 
     class Meta:
         db_table = 'cms_vimage'
@@ -973,8 +978,8 @@ class VLink(VObject):
 
     def info_view(self):
         return render_to_response('view_link.html', { 'vobject': self,
-              'primary_buttons': primary_buttons(self.request, self, 'view'),
-              'secondary_buttons': secondary_buttons(self.request, self)} )
+              'primary_buttons': primary_buttons(self, 'view'),
+              'secondary_buttons': secondary_buttons(self)} )
 
     class Meta:
         db_table = 'cms_vlink'
@@ -1026,8 +1031,8 @@ class VInternalRedirection(VObject):
     def info_view(self):
         return render_to_response('view_internalredirection.html',
             { 'vobject': self,
-              'primary_buttons': primary_buttons(self.request, self, 'view'),
-              'secondary_buttons': secondary_buttons(self.request, self)} )
+              'primary_buttons': primary_buttons(self, 'view'),
+              'secondary_buttons': secondary_buttons(self)} )
 
     class Meta:
         db_table = 'cms_vinternalredirection'
