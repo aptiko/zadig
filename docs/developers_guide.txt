@@ -107,13 +107,14 @@ of multilingual groups that will be checked for integrity on
 commit.
 
 Usually you create :class:`~twistycms.core.models.Entry` objects by
-calling the :meth:`~twistycms.core.models.Entry.objects.get_by_path()`
-method of the default manager, or by using the default constructor, in
-which case you supply the *request* object; the entry returned will
-have a *request* attribute with the supplied object. Likewise, the
-usual way to get to a :class:`~twistycms.core.models.VObject` object,
-is via the :attr:`~twistycms.core.models.Entry.vobject` property or
-the :meth:`~twistycms.core.models.Entry.get_vobject()` method of an
+calling the ``get_by_path()`` method of the :attr:`default manager
+<twistycms.core.models.Entry.objects>`, or by using the default
+constructor, in which case you supply the *request* object; the entry
+returned will have a *request* attribute with the supplied object.
+Likewise, the usual way to get to a
+:class:`~twistycms.core.models.VObject` object, is via the
+:attr:`~twistycms.core.models.Entry.vobject` property or the
+:meth:`~twistycms.core.models.Entry.get_vobject()` method of an
 :class:`~twistycms.core.models.Entry` object; the returned object will
 have the *request* attribute assigned.  If you have a
 :class:`~twistycms.core.models.VObject` and you need to get to its
