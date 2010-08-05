@@ -14,8 +14,6 @@ import settings
 from twistycms.core import utils
 import twistycms.core
 
-from twistycms.core.utils import primary_buttons, secondary_buttons
-
 
 class permissions:
     VIEW=1
@@ -272,6 +270,11 @@ class Entry(models.Model):
         return result
 
     @property
+    def touchable(self):
+        return self.permissions.intersection(
+                    set((permissions.EDIT, permissions.ADMIN))) != set()
+
+    @property
     def vobject(self):
         return self.get_vobject()
 
@@ -470,11 +473,7 @@ class Entry(models.Model):
         return render_to_response(self.template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
-                'subform': subform, 'optionsforms': optionsforms,
-                'primary_buttons': primary_buttons(
-                                                not new and vobject, 'edit'),
-                'secondary_buttons': not new and secondary_buttons(vobject) or
-                                                                        []})
+                'subform': subform, 'optionsforms': optionsforms })
 
     def rename(self, newname):
         if not self.rcontainer:
@@ -553,19 +552,14 @@ class Entry(models.Model):
             move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
-                { 'vobject': vobject,
+                { 'vobject': vobject, 'subentries': subentries,
                   'subentries_with_formset': map(lambda x,y: (x,y), subentries,
                                                         items_formset.forms),
-                  'subentries': subentries, 'move_item_form': move_item_form,
-                  'primary_buttons': primary_buttons(vobject, 'contents'),
-                  'secondary_buttons': secondary_buttons(vobject)})
+                  'move_item_form': move_item_form})
 
     def history_view(self):
         vobject = self.vobject
-        return render_to_response('entry_history.html',
-                { 'vobject': vobject,
-                  'primary_buttons': primary_buttons(vobject, 'history'),
-                  'secondary_buttons': secondary_buttons(vobject)})
+        return render_to_response('entry_history.html', { 'vobject': vobject })
 
     def __unicode__(self):
         result = self.name
@@ -866,9 +860,7 @@ class VPage(VObject):
     content = models.TextField(blank=True)
 
     def end_view(self):
-        return render_to_response('view_page.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self, 'view'),
-            'secondary_buttons': secondary_buttons(self)})
+        return render_to_response('view_page.html', { 'vobject': self })
 
     def info_view(self):
         return self.end_view()
@@ -938,9 +930,7 @@ class VImage(VObject):
         return response
 
     def info_view(self):
-        return render_to_response('view_image.html', { 'vobject': self,
-            'primary_buttons': primary_buttons(self, 'view'),
-            'secondary_buttons': secondary_buttons(self)})
+        return render_to_response('view_image.html', { 'vobject': self })
 
     class Meta:
         db_table = 'cms_vimage'
@@ -990,9 +980,7 @@ class VLink(VObject):
         return HttpResponsePermanentRedirect(self.target)
 
     def info_view(self):
-        return render_to_response('view_link.html', { 'vobject': self,
-              'primary_buttons': primary_buttons(self, 'view'),
-              'secondary_buttons': secondary_buttons(self)} )
+        return render_to_response('view_link.html', { 'vobject': self })
 
     class Meta:
         db_table = 'cms_vlink'
@@ -1043,9 +1031,7 @@ class VInternalRedirection(VObject):
 
     def info_view(self):
         return render_to_response('view_internalredirection.html',
-            { 'vobject': self,
-              'primary_buttons': primary_buttons(self, 'view'),
-              'secondary_buttons': secondary_buttons(self)} )
+            { 'vobject': self })
 
     class Meta:
         db_table = 'cms_vinternalredirection'

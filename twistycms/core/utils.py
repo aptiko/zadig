@@ -25,56 +25,6 @@ def get_current_path(request):
     if result != '/': result += '/'
     return result
 
-def primary_buttons(vobject, selected_view):
-    from twistycms.core.models import permissions
-    if not vobject:
-        return [{ 'name': _(u'new'), 'href': '', 'selected': True }]
-    if vobject.rentry.permissions.intersection(
-            set((permissions.EDIT, permissions.ADMIN))) == set():
-        return []
-    href_prefix = ''
-    if re.search(r'__[a-zA-Z]+__/$', vobject.request.path): href_prefix = '../'
-    result = []
-    for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
-        href_suffix = '__' + x + '__/'
-        if x == _(u'view'): href_suffix = ''
-        href = href_prefix + href_suffix
-        result.append({ 'name': x, 'href': href, 'selected': x==selected_view })
-    return result
-
-def secondary_buttons(vobject):
-    from twistycms.core.models import permissions
-    if not vobject: return []
-    spath = vobject.entry.spath
-    if vobject.rentry.permissions.intersection(
-            set((permissions.EDIT, permissions.ADMIN))) == set():
-        return []
-    result = [
-          { 'name': _(u'State: <span class="state%s">%s</span>') %
-                (vobject.entry.state.descr, vobject.entry.state.descr),
-            'items': [
-                       { 'href': '%s__state__/%d' % (spath, x.target_state.id,),
-                         'name': x.target_state.descr,
-                       } for x in vobject.entry.state.source_rules.all()
-                     ]
-          },
-          { 'name': _(u'Add new…'),
-            'items': [
-                       { 'href': '%s__new__/Page/' % (spath,),
-                                                    'name': _(u'Page') },
-                       { 'href': '%s__new__/Image/'% (spath,),
-                                                    'name': _(u'Image') },
-                     ]
-          },
-          { 'name': _(u'Actions'),
-            'items': [
-                       { 'href': '%s__cut__/' % (spath,) , 'name': _(u'Cut') },
-                       { 'href': '%s__paste__/' % (spath,),'name': _(u'Paste')},
-                     ]
-          },
-        ]
-    return result
-
 class sanitize_html(unicode):
     # FIXME: Still vulnerable to some attacks. Go to
     # http://ha.ckers.org/xss.html. The attacks to which we are vulnerable are:

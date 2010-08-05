@@ -23,17 +23,20 @@ def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
     _set_languages(vobject)
+    vobject.request.view_name = _(u'view')
     return vobject.end_view()
 
 def info_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
     _set_languages(vobject)
+    vobject.request.view_name = _(u'view')
     return vobject.info_view()
 
 def edit_entry(request, path):
     entry = models.Entry.objects.get_by_path(request, path).descendant
     _set_languages(entry.vobject)
+    entry.request.view_name = _(u'edit')
     return entry.edit_view()
 
 def new_entry(request, parent_path, entry_type):
@@ -42,16 +45,19 @@ def new_entry(request, parent_path, entry_type):
     parent_entry = parent_vobject.entry.descendant
     new_entry_class = eval('models.%sEntry' % (entry_type,))
     entry = new_entry_class(container=parent_entry)
+    entry.request.view_name = _u('edit')
     return entry.edit_view(new=True)
 
 def entry_contents(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
     _set_languages(entry.vobject)
+    entry.request.view_name = _(u'contents')
     return entry.contents_view()
 
 def entry_history(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
     _set_languages(entry.vobject)
+    entry.request.view_name = _(u'history')
     return entry.history_view()
 
 def change_state(request, path, new_state_id):

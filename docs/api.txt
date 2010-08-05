@@ -145,6 +145,12 @@ Entry
       list is the order with which languages are listed in
       ``settings.LANGUAGES``.
 
+   .. attribute:: twistycms.core.models.Entry.touchable
+
+      ``True`` if the current user has either *edit* or *admin*
+      permission on the entry. Primarily used by the template to check
+      whether to show the editing buttons.
+
    :class:`~twistycms.core.models.Entry` objects also have the following methods:
 
    .. method:: twistycms.core.models.Entry.get_vobject([version_number])
