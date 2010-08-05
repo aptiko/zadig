@@ -2,7 +2,6 @@
 {% load i18n %}
 
 {% block mainContent %}
-<div class="mainContent {% if primary_buttons %}withButtons{% endif %}">
   <h1>Contents of {{vobject.metatags.default.get_short_title}}</h1>
   <form method="POST" action="">
     <table class="objectContents">
@@ -22,5 +21,4 @@
     <table><tbody>{{ move_item_form.as_table }}</tbody></table>
     <input type="submit" />
   </form>
-</div>
 {% endblock %}

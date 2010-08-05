@@ -39,10 +39,12 @@
         {% navigation %}
       </td>
       <td id="mainColumn">
-        {% primary_buttons view %}
+        {% primary_buttons %}
         {% secondary_buttons %} 
-        {% block mainContent %}
-        {% endblock %}
+        <div class="mainContent {% if vobject.rentry.touchable %}withButtons{% endif %}">
+          {% block mainContent %}
+          {% endblock %}
+        </div>
       </td>
       <td id="rightColumn">
       </td>

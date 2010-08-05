@@ -270,6 +270,11 @@ class Entry(models.Model):
         return result
 
     @property
+    def touchable(self):
+        return self.permissions.intersection(
+                    set((permissions.EDIT, permissions.ADMIN))) != set()
+
+    @property
     def vobject(self):
         return self.get_vobject()
 
