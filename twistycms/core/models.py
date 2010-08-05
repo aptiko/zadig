@@ -538,19 +538,28 @@ class Entry(models.Model):
     def contents_view(self):
         subentries = self.subentries
         vobject = self.vobject
-        if self.request.method == 'POST':
+        if self.request.method == 'POST' and 'move' in self.request.POST:
             move_item_form = MoveItemForm(self.request.POST)
             if move_item_form.is_valid():
                 s = move_item_form.cleaned_data['move_object']
                 t = move_item_form.cleaned_data['before_object']
                 self.reorder(s, t)
-        else:
-            items_formset = ContentsFormSet(initial=[
-                            { 'select_object': False } for x in subentries ])
-            move_item_form = MoveItemForm(initial=
+        elif self.request.method == 'POST' and 'cut' in self.request.POST:
+            formset = ContentsFormSet(self.request.POST)
+            self.request.session['cut_entries'] = []
+            for i,f in enumerate(formset.cleaned_data):
+                if f['select_object']:
+                    self.request.session['cut_entries'].append(subentries[i].id)
+        items_formset = ContentsFormSet(initial=[
+            { 'entry_id': x.id,
+              'select_object': x.id in self.request.session.get(
+                                                            'cut_entries', [])
+            } for x in subentries ])
+        move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject, 'subentries': subentries,
+                  'formset': items_formset,
                   'subentries_with_formset': map(lambda x,y: (x,y), subentries,
                                                         items_formset.forms),
                   'move_item_form': move_item_form})

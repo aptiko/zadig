@@ -4,6 +4,7 @@
 {% block mainContent %}
   <h1>Contents of {{vobject.metatags.default.get_short_title}}</h1>
   <form method="POST" action="">
+    {{ formset.management_form }}
     <table class="objectContents">
       <thead><tr>
           <th></th>
@@ -20,7 +21,8 @@
         {% endfor %}
       </tbody>
     </table>
+    <input type="submit" name="cut" value="Cut selected objects" />
     <table><tbody>{{ move_item_form.as_table }}</tbody></table>
-    <input type="submit" />
+    <input type="submit" name="move" value="Move"/>
   </form>
 {% endblock %}
