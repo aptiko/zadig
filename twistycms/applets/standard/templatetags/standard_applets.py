@@ -199,8 +199,10 @@ register.tag('navigation', do_navigation)
 
 
 class PrimaryButtonsNode(template.Node):
+
     def __init__(self, selected_view):
         self.selected_view = selected_view
+
     def render(self, context):
         from twistycms.core.models import permissions
         import re
@@ -225,7 +227,6 @@ class PrimaryButtonsNode(template.Node):
         return result
 
 
-
 def do_primary_buttons(parser, token):
     a = token.split_contents()
     if len(a)!= 2:
@@ -236,3 +237,62 @@ def do_primary_buttons(parser, token):
 
 
 register.tag('primary_buttons', do_primary_buttons)
+
+
+### Secondary buttons ###
+
+
+class SecondaryButtonsNode(template.Node):
+
+    def __init__(self):
+        pass
+
+    def render(self, context):
+        from twistycms.core.models import permissions
+        vobject = context['vobject']
+        if not vobject: return ''
+        spath = vobject.entry.spath
+        if vobject.rentry.permissions.intersection(
+                set((permissions.EDIT, permissions.ADMIN))) == set():
+            return ''
+        p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
+                    (vobject.entry.state.descr, vobject.entry.state.descr),
+              'items': [ { 'href': '%s__state__/%d' %
+                                                    (spath, x.target_state.id,),
+                           'name': x.target_state.descr,
+                         } for x in vobject.entry.state.source_rules.all()
+                        ]
+            },
+            { 'name': _(u'Add new…'),
+              'items': [ { 'href': '%s__new__/Page/' % (spath,),
+                           'name': _(u'Page') },
+                         { 'href': '%s__new__/Image/'% (spath,),
+                           'name': _(u'Image') },
+                       ]
+            },
+            { 'name': _(u'Actions'),
+              'items': [ { 'href': '%s__cut__/' % (spath,) ,
+                           'name': _(u'Cut') },
+                         { 'href': '%s__paste__/' % (spath,),
+                           'name': _(u'Paste')},
+                         ]
+            },
+            ]
+        result = u'<ul class="secondaryButtons">'
+        for b in p:
+            result += u'<li><dl><dt><a href="" onclick=' \
+                u'"return toggleMenu(this.parentNode)">%s&#9660;' \
+                '</a></dt><dd>' % b['name']
+            for i in b['items']:
+                result += u'<li><a href="%s">%s</a></li>' % (i['href'],
+                                                                    i['name'])
+            result += u'</dd></dl></li>'
+        result += u'</ul>'
+        return result
+
+
+def do_secondary_buttons(parser, token):
+    return SecondaryButtonsNode()
+
+
+register.tag('secondary_buttons', do_secondary_buttons)
