@@ -475,16 +475,6 @@ The functions below are in module twistycms.core.utils.
    session), or the default language if the user has not selected a
    language.
 
-.. function:: twistycms.core.utils.primary_buttons(request, vobject, selected_view)
-
-   Return a list of dictionaries, where each dictionary is a primary
-   button.
-
-.. function:: twistycms.core.utils.secondary_buttons(request, vobject)
-
-   Return a list of dictionaries, where each dictionary is a secondary
-   button.
-
 .. function:: twistycms.core.utils.sanitize_html(html)
 
    Sanitize the HTML provided and return a sanitized version. This is
