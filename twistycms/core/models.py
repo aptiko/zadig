@@ -515,6 +515,7 @@ class Entry(models.Model):
         self.name = newname
         self.save()
         nentry = InternalRedirectionEntry(container=self.rcontainer)
+        nentry.request = self.request
         nentry.__initialize()
         nentry.name = oldname
         nentry.save()
