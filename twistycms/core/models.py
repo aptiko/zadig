@@ -386,6 +386,10 @@ class Entry(models.Model):
         if not self.multilingual_group:
             return []
         result = list(self.multilingual_group.entry_set.all())
+        for x in result:
+            if x.id == self.id:
+                result.remove(x)
+                break
         result.sort(cmp)
         return result
 
