@@ -153,8 +153,7 @@ entry, including the history, is permanently and irrevocably deleted.
 
 .. admonition:: Not implemented yet
 
-   Although the database is ready for all that, deleting an object (in
-   any way) has not yet been implemented in the user interface.
+   Marking as deleted is not yet implemented in the user interface.
 
 Views
 =====

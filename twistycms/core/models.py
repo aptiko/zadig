@@ -236,6 +236,8 @@ class Entry(models.Model):
         if 'request' in self.__dict__ and \
                                 permissions.DELETE not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
+        if not self.container:
+            raise PermissionDenied(_(u"The root object cannot be deleted"))
         if self.multilingual_group:
             _check_multilingual_group(self.request, self.multilingual_group.id)
         return super(Entry, self).delete(*args, **kwargs)

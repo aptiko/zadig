@@ -39,8 +39,10 @@
         {% navigation %}
       </td>
       <td id="mainColumn">
-        {% primary_buttons %}
-        {% secondary_buttons %} 
+        {% block buttons %}
+          {% primary_buttons %}
+          {% secondary_buttons %} 
+        {% endblock %}
         <div class="mainContent {% if vobject.rentry.touchable %}withButtons{% endif %}">
           {% block mainContent %}
           {% endblock %}

@@ -264,6 +264,8 @@ class SecondaryButtonsNode(template.Node):
                            'name': _(u'Cut') },
                          { 'href': '%s__paste__/' % (spath,),
                            'name': _(u'Paste')},
+                         { 'href': '%s__delete__/' % (spath,),
+                           'name': _(u'Delete')},
                          ]
             },
             ]

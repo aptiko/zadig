@@ -5,10 +5,11 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect
 from django import forms
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 import django.contrib.auth
 
 from twistycms.core import models
+from twistycms.core.models import permissions
 
 def _set_languages(vobject):
     """Set preferred and effective language."""
@@ -115,3 +116,21 @@ def paste(request, path):
         e.request = request
         e.move(target_entry)
     return entry_contents(request, path)
+
+def delete(request, path):
+    vobject = models.VObject.objects.get_by_path(request, path)
+    _set_languages(vobject)
+    if permissions.DELETE not in vobject.rentry.permissions:
+        raise PermissionDenied(_(u"Permission denied"))
+    if not vobject.rentry.rcontainer:
+        raise PermissionDenied(_(u"The root object cannot be deleted"))
+    if request.method=='POST' and 'confirm' in request.POST and \
+                                            request.POST['confirm']:
+        container  = vobject.rentry.rcontainer
+        vobject.rentry.delete()
+        return entry_contents(request, container.path)
+    elif request.method=='POST':
+        return info_view(request, path)
+    else:
+        return render_to_response('delete_entry.html', 
+                                                { 'vobject': vobject })
