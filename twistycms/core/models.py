@@ -547,8 +547,6 @@ class Entry(models.Model):
         else:
             items_formset = ContentsFormSet(initial=[
                             { 'select_object': False } for x in subentries ])
-            import sys
-            sys.stderr.write(items_formset.as_table())
             move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
         return render_to_response('entry_contents.html',
