@@ -226,6 +226,16 @@ class Entry(models.Model):
         return super(Entry, self).save(args, kwargs)
 
     def delete(self, *args, **kwargs):
+        """Two things must be done before actually deleting: first, check that
+        the user has permission to do so, and, second, cleanup multilingual
+        group. We check for permission only if we have a request attribute. If
+        we don't have a request attribute, it means that it is likely Django
+        calling us, for example in order to cascade delete, which means we
+        should do it even without permission (hopefully, that is).
+        """
+        if 'request' in self.__dict__ and \
+                                permissions.DELETE not in self.permissions:
+            raise PermissionDenied(_(u"Permission denied"))
         if self.multilingual_group:
             _check_multilingual_group(self.request, self.multilingual_group.id)
         return super(Entry, self).delete(*args, **kwargs)
