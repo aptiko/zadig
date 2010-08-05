@@ -425,7 +425,9 @@ Other models
    has a :meth:`check()` method, which checks for integrity: it checks
    that there are no multiple language occurrences in the group, makes
    other similar checks, and raises
-   :exc:`~django.core.exceptions.ValidationError` if a check fails.
+   :exc:`~django.core.exceptions.ValidationError` if a check fails. It
+   also has a :meth:`delete_if_useless()` method, which will delete
+   the multilingual group if it contains only one entry or no entries.
 
 .. class:: twistycms.core.models.Page(VObject)
 

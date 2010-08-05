@@ -137,6 +137,18 @@ class MultilingualGroup(models.Model):
                     ', '.join([str(x) for x in entries])))
             languages_in_group.add(latest_vobject.language.id)
 
+    def delete(self, *args, **kwargs):
+        """This should work like ON CASCADE SET NULL, it should not delete
+        any entries!"""
+        for e in self.entry_set.all():
+            e.multilingual_group = None
+            e.save()
+        return super(MultilingualGroup, self).delete(*args, **kwargs)
+
+    def delete_if_useless(self):
+        if self.entry_set.count() < 2:
+            self.delete()
+
     def __unicode__(self):
         return unicode(self.id)
 
@@ -221,7 +233,7 @@ class Entry(models.Model):
         # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
         if self.id:
             original_mg = Entry.objects.get(id=self.id).multilingual_group
-            if original_mg:
+            if original_mg and self.request:
                 _check_multilingual_group(self.request, original_mg.id)
         return super(Entry, self).save(args, kwargs)
 
@@ -238,9 +250,10 @@ class Entry(models.Model):
             raise PermissionDenied(_(u"Permission denied"))
         if not self.container:
             raise PermissionDenied(_(u"The root object cannot be deleted"))
-        if self.multilingual_group:
-            _check_multilingual_group(self.request, self.multilingual_group.id)
-        return super(Entry, self).delete(*args, **kwargs)
+        mg = self.multilingual_group
+        result = super(Entry, self).delete(*args, **kwargs)
+        if mg: mg.delete_if_useless()
+        return result
 
     @property
     def rcontainer(self):
