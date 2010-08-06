@@ -237,22 +237,30 @@ class Entry(models.Model):
                 _check_multilingual_group(self.request, original_mg.id)
         return super(Entry, self).save(args, kwargs)
 
+    def __renumber_subentries(self):
+        for i, s in enumerate(self.all_subentries.all()):
+            if s.seq != i+1:
+                s.seq = i+1
+                s.save()
+
     def delete(self, *args, **kwargs):
-        """Two things must be done before actually deleting: first, check that
-        the user has permission to do so, and, second, cleanup multilingual
-        group. We check for permission only if we have a request attribute. If
-        we don't have a request attribute, it means that it is likely Django
-        calling us, for example in order to cascade delete, which means we
-        should do it even without permission (hopefully, that is).
-        """
+        """Several things need to be done: check that the user has permission
+        to delete, check that we are not deleting the root page, cleanup
+        multilingual group, cleanup sequence number. We check for permission
+        only if we have a request attribute. If we don't have a request
+        attribute, it means that it is likely Django calling us, for example in
+        order to cascade delete, which means we should do it even without
+        permission (hopefully, that is)."""
         if 'request' in self.__dict__ and \
                                 permissions.DELETE not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        if not self.container:
+        container = self.rcontainer
+        if not container:
             raise PermissionDenied(_(u"The root object cannot be deleted"))
         mg = self.multilingual_group
         result = super(Entry, self).delete(*args, **kwargs)
         if mg: mg.delete_if_useless()
+        container.__renumber_subentries()
         return result
 
     @property
