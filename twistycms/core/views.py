@@ -46,7 +46,8 @@ def new_entry(request, parent_path, entry_type):
     parent_entry = parent_vobject.entry.descendant
     new_entry_class = eval('models.%sEntry' % (entry_type,))
     entry = new_entry_class(container=parent_entry)
-    entry.request.view_name = _u('edit')
+    entry.request = request
+    entry.request.view_name = _(u'edit')
     return entry.edit_view(new=True)
 
 def entry_contents(request, path):

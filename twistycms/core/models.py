@@ -463,7 +463,8 @@ class Entry(models.Model):
                                                         if o['entry_options']]
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
-                        'language': self.vobject.language,
+                        'language': self.vobject.language if not new else\
+                            Language.objects.get(id=settings.LANGUAGES[0]),
                         'altlang': self.alt_lang_entries[0].spath
                             if self.alt_lang_entries else '',
                         })
