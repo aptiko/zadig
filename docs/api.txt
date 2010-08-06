@@ -121,6 +121,11 @@ Entry
       :attr:`~twistycms.core.models.Entry.container``
       and the resulting :class:`~twistycms.core.models.Entry` object
       will also have the :ref:`request object <request-object>` set.
+
+   .. attribute:: twistycms.core.models.Entry.type
+
+      This is a translatable, human readable name of the type, such as
+      "Page" or "Image".
       
    :class:`~twistycms.core.models.Entry` objects also have the following properties:
 

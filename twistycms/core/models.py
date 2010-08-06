@@ -339,6 +339,10 @@ class Entry(models.Model):
             result = '/'
         return result
 
+    @property
+    def type(self):
+        return self.descendant.__class__.__name__
+
     def contains(self, entry):
         while entry:
             if entry.rcontainer == self: return True
@@ -897,6 +901,10 @@ class PageEntry(Entry):
     def vobject_class(self):
         return VPage
 
+    @property
+    def type(self):
+        return _(u"Page")
+
     class Meta:
         db_table = 'cms_pageentry'
 
@@ -959,6 +967,10 @@ class ImageEntry(Entry):
     @property
     def vobject_class(self):
         return VImage
+
+    @property
+    def type(self):
+        return _(u"Image")
 
     class Meta:
         db_table = 'cms_imageentry'
@@ -1028,6 +1040,10 @@ class VLink(VObject):
     def info_view(self):
         return render_to_response('view_link.html', { 'vobject': self })
 
+    @property
+    def type(self):
+        return _(u"External link")
+
     class Meta:
         db_table = 'cms_vlink'
 
@@ -1063,6 +1079,10 @@ class InternalRedirectionEntry(Entry):
     @property
     def vobject_class(self):
         return VInternalRedirection
+
+    @property
+    def type(self):
+        return _(u"Internal redirection")
 
     class Meta:
         db_table = 'cms_internalredirectionentry'
