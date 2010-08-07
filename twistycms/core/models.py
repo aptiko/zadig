@@ -678,6 +678,13 @@ class VObject(models.Model):
         entry.request = self.request
         return entry
 
+    @property
+    def metatags(self):
+        result = self.metatags_set
+        if 'request' in self.__dict__:
+            result.request = self.request
+        return result
+
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
 
@@ -690,16 +697,22 @@ class VObject(models.Model):
 
 class MetatagManager(models.Manager):
 
+    @property
     def default(self):
         first_metatags = self.all()[0]
-        vobject_language = first_metatags.vobject.language
-        a = self.filter(language=vobject_language)
+        language = None
+        if 'request' in self.__dict__ and self.request:
+            language = self.request.effective_language
+            a = self.filter(language=language)
+            if a: return a[0]
+        language = first_metatags.vobject.language
+        a = self.filter(language=language)
         if a: return a[0]
         return first_metatags
 
 
 class VObjectMetatags(models.Model):
-    vobject = models.ForeignKey(VObject, related_name="metatags")
+    vobject = models.ForeignKey(VObject, related_name='metatags_set')
     language = models.ForeignKey(Language)
     title = models.CharField(max_length=250)
     short_title = models.CharField(max_length=250, blank=True)

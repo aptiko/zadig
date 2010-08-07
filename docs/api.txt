@@ -316,6 +316,14 @@ VObject
       and the resulting :class:`~twistycms.core.models.Entry` object
       will also have the :ref:`request object <request-object>` set.
       
+   .. attribute:: twistycms.core.models.VObject.metatags
+
+      The set of metatags of the vobject. This is like the related
+      name of :class:`~twistycms.core.models.VObjectMetatags`, but it
+      also passes the request object; see
+      :class:`~twistycms.core.models.VObjectMetatags` for more
+      information.
+
    .. method:: twistycms.core.models.VObject.end_view()
 
       Return a :class:`django.http.HttpResponse` object with the end
@@ -412,10 +420,17 @@ Other models
    :meth:`get_short_title`, which returns the short title, or the
    title if the short title is empty.
 
-   The default manager has an additional method, :meth:`default`,
-   which returns the default set of metatags. This is normally the set
-   of metatags in the language of the vobject; but if such a set does
-   not exist, :meth:`default` returns a random set of metatags.
+   The default manager has an additional property, :attr:`default`,
+   which returns an appropriate set of metatags. Normally the manager
+   has access to the :ref:`request object <request-object>`, in which
+   case it returns the metatags in the effective language. Failing
+   that (because the request object is unavailable, or because there
+   are no metatags in the effective language), it returns the 
+   metatags in the language of the vobject; and if such a set does
+   not exist, it returns a random set of metatags.  (The manager
+   normally has access to the request object because you normally
+   write ``v.metatags.default``, where ``v`` is a *vobject* object, in
+   which case ``v`` passes the request object to the manager.)
 
 .. class:: twistycms.core.models.ContentFormat
 

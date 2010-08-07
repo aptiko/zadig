@@ -26,9 +26,9 @@ class BreadcrumbsNode(template.Node):
                 result = u'''<a href="%s">%s</a>
                     <span class="breadcrumb-separator">→</span> %s''' % (
                     vobject.entry.spath,
-                    vobject.metatags.default().get_short_title(), result)
+                    vobject.metatags.default.get_short_title(), result)
             else:
-                result = vobject.metatags.default().get_short_title()
+                result = vobject.metatags.default.get_short_title()
             container = vobject.rentry.rcontainer
             vobject = container.vobject if container else None
         return result
@@ -158,7 +158,7 @@ class NavigationNode(template.Node):
                 s.state.descr.replace(' ',''),
                 s.id==current_entry.id and 'current' or '',
                 s.spath,
-                s.vobject.metatags.default().get_short_title())
+                s.vobject.metatags.default.get_short_title())
             if s.contains(current_entry) or s.id==current_entry.id:
                 result += self.render_entry_contents(s, current_entry, level+1)
             result += '</li>'
@@ -183,7 +183,7 @@ class NavigationNode(template.Node):
             result = '''<dl class="portlet navigationPortlet">
                 <dt><a href='%s'>%s</a></dt>
                 <dd class="lastItem">%s</dd></dl>''' % (toplevel_entry.spath,
-                toplevel_entry.vobject.metatags.default().get_short_title(),
+                toplevel_entry.vobject.metatags.default.get_short_title(),
                 result)
         return result
             
