@@ -467,8 +467,7 @@ class Entry(models.Model):
                                                         if o['entry_options']]
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
-                        'language': self.vobject.language if not new else\
-                            Language.objects.get(id=settings.LANGUAGES[0]),
+                        'language': self.vobject.language if not new else '',
                         'altlang': self.alt_lang_entries[0].spath
                             if self.alt_lang_entries else '',
                         })
@@ -494,11 +493,12 @@ class Entry(models.Model):
                     self.name = mainform.cleaned_data['name']
                 self.set_altlang(mainform.cleaned_data['altlang'])
                 self.save()
+                lang_id = mainform.cleaned_data['language']
                 nvobject = self.vobject_class(entry=self,
                     version_number=new and 1 or (
                                             self.vobject.version_number + 1),
-                    language=Language.objects.get(
-                                       id=mainform.cleaned_data['language']))
+                    language=Language.objects.get(id=lang_id) if lang_id else
+                                                                        None)
                 nvobject.request = self.request
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
@@ -732,7 +732,8 @@ class VObjectMetatags(models.Model):
 
 
 class EditEntryForm(forms.Form):
-    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
+    language = forms.ChoiceField(choices=[('','')] +
+                [(l, l) for l in settings.LANGUAGES], required=False)
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
     altlang = forms.CharField(required=False)
