@@ -144,7 +144,8 @@ class NavigationNode(template.Node):
         if not v.language: return True
         if v.language.id==v.request.effective_language: return True
         if not v.rentry.multilingual_group: return True
-        if v.request.effective_language in v.rentry.alt_lang_entries:
+        if v.request.effective_language in [e.vobject.language.id
+                                        for e in v.rentry.alt_lang_entries]:
             return False
         if v.rentry.multilingual_group.id in self.multilingual_groups_seen:
             return False
