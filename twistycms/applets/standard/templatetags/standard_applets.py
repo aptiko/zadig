@@ -132,7 +132,20 @@ register.tag('login', do_login)
 class NavigationNode(template.Node):
 
     def __init__(self):
-        pass
+        self.multilingual_groups_seen = set()
+
+    def __must_show(self, sibling, parent_entry, current_entry):
+        if sibling.contains(current_entry) or sibling.id==current_entry.id:
+            return True
+        v = sibling.vobject
+        if not v.language: return True
+        if v.language.id==v.request.effective_language: return True
+        if not v.rentry.multilingual_group: return True
+        if v.request.effective_language in v.rentry.alt_lang_entries:
+            return False
+        if v.rentry.multilingual_group.id in self.multilingual_groups_seen:
+            return False
+        return True
 
     def render_entry_contents(self, entry, current_entry, level):
         result = ''
@@ -146,19 +159,18 @@ class NavigationNode(template.Node):
                 if entryoptions.no_navigation: continue
             except models.EntryOptions.DoesNotExist:
                 pass
-            if v.language and \
-                        v.language.id!=entry.request.effective_language and \
-                        s.id!=current_entry.id and \
-                        not s.contains(current_entry):
+            if not self.__must_show(s, entry, current_entry):
                 continue
             if no_sibling_shown_yet:
                 no_sibling_shown_yet = False
                 result += '<ul class="navigationLevel%d">' % (level,)
             result += '<li><a class="state%s %s" href="%s">%s</a>' % (
                 s.state.descr.replace(' ',''),
-                s.id==current_entry.id and 'current' or '',
+                s.id=='current' if current_entry.id else '',
                 s.spath,
                 s.vobject.metatags.default.get_short_title())
+            if s.multilingual_group:
+                self.multilingual_groups_seen.add(s.multilingual_group.id)
             if s.contains(current_entry) or s.id==current_entry.id:
                 result += self.render_entry_contents(s, current_entry, level+1)
             result += '</li>'
