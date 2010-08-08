@@ -22,13 +22,16 @@ class BreadcrumbsNode(template.Node):
         result = ''
         vobject = context.get('vobject', None)
         while vobject:
-            if result:
-                result = u'''<a href="%s">%s</a>
-                    <span class="breadcrumb-separator">→</span> %s''' % (
-                    vobject.entry.spath,
-                    vobject.metatags.default.get_short_title(), result)
-            else:
-                result = vobject.metatags.default.get_short_title()
+            entryoptions = models.EntryOptions.objects.get_or_create(
+                                                        entry=vobject.rentry)[0]
+            if not entryoptions or not entryoptions.no_breadcrumbs:
+                if result:
+                    result = u'''<a href="%s">%s</a>
+                        <span class="breadcrumb-separator">→</span> %s''' % (
+                        vobject.entry.spath,
+                        vobject.metatags.default.get_short_title(), result)
+                else:
+                    result = vobject.metatags.default.get_short_title()
             container = vobject.rentry.rcontainer
             vobject = container.vobject if container else None
         return result
