@@ -369,6 +369,7 @@ class Entry(models.Model):
         if permissions.EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
+        for s in subentries: s.request = self.request
         s = source_seq
         t = target_seq
         n = len(subentries)
