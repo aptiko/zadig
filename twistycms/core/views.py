@@ -116,6 +116,7 @@ def paste(request, path):
         e = models.Entry.objects.get(pk=entry_id)
         e.request = request
         e.move(target_entry)
+    request.session['cut_entries'] = []
     return entry_contents(request, path)
 
 def delete(request, path):
