@@ -581,7 +581,6 @@ class Entry(models.Model):
         nmetatags.save()
 
     def contents_view(self):
-        subentries = self.subentries
         vobject = self.vobject
         if self.request.method == 'POST' and 'move' in self.request.POST:
             move_item_form = MoveItemForm(self.request.POST)
@@ -589,7 +588,9 @@ class Entry(models.Model):
                 s = move_item_form.cleaned_data['move_object']
                 t = move_item_form.cleaned_data['before_object']
                 self.reorder(s, t)
+                subentries = self.subentries
         elif self.request.method == 'POST' and 'cut' in self.request.POST:
+            subentries = self.subentries
             formset = ContentsFormSet(self.request.POST)
             self.request.session['cut_entries'] = []
             for i,f in enumerate(formset.cleaned_data):
