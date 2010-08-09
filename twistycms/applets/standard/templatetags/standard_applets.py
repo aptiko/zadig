@@ -185,15 +185,12 @@ class NavigationNode(template.Node):
         vobject = context.get('vobject', None)
         # Find the innermost containing object that has navigation_toplevel.
         toplevel_entry = vobject.rentry
-        try:
-            while True:
-                if toplevel_entry.path=='': break
-                entryoptions = models.EntryOptions.objects.get(
-                                                        entry=toplevel_entry)
-                if entryoptions.navigation_toplevel: break
-                toplevel_entry = toplevel_entry.rcontainer
-        except models.EntryOptions.DoesNotExist:
-            pass
+        while True:
+            if not toplevel_entry.container: break
+            entryoptions = models.EntryOptions.objects.get_or_create(
+                                                    entry=toplevel_entry)[0]
+            if entryoptions.navigation_toplevel: break
+            toplevel_entry = toplevel_entry.rcontainer
         result = self.render_entry_contents(toplevel_entry, vobject.rentry, 1)
         if result:
             result = '''<dl class="portlet navigationPortlet">
