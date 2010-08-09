@@ -193,9 +193,16 @@ class NavigationNode(template.Node):
             toplevel_entry = toplevel_entry.rcontainer
         result = self.render_entry_contents(toplevel_entry, vobject.rentry, 1)
         if result:
+            toplevel_link = toplevel_entry.spath
+            preferred_language = vobject.request.preferred_language
+            if toplevel_entry.vobject.language.id != preferred_language:
+                for e in toplevel_entry.alt_lang_entries:
+                    if e.vobject.language.id == preferred_language:
+                        toplevel_link = e.spath
+                        break
             result = '''<dl class="portlet navigationPortlet">
                 <dt><a href='%s'>%s</a></dt>
-                <dd class="lastItem">%s</dd></dl>''' % (toplevel_entry.spath,
+                <dd class="lastItem">%s</dd></dl>''' % (toplevel_link,
                 toplevel_entry.vobject.metatags.default.get_short_title(),
                 result)
         return result
