@@ -241,6 +241,7 @@ class Entry(models.Model):
         for i, s in enumerate(self.all_subentries.all()):
             if s.seq != i+1:
                 s.seq = i+1
+                s.request = self.request
                 s.save()
 
     def delete(self, *args, **kwargs):
