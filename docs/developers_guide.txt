@@ -21,7 +21,9 @@ empty ``__init__.py`` file, an empty ``models.py`` file, and a
 
 In ``myapplet.py``, add Django code that implements a template tag
 (we'll assume ``myapplettag``). If the applet is a portlet, make sure
-that the tag output conforms to the portlet specification::
+that the tag output conforms to the portlet specification:
+
+.. code-block:: html
 
     <dl class="portlet">
       <dt>Portlet title</dt>
@@ -52,7 +54,8 @@ to ``myapplet/__init__.py``, according to the following::
     from django import forms
 
     class EntryOptionsForm(forms.Form):
-        ...
+        MyOption = forms.BooleanField()
+        # And so on
 
     def entry_options(request, form=None):
         if not form:
@@ -62,6 +65,9 @@ to ``myapplet/__init__.py``, according to the following::
             return form
         else:
             # Process configuration options that have been submitted.
+            entryoptions.my_option = form.cleaned_data['MyOption']
+            # ...
+            entryoptions.save()
         
 When TwistyCMS starts, it looks at the ``__init__.py`` file of each
 applet directory. If the file contains ``entry_options``, it registers
