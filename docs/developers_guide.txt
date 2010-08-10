@@ -14,24 +14,12 @@ Creating applets
 
 To create an applet (or a set of related applets in a Django
 application), create a directory, say ``myapplet``, inside the
-``twistycms/applets`` directory. Inside ``myapplet``, create an
-empty ``__init__.py`` file, an empty ``models.py`` file, and a
+``twistycms/applets`` directory. Inside ``myapplet``, create an empty
+``__init__.py`` file, an empty ``models.py`` file, and a
 ``templatetags`` directory. Inside ``templatetags``, create an empty
-``__init__.py`` and a ``myapplet.py`` file.
-
-In ``myapplet.py``, add Django code that implements a template tag
-(we'll assume ``myapplettag``). If the applet is a portlet, make sure
-that the tag output conforms to the portlet specification:
-
-.. code-block:: html
-
-    <dl class="portlet">
-      <dt>Portlet title</dt>
-      <dd>First item</dd>
-      <dd>Second item</dd>
-      ...
-      <dd class="lastItem">Last item</dd>
-    </dl>
+``__init__.py`` and a ``myapplet.py`` file.  In ``myapplet.py``, add
+Django code that implements a template tag (we'll assume
+``myapplettag``).
 
 That is all you have to do for a basic applet. You can then use
 it in your template like this::
@@ -69,6 +57,27 @@ to ``myapplet/__init__.py``, according to the following::
             # ...
             entryoptions.save()
         
+If the applet is a portlet, you need to do two more things. First,
+make sure that the tag output conforms to the portlet specification:
+
+.. code-block:: html
+
+    <dl class="portlet">
+      <dt>Portlet title</dt>
+      <dd>First item</dd>
+      <dd>Second item</dd>
+      ...
+      <dd class="lastItem">Last item</dd>
+    </dl>
+
+Second, in ``myapplet/__init__.py``, add the following::
+
+    portlets = [{ 'name': _(u"My portlet"),
+                  'tag': "myportlettag", },
+                # Obviously add more items to this list if your
+                # application defines more than one portlets.
+               ]
+
 When TwistyCMS starts, it looks at the ``__init__.py`` file of each
 applet directory. If the file contains ``entry_options``, it registers
 it. Then, when the user edits a page, TwistyCMS calls
@@ -81,6 +90,8 @@ is not treated as a whole form but as a part of a form that is mixed
 with the entry options of all other installed applets, resulting in
 one form for all applets together; but this makes no difference for
 the applet code.
+
+TwistyCMS also registers the portlets it finds in ``__init__.py``.
 
 Creating new object types
 =========================

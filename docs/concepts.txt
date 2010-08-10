@@ -244,28 +244,35 @@ and delete.
 Applets and portlets
 ====================
 
-An **applet** is essentially a Django application that provides a template
-tag. The breadcrumbs, for example, is an applet, and it provides the
-``breadcrumbs`` tag. When you include ``{% breadcrumbs %}`` in a template,
-this is replaced by the breadcrumbs.  TwistyCMS is designed so that very
-little functionality is in the core; the rest is in applets. Like all
-Django applications, applets are installed by adding them to
-``INSTALLED_APPS`` in the ``settings.py`` file. Details on the applet
-installation procedure are presented further below.
+An **applet** is essentially a Django custom template tag.  The
+breadcrumbs, for example, is an applet; when you include ``{%
+breadcrumbs %}`` in a template, this is replaced by the breadcrumbs.
+The reason we don't call them simply tags is that applets also have
+standard ways of storing configuration options; they can have
+configuration options per entry, or global. But don't worry if you
+don't understand this yet; just think of "applet" as a synonym for a
+custom template tag.
+
+TwistyCMS is designed so that very little functionality is in the
+core; the rest is in applets. Like all Django applications, applets
+are installed by adding them to ``INSTALLED_APPS`` in the
+``settings.py`` file. Details on the applet installation procedure are
+presented further below.
 
 .. admonition:: Note
 
     For good code structure, a Django application can contain many
     applets: for example, ``twistycms/applets/standard`` contains all the
-    standard applets. Therefore, if we want to be precise, an applet
-    is not a Django application, but a custom template tag accompanied
-    by related functionality such as configuration options (explained
-    below).
+    standard applets.
 
-A **portlet** is a special kind of applet. The only special thing
-about it is that it has a certain kind of look: it has a title and a
-body, and the body consists of items (some portlets, like navigation,
-have only one item in the body). The template tag of the portlet renders the portlet in a very specific manner::
+A **portlet** is a special kind of applet. There are two things that
+are special about portlets: the first one is that they have a certain
+kind of look: they have a title and a body, and the body consists of
+items (some portlets, like navigation, have only one item in the
+body). The template tag of the portlet renders the portlet in a very
+specific manner:
+
+.. code-block:: html
 
     <dl class="portlet">
       <dt>Portlet title</dt>
@@ -276,22 +283,27 @@ have only one item in the body). The template tag of the portlet renders the por
     </dl>
 
 Because portlets conform to that specification, the CSS style sheet
-can define a common look for all portlets. That is all that is
-special about them. Otherwise, they are identical to applets.
+can define a common look for all portlets.
+
+The second thing that is special about portlets is that they are
+registered: TwistyCMS knows what portlets are available; this makes
+possible to have user interface where the user can select portlets
+from a list, instead of having to specify them in a Django template.
+For example, the left and right panes, used as portlet holders in the
+default template, are applets themselves, and the user that has
+appropriate permissions for a page can select which portlets they will
+show on that page (and the pages contained therein).
 
 Applets included with TwistyCMS, such as the breadcrumbs and the
 navigation, are in ``twistycms/applets/standard``.
 
 .. admonition:: Not implemented yet
 
-   The portlets for pending events, news, and calendar have not been
-   implemented yet.
+   The portlets for recent changes, pending events, news, and calendar
+   have not been implemented yet. In addition, the portlet holders
+   have also not been implemented, and, instead, the showing of the
+   portlets is merely hacked into the template.
 
-Besides a template tag, an applet can also provide a set of
-configuration options per object (entry).
-
-The left and right panes, used as portlet holders in the default
-template, are applets themselves.
 
 Installing applets
 ------------------
@@ -305,5 +317,5 @@ one or more applets), do the following:
 3. If there is any additional CSS, put it in the ``static`` directory,
    and add an ``@import`` statement in the main stylesheet (in the
    default template it is named ``style.css``).
-4. In the ``twisty`` directory, run ``./manage.py syncdb``. This will
+4. In the ``twisty`` directory, run ``./manage.py migrate``. This will
    create any additional database tables needed by the applet.
