@@ -30,3 +30,8 @@ def entry_options(entry, form=None):
         entryoptions.navigation_toplevel = form.cleaned_data[
                                                         'navigation_toplevel']
         entryoptions.save()
+
+portlets = [
+    { 'name': _(u"Navigation"),
+      'tag': 'navigation', },
+]
