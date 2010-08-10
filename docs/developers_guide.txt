@@ -91,11 +91,65 @@ To create a new object type, you need to subclass
 assume that the type you want to create is to be called a Snail. Name
 your :class:`twistycms.core.models.Entry` subclass *SnailEntry*, your
 :class:`twistycms.core.models.VObject` subclass *VSnail*, and your
-form *EditSnailForm*.
+form *EditSnailForm*. The code should be as follows::
 
-.. admonition:: Work in progress
+    from twistycms.core.models import Entry, VObject
 
-   There's obviously more to write here.
+    class SnailEntry(Entry):
+
+        def create_edit_subform(self, new):
+            if new:
+                result = EditSnailForm()
+            else:
+                result = EditSnailForm(
+                        initial={'content': self.vobject.content})
+            return result
+
+        def process_edit_subform(self, vobject, form):
+            vobject.content=form.cleaned_data['content']
+
+        @property
+        def template_name(self):
+            return 'edit_snail.html'
+
+        @property
+        def subform_class(self):
+            return EditSnailForm
+
+        @property
+        def vobject_class(self):
+            return VSnail
+
+        @property
+        def type(self):
+            return _(u"Snail")
+
+        class Meta:
+            db_table = 'myprefix_snailentry'
+
+
+    class VSnail(VObject):
+        content = models.TextField(blank=True) # Or whatever it is
+
+        def end_view(self):
+            return render_to_response('view_snail.html', { 'vobject': self })
+
+        def info_view(self):
+            return self.end_view()
+
+        class Meta:
+            db_table = 'myprefix_vsnail'
+
+
+    class EditSnailForm(forms.Form):
+        content = forms.CharField()
+
+        def render(self):
+            return self.as_table()
+
+.. admonition:: Incomplete
+
+   More to write here in order to explain the above example.
 
 .. _request-object:
 
