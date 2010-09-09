@@ -9,7 +9,7 @@ is too difficult to administer and program. Zadig is written from
 scratch using Django, and is carefully and slowly designed in order to
 be simple and intuitive.
 
-.. _some disagree:: http://www.gnu.org/philosophy/words-to-avoid.html#Content
+.. _some disagree: http://www.gnu.org/philosophy/words-to-avoid.html#Content
 
 There is no user documentation here. Users don't read documentation,
 they expect the administrators to tell them everything. Therefore we
