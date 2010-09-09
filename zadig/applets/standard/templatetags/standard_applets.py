@@ -3,9 +3,9 @@ from django import template
 from django.utils.translation import ugettext as _
 import settings
 
-from twistycms.core import models as coremodels
-from twistycms.core.utils import get_current_path
-from twistycms.applets.standard import models
+from zadig.core import models as coremodels
+from zadig.core.utils import get_current_path
+from zadig.applets.standard import models
 
 register = template.Library()
 

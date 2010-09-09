@@ -1,11 +1,11 @@
 #!/usr/bin/python
 """
-plone2twistycms converts a Plone site to a twistycms site. It does so
+plone2zadig converts a Plone site to a Zadig site. It does so
 by visiting the Plone site on the web. The script must log on the
 Plone site as a user who has edit permissions on all pages (the
 administrator for example).
 
-Usage: plone2twistycms config_file
+Usage: plone2zadig config_file
 
 The config_file a collection of lines of the form "OPTION=value".  It
 is actually a Python program that defines several variables. The
@@ -27,7 +27,7 @@ The options are:
       I18N_LANGUAGE cookie is sent.
 
   TARGET_PATH
-      Will migrate PLONE_URL to this twistycms path, and subobjects to
+      Will migrate PLONE_URL to this Zadig path, and subobjects to
       subpaths.
 
   REMOVE_TARGET
@@ -39,7 +39,7 @@ The options are:
       of the same type, or an exception is raised.
 
   OWNER
-      The objects created in twistycms will belong to this user.
+      The objects created in Zadig will belong to this user.
 
   DEFAULT_LANGUAGE
       When a Plone page is "language neutral", it will be considered
@@ -65,9 +65,9 @@ from BeautifulSoup import BeautifulSoup, Tag
 from django.conf import settings
 from django.db import transaction
 
-from twistycms.core.utils import sanitize_html
-from twistycms.core.utils import split_path
-from twistycms.core import models
+from zadig.core.utils import sanitize_html
+from zadig.core.utils import split_path
+from zadig.core import models
 
 # Read configuration file
 execfile(sys.argv[1])
@@ -263,7 +263,7 @@ class PlonePage(PloneObject):
             description=self.description)
         nmetatags.save()
         # FIXME: Should be in superclass, other types also have no_nav
-        from twistycms.applets.standard.models import EntryOptions
+        from zadig.applets.standard.models import EntryOptions
         options = EntryOptions(entry=self.entry, no_navigation=self.no_nav)
         options.save()
         self.post_migrate(request, path, models.PageEntry)
@@ -336,7 +336,7 @@ class PloneFolder(PlonePage):
             self.content = ''
     @transaction.commit_on_success
     def migrate(self, request, path):
-        # TwistyCMS does not have folders, so we'll become a page. First
+        # Zadig does not have folders, so we'll become a page. First
         # of all migrate the page.
         super(PloneFolder, self).migrate(request, path)
         # But also migrate the contents of the folder

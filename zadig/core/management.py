@@ -5,7 +5,7 @@ from django.db.models import signals
 from django.contrib.auth.models import User
 import settings
 
-from twistycms.core import models
+from zadig.core import models
 
 def import_initial_data(app, created_models, verbosity, **kwargs):
     if models.Permission in created_models:

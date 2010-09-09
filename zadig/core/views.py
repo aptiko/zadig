@@ -8,8 +8,8 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError, PermissionDenied
 import django.contrib.auth
 
-from twistycms.core import models
-from twistycms.core.models import permissions
+from zadig.core import models
+from zadig.core.models import permissions
 
 def _set_languages(vobject):
     """Set preferred and effective language."""

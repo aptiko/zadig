@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import patterns
 
-urlpatterns = patterns('twistycms.core.views',
+urlpatterns = patterns('zadig.core.views',
     ('^(?P<path>.*)__history__/?$', 'entry_history'),
     ('^(?P<path>.*)__contents__/?$', 'entry_contents'),
     ('^(?P<path>.*)__edit__/?$', 'edit_entry'),

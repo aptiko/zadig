@@ -1,8 +1,8 @@
 .. _api:
 
-=============
-TwistyCMS API
-=============
+=========
+Zadig API
+=========
 
 It is important to read the :ref:`concepts` document before studying
 the API, otherwise you will not understand what I'm talking about.
@@ -17,20 +17,20 @@ mentioned unless there is something unusual about it.
 Entry
 -----
 
-.. class:: twistycms.core.models.Entry(request, path)
+.. class:: zadig.core.models.Entry(request, path)
 
    Stores an entry. It is always a subclass that is used, rather than
-   :class:`~twistycms.core.models.Entry` itself. The constructor of
+   :class:`~zadig.core.models.Entry` itself. The constructor of
    the subclass creates a new entry at the specified path.  The parent
    entry must already exist and the logged on user must have
    appropriate permissions on the parent entry; otherwise, an
    exception is raised. If other entries with the same parent entry
    exist, the entry is added as the last sibling.
    
-   The default manager for :class:`~twistycms.core.models.Entry` has an
+   The default manager for :class:`~zadig.core.models.Entry` has an
    additional method:
 
-   .. attribute:: twistycms.core.models.Entry.objects
+   .. attribute:: zadig.core.models.Entry.objects
 
       .. method:: get_by_path(request, path)
 
@@ -42,18 +42,18 @@ Entry
          when retrieving Entries, because it will take care of
          permissions at a low level.
 
-   :class:`~twistycms.core.models.Entry` objects have the following attributes:
+   :class:`~zadig.core.models.Entry` objects have the following attributes:
 
-   .. attribute:: twistycms.core.models.Entry.container
+   .. attribute:: zadig.core.models.Entry.container
 
-      A foreign key to :class:`~twistycms.core.models.Entry` (that is,
+      A foreign key to :class:`~zadig.core.models.Entry` (that is,
       to self). It indicates which entry contains the entry. This
       attribute can be null; there is one and only one entry that has
-      a null :attr:`~twistycms.core.models.Entry.container`, and it is
+      a null :attr:`~zadig.core.models.Entry.container`, and it is
       the root entry.
 
       You should generally not use this attribute; use the
-      :attr:`~twistycms.core.models.Entry.rcontainer` property
+      :attr:`~zadig.core.models.Entry.rcontainer` property
       instead.
 
       The *related_name* of this attribute is ``all_subentries``.
@@ -61,118 +61,118 @@ Entry
       ``myentry.all_subentries`` is the list of entries contained in
       ``myentry``. You should not, however, use ``all_subentries``, unless
       you have a good reason to do so; instead, use 
-      :meth:`~twistycms.core.models.Entry.subentries`, which checks
+      :meth:`~zadig.core.models.Entry.subentries`, which checks
       permissions and which assigns the :ref:`request object
       <request-object>` to the subentries.
 
-   .. attribute:: twistycms.core.models.Entry.name
+   .. attribute:: zadig.core.models.Entry.name
 
       The name of the entry.
 
-   .. attribute:: twistycms.core.models.Entry.seq
+   .. attribute:: zadig.core.models.Entry.seq
 
       The sequence of the entry in its container: 1 for the first
       entry, 2 for the second entry, and so on.
 
-   .. attribute:: twistycms.core.models.Entry.owner
+   .. attribute:: zadig.core.models.Entry.owner
 
       A foreign key to ``django.contrib.auth.models.User``, indicating
       the owner of the entry.
 
-   .. attribute:: twistycms.core.models.Entry.state
+   .. attribute:: zadig.core.models.Entry.state
 
-      A foreign key to :class:`~twistycms.core.models.State`, indicating the state of
+      A foreign key to :class:`~zadig.core.models.State`, indicating the state of
       the entry.
 
-   .. attribute:: twistycms.core.models.Entry.multilingual_group
+   .. attribute:: zadig.core.models.Entry.multilingual_group
 
       A foreign key to
-      :class:`~twistycms.core.models.MultilingualGroup`, indicating
+      :class:`~zadig.core.models.MultilingualGroup`, indicating
       the multilingual group, if any, to which the entry belongs.
 
-   :class:`~twistycms.core.models.Entry` objects also have the
+   :class:`~zadig.core.models.Entry` objects also have the
    following properties:
 
-   .. attribute:: twistycms.core.models.Entry.path
+   .. attribute:: zadig.core.models.Entry.path
 
       This read-only property returns the URL path to the entry, not
       including a leading or trailing slash.
 
-   .. attribute:: twistycms.core.models.Entry.spath
+   .. attribute:: zadig.core.models.Entry.spath
 
       This read-only property returns the full relative URL path to
       the entry, starting and ending in a slash. (This is more
       complicated than just prefixing and suffixing
-      :attr:`~twistycms.core.models.Entry.path` with a slash, because
+      :attr:`~zadig.core.models.Entry.path` with a slash, because
       then the root entry would be two slashes instead of one.)
 
-   .. attribute:: twistycms.core.models.Entry.descendant
+   .. attribute:: zadig.core.models.Entry.descendant
 
-      :class:`~twistycms.core.models.Entry` is always subclassed. If
+      :class:`~zadig.core.models.Entry` is always subclassed. If
       you get a grip on an object of type
-      :class:`~twistycms.core.models.Entry` when in fact you need that
+      :class:`~zadig.core.models.Entry` when in fact you need that
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
 
-   .. attribute:: twistycms.core.models.Entry.rcontainer
+   .. attribute:: zadig.core.models.Entry.rcontainer
 
       Use this instead of
-      :attr:`~twistycms.core.models.Entry.container``
-      and the resulting :class:`~twistycms.core.models.Entry` object
+      :attr:`~zadig.core.models.Entry.container``
+      and the resulting :class:`~zadig.core.models.Entry` object
       will also have the :ref:`request object <request-object>` set.
 
-   .. attribute:: twistycms.core.models.Entry.type
+   .. attribute:: zadig.core.models.Entry.type
 
       This is a translatable, human readable name of the type, such as
       "Page" or "Image".
       
-   :class:`~twistycms.core.models.Entry` objects also have the following properties:
+   :class:`~zadig.core.models.Entry` objects also have the following properties:
 
-   .. attribute:: twistycms.core.models.Entry.permissions
+   .. attribute:: zadig.core.models.Entry.permissions
 
       Return the permissions the logged on user has on the entry.
 
-   .. attribute:: twistycms.core.models.Entry.vobject
+   .. attribute:: zadig.core.models.Entry.vobject
 
       This is the same as
-      :meth:`~twistycms.core.models.Entry.get_vobject()` without an
+      :meth:`~zadig.core.models.Entry.get_vobject()` without an
       argument.
 
-   .. attribute:: twistycms.core.models.Entry.subentries
+   .. attribute:: zadig.core.models.Entry.subentries
 
-      A list of :class:`~twistycms.core.models.Entry` objects, which are the
+      A list of :class:`~zadig.core.models.Entry` objects, which are the
       subentries which the user has permission to search, in order.
 
-   .. attribute:: twistycms.core.models.Entry.alt_lang_entries
+   .. attribute:: zadig.core.models.Entry.alt_lang_entries
 
       A list with the alternative language entries. The order in this
       list is the order with which languages are listed in
       ``settings.LANGUAGES``.
 
-   .. attribute:: twistycms.core.models.Entry.touchable
+   .. attribute:: zadig.core.models.Entry.touchable
 
       ``True`` if the current user has either *edit* or *admin*
       permission on the entry. Primarily used by the template to check
       whether to show the editing buttons.
 
-   :class:`~twistycms.core.models.Entry` objects also have the following methods:
+   :class:`~zadig.core.models.Entry` objects also have the following methods:
 
-   .. method:: twistycms.core.models.Entry.get_vobject([version_number])
+   .. method:: zadig.core.models.Entry.get_vobject([version_number])
 
       Return the entry's vobject; actually returns a
-      :class:`~twistycms.core.models.VObject` descendant. If *version_number*
+      :class:`~zadig.core.models.VObject` descendant. If *version_number*
       is not specified, it returns the latest vobject. An exception is
       raised if the user does not have permission to view the vobject.
 
-   .. method:: twistycms.core.models.Entry.contains(entry)
+   .. method:: zadig.core.models.Entry.contains(entry)
 
       Check whether *entry* is contained, directly or indirectly, in
       *self*. Returns :const:`True` if *self* is the parent of
       *entry*, or the parent of its parent, or any ancenstor, and
       :const:`False` otherwise.
 
-   .. method:: twistycms.core.models.Entry.reorder(source_seq, target_seq)
+   .. method:: zadig.core.models.Entry.reorder(source_seq, target_seq)
 
       Move the subentry with :samp:`seq={source_seq}` before subentry
       with :samp:`seq={target_seq}`.  *source_seq* and *target_seq*
@@ -181,14 +181,14 @@ Entry
       before the child that has :samp:`seq={target_seq}`, unless
       *target_seq* is one more than the number of children, in which
       case the child is moved to the end. The other children are
-      renumbered as needed (i.e.  their :attr:`~twistycms.core.models.Entry.seq`
+      renumbered as needed (i.e.  their :attr:`~zadig.core.models.Entry.seq`
       is modified accordingly).  Raises an exception if *source_seq*
       or *target_seq* are inappropriate; for example, if *source_seq*
       is larger than the number of children, or if *source_seq* and
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
-   .. method:: twistycms.core.models.Entry.edit_view([new=False])
+   .. method:: zadig.core.models.Entry.edit_view([new=False])
 
       Return a :class:`django.http.HttpResponse` object with the edit
       view of the vobject. Depending on the contents of the
@@ -196,14 +196,14 @@ Entry
       either processes a submitted form (either modifying the entry or
       finding an error in the submitted form) and returns the
       response, or it returns a page with a form for editing the
-      entry. *self* must be an :class:`~twistycms.core.models.Entry`
+      entry. *self* must be an :class:`~zadig.core.models.Entry`
       subclass.
 
       If *new* is :const:`True`, it means that the entry does not
       exist yet but is in the process of being created. When calling
       in this manner, *self* must be an
-      :class:`~twistycms.core.models.Entry` subclass, and
-      :attr:`~twistycms.core.models.Entry.container` must have been
+      :class:`~zadig.core.models.Entry` subclass, and
+      :attr:`~zadig.core.models.Entry.container` must have been
       set to the entry of which the new entry will be a child; the
       other attributes are irrelevant.  Depending on the contents of
       the :ref:`request object <request-object>`, the method will then
@@ -212,30 +212,30 @@ Entry
       form) and return the response, or return a page with a (mostly
       empty) form for filling in the entry.
 
-   .. method:: twistycms.core.models.Entry.contents_view()
+   .. method:: zadig.core.models.Entry.contents_view()
 
       Return a :class:`django.http.HttpResponse` object with the
       contents view of the entry.
 
-   .. method:: twistycms.core.models.Entry.history_view()
+   .. method:: zadig.core.models.Entry.history_view()
 
       Return a :class:`django.http.HttpResponse` object with the
       history view of the entry.
 
-   .. method:: twistycms.core.models.Entry.rename(newname)
+   .. method:: zadig.core.models.Entry.rename(newname)
 
       Rename the entry to the specified new name; it also creates a
       new redirection entry with the old name.
 
-   .. method:: twistycms.core.models.Entry.move(target_entry)
+   .. method:: zadig.core.models.Entry.move(target_entry)
 
       Move the entry from its current container to *target_entry*,
       which will be the new container. Also create a new redirection
       entry at the old location. Verifies permissions to do all that.
 
-   .. method:: twistycms.core.models.Entry.set_altlang(altpath)
+   .. method:: zadig.core.models.Entry.set_altlang(altpath)
 
-      Set :attr:`~twistycms.core.models.Entry.multilingual_group` so
+      Set :attr:`~zadig.core.models.Entry.multilingual_group` so
       that the entry specified by *altpath* is an alternative language
       entry. *altpath* is a path to another entry.
       
@@ -260,10 +260,10 @@ Entry
       conflicts, it removes one or both of the entries from their old
       groups as needed.
 
-   .. method:: twistycms.core.models.Entry.add_details(vobject, form)
+   .. method:: zadig.core.models.Entry.add_details(vobject, form)
 
-      The :meth:`~twistycms.core.models.Entry.edit_view` method is
-      implemented in :class:`~twistycms.core.models.Entry` and not in
+      The :meth:`~zadig.core.models.Entry.edit_view` method is
+      implemented in :class:`~zadig.core.models.Entry` and not in
       its subclasses. When creating a new vobject as a result of edit
       form submission, it doesn't know how to process all attributes
       submitted with the form. It therefore processes only those it
@@ -274,69 +274,69 @@ Entry
 VObject
 -------
 
-.. class:: twistycms.core.models.VObject
+.. class:: zadig.core.models.VObject
 
    This model is the parent of models that inherit it using
    multi-table inheritance, and stores a vobject.  This model does not
    actually store the content of the vobject; this is stored by the
-   descendant model.  :class:`~twistycms.core.models.VObject` provides the following
+   descendant model.  :class:`~zadig.core.models.VObject` provides the following
    attributes and methods:
    
-   .. attribute:: twistycms.core.models.VObject.entry
+   .. attribute:: zadig.core.models.VObject.entry
 
-      Foreign key to ::class:`~twistycms.core.models.Entry`. Note that
+      Foreign key to ::class:`~zadig.core.models.Entry`. Note that
       you should avoid using this attribute; instead, use
-      :attr:`~twistycms.core.models.VObject.rentry`.
+      :attr:`~zadig.core.models.VObject.rentry`.
 
-   .. attribute:: twistycms.core.models.VObject.version_number
+   .. attribute:: zadig.core.models.VObject.version_number
 
       An integer
 
-   .. attribute:: twistycms.core.models.VObject.date
+   .. attribute:: zadig.core.models.VObject.date
 
       The date in which the vobject has been created.
 
-   .. attribute:: twistycms.core.models.VObject.language
+   .. attribute:: zadig.core.models.VObject.language
 
-      A foreign key to :class:`~twistycms.core.models.Language` designating the language of
+      A foreign key to :class:`~zadig.core.models.Language` designating the language of
       the vobject.
 
-   .. attribute:: twistycms.core.models.VObject.descendant
+   .. attribute:: zadig.core.models.VObject.descendant
 
-      :class:`~twistycms.core.models.VObject` is always subclassed. If
+      :class:`~zadig.core.models.VObject` is always subclassed. If
       you get a grip on an object of type
-      :class:`~twistycms.core.models.VObject` when in fact you need that
+      :class:`~zadig.core.models.VObject` when in fact you need that
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
 
-   .. attribute:: twistycms.core.models.VObject.rentry
+   .. attribute:: zadig.core.models.VObject.rentry
 
-      Use this instead of :attr:`~twistycms.core.models.VObject.entry`
-      and the resulting :class:`~twistycms.core.models.Entry` object
+      Use this instead of :attr:`~zadig.core.models.VObject.entry`
+      and the resulting :class:`~zadig.core.models.Entry` object
       will also have the :ref:`request object <request-object>` set.
       
-   .. attribute:: twistycms.core.models.VObject.metatags
+   .. attribute:: zadig.core.models.VObject.metatags
 
       The set of metatags of the vobject. This is like the related
-      name of :class:`~twistycms.core.models.VObjectMetatags`, but it
+      name of :class:`~zadig.core.models.VObjectMetatags`, but it
       also passes the request object; see
-      :class:`~twistycms.core.models.VObjectMetatags` for more
+      :class:`~zadig.core.models.VObjectMetatags` for more
       information.
 
-   .. method:: twistycms.core.models.VObject.end_view()
+   .. method:: zadig.core.models.VObject.end_view()
 
       Return a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
 
-   .. method:: twistycms.core.models.VObject.info_view()
+   .. method:: zadig.core.models.VObject.info_view()
 
       Returns a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
       
-   :class:`~twistycms.core.models.VObject` has a custom manager:
+   :class:`~zadig.core.models.VObject` has a custom manager:
 
-   .. attribute:: twistycms.core.models.VObject.objects
+   .. attribute:: zadig.core.models.VObject.objects
 
       :attr:`objects` is similar to the default manager, except that
       it has an additional method:
@@ -352,24 +352,24 @@ VObject
 Other models
 ------------
 
-.. class:: twistycms.core.models.EntryPermission
+.. class:: zadig.core.models.EntryPermission
 
    Permissions assigned to the entry besides those assigned to its
    state. Has three attributes: :attr:`entry`, :attr:`lentity` and
    :attr:`permission`, all foreign keys to the respective model.
 
-.. class:: twistycms.core.models.Language
+.. class:: zadig.core.models.Language
 
    Contains languages. It has only one field, :attr:`id`, storing the
    language id, as a 5-character long string, in the form "en" or
    "en_us" etc.
 
-.. class:: twistycms.core.models.Permission
+.. class:: zadig.core.models.Permission
 
    A lookup that lists permissions: "view", "edit", "admin", "search",
    "delete". Has only a :attr:`descr` attribute.
 
-.. class:: twistycms.core.models.Lentity
+.. class:: zadig.core.models.Lentity
 
    A Lentity represents either a user or a group, and is used whenever
    any of the two can be used; for example, a certain permission can
@@ -379,39 +379,39 @@ Other models
    :class:`django.contrib.auth.models.Group`. Either :attr:`user`, or
    :attr:`group`, or :attr:`special`, must be not null; the other two
    must be null. If :attr:`user` is not null, the
-   :class:`~twistycms.core.models.Lentity` represents a user.  If :attr:`group`
-   is not null, the :class:`~twistycms.core.models.Lentity` represents a group.
+   :class:`~zadig.core.models.Lentity` represents a user.  If :attr:`group`
+   is not null, the :class:`~zadig.core.models.Lentity` represents a group.
    If :attr:`special` is 1, it represents the anonymous user, and if
    :attr:`special` is 2, it represents all valid users (the logged on
    user).
 
-.. class:: twistycms.core.models.State
+.. class:: zadig.core.models.State
 
    A list of states. Contains only a :attr:`descr` attribute.
 
-.. class:: twistycms.core.models.StatePermission
+.. class:: zadig.core.models.StatePermission
 
    A state is a collection of permissions. This model stores the
    permissions that comprise the state. It has three attributes,
    :attr:`state`, :attr:`lentity` and :attr:`permission`, which are
-   foreign keys to :class:`~twistycms.core.models.State`, :class:`~twistycms.core.models.Lentity`
-   and :class:`~twistycms.core.models.Permission`, and designate that said lentity
+   foreign keys to :class:`~zadig.core.models.State`, :class:`~zadig.core.models.Lentity`
+   and :class:`~zadig.core.models.Permission`, and designate that said lentity
    has said permission on said state.
 
-.. class:: twistycms.core.models.StateTransition
+.. class:: zadig.core.models.StateTransition
 
    A state transition. Has two attributes, :attr:`source_state` and
-   :attr:`target_state`, both foreign keys to :class:`~twistycms.core.models.State`.
+   :attr:`target_state`, both foreign keys to :class:`~zadig.core.models.State`.
 
-.. class:: twistycms.core.models.Workflow
+.. class:: zadig.core.models.Workflow
 
    A workflow is a collection of states and state-transition rules.
    The model has three attributes: :attr:`name`, which is a string,
    :attr:`states`, and :attr:`state_transitions`. The last two are
-   many to many fields to :class:`~twistycms.core.models.State` and
-   :class:`~twistycms.core.models.StateTransition`.
+   many to many fields to :class:`~zadig.core.models.State` and
+   :class:`~zadig.core.models.StateTransition`.
 
-.. class:: twistycms.core.models.VObjectMetatags
+.. class:: zadig.core.models.VObjectMetatags
 
    Stores the metatags of a vobject. Has five attributes:
    :attr:`vobject` and :attr:`language` are foreign keys to the
@@ -432,16 +432,16 @@ Other models
    write ``v.metatags.default``, where ``v`` is a *vobject* object, in
    which case ``v`` passes the request object to the manager.)
 
-.. class:: twistycms.core.models.ContentFormat
+.. class:: zadig.core.models.ContentFormat
 
    A lookup storing content formats, such as "text/html" or
    "text/x-rst". Has only a :attr:`descr` field.
 
-.. class:: twistycms.core.models.MultilingualGroup
+.. class:: zadig.core.models.MultilingualGroup
 
    Stores the multilingual groups. It has no field besides id, as it
    is only used to group multilingual entries together through their
-   :attr:`~twistycms.core.models.Entry.multilingual_group` field. It
+   :attr:`~zadig.core.models.Entry.multilingual_group` field. It
    has a :meth:`check()` method, which checks for integrity: it checks
    that there are no multiple language occurrences in the group, makes
    other similar checks, and raises
@@ -449,29 +449,29 @@ Other models
    also has a :meth:`delete_if_useless()` method, which will delete
    the multilingual group if it contains only one entry or no entries.
 
-.. class:: twistycms.core.models.Page(VObject)
+.. class:: zadig.core.models.Page(VObject)
 
-   Inherits :class:`~twistycms.core.models.VObject` and designates a page. Has
+   Inherits :class:`~zadig.core.models.VObject` and designates a page. Has
    attributes :attr:`format`, a foreign key to
-   :class:`~twistycms.core.models.ContentFormat`, and :attr:`content`, a text field.
+   :class:`~zadig.core.models.ContentFormat`, and :attr:`content`, a text field.
 
-.. class:: twistycms.core.models.File(VObject)
+.. class:: zadig.core.models.File(VObject)
 
-   Inherits :class:`~twistycms.core.models.VObject` and designates a file. Has
+   Inherits :class:`~zadig.core.models.VObject` and designates a file. Has
    attribute :attr:`content`, a file field.
    
-.. class:: twistycms.core.models.Image(VObject)
+.. class:: zadig.core.models.Image(VObject)
 
-   Inherits :class:`~twistycms.core.models.VObject` and designates an image. Has
+   Inherits :class:`~zadig.core.models.VObject` and designates an image. Has
    attribute :attr:`content`, an image field.
 
    
 Utility functions
 =================
 
-The functions below are in module twistycms.core.utils.
+The functions below are in module zadig.core.utils.
 
-.. function:: twistycms.core.utils.split_path(path)
+.. function:: zadig.core.utils.split_path(path)
 
    Return a list with the path items. Roughly :samp:`path.split('/')`
    but not confused by trailing slash, will ignore a starting slash,
@@ -479,25 +479,25 @@ The functions below are in module twistycms.core.utils.
    includes an empty string as the first path item, which stands for
    the root entry.
 
-.. function:: twistycms.core.utils.get_current_path(request)
+.. function:: zadig.core.utils.get_current_path(request)
 
    Return the path to the current entry. This is something like
    ``request.path``, but does not include any directive like ``__edit__``
    and so on.
 
-.. function:: twistycms.core.utils.get_preferred_language(request)
+.. function:: zadig.core.utils.get_preferred_language(request)
 
    Return the id of the language selected by the user (found in the
    session), or the default language if the user has not selected a
    language.
 
-.. function:: twistycms.core.utils.get_effective_language(request)
+.. function:: zadig.core.utils.get_effective_language(request)
 
    Return the id of the language selected by the user (found in the
    session), or the default language if the user has not selected a
    language.
 
-.. function:: twistycms.core.utils.sanitize_html(html)
+.. function:: zadig.core.utils.sanitize_html(html)
 
    Sanitize the HTML provided and return a sanitized version. This is
    done for two reasons: (a) to avoid cross site scripting attacks;

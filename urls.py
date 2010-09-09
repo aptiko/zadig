@@ -9,10 +9,10 @@ urlpatterns = patterns('',
 )
 
 # Cms
-import twistycms.core.urls
+import zadig.core.urls
 urlpatterns += patterns('',
     (r'^tinymce/', include('tinymce.urls')),
-    (r'^', include('twistycms.core.urls')),
+    (r'^', include('zadig.core.urls')),
 )
 
 # Static files

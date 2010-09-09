@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# TwistyCMS documentation build configuration file, created by
+# Zadig documentation build configuration file, created by
 # sphinx-quickstart on Sat Dec  6 14:27:15 2008.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -35,8 +35,8 @@ source_suffix = '.txt'
 master_doc = 'index'
 
 # General substitutions.
-project = 'TwistyCMS'
-copyright = '2008, Antonis Christofides'
+project = 'Zadig'
+copyright = '2008-2010 Antonis Christofides'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -125,7 +125,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'TwistyCMSdoc'
+htmlhelp_basename = 'Zadigdoc'
 
 
 # Options for LaTeX output
@@ -140,7 +140,7 @@ htmlhelp_basename = 'TwistyCMSdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'TwistyCMS.tex', 'TwistyCMS Documentation', 'Antonis Christofides', 'manual'),
+  ('index', 'Zadig.tex', 'Zadig Documentation', 'Antonis Christofides', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

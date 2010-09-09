@@ -1,9 +1,9 @@
 .. _requirements:
 
-Requirements and principles for TwistyCMS
-=========================================
+Requirements and principles for Zadig
+=====================================
 
-These are the requirements for Version 1.0 of TwistyCMS:
+These are the requirements for Version 1.0 of Zadig:
 
 * Must provide most of Plone's default objects; namely folders, pages,
   images, files, news, and events. These objects must have all the
@@ -31,12 +31,12 @@ These are the requirements for Version 1.0 of TwistyCMS:
 * No duplication of functionality from Django. User authentication, session
   management, etc., all done at the Django level. Wherever Django's
   functionality is insufficient, improvements will preferably be contributed to
-  Django rather than to TwistyCMS.
+  Django rather than to Zadig.
 
 * Great documentation, faithful to the tradition of Python and Django.
 
 * End product, not a platform. Other applications shall be written on Django,
-  not on TwistyCMS. But this does not mean that TwistyCMS's APIs won't be
+  not on Zadig. But this does not mean that Zadig's APIs won't be
   perfectly documented, or that some good practices for customizations will
   not be provided.
 

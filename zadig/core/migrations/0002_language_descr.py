@@ -1,7 +1,7 @@
 
 from south.db import db
 from django.db import models
-from twistycms.core.models import *
+from zadig.core.models import *
 
 class Migration:
     

@@ -1,4 +1,4 @@
-# Django settings for twistycrm project.
+# Django settings for Zadig project.
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -64,7 +64,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
-    'twistycms.core.middleware.GeneralMiddleware',
+    'zadig.core.middleware.GeneralMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -83,8 +83,8 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.markup',
     'south',
-    'twistycms.core',
-    'twistycms.applets.standard',
+    'zadig.core',
+    'zadig.applets.standard',
     'tinymce',
 )
 
@@ -92,6 +92,6 @@ INSTALLED_APPS = (
 TINYMCE_JS_URL = '/static/tinymce/tiny_mce.js'
 TINYMCE_JS_ROOT = '/static/tinymce'
 
-# TwistyCMS settings
+# Zadig settings
 LANGUAGES = ('en', 'el')
 WORKFLOW_ID = 1

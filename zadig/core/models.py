@@ -11,8 +11,8 @@ import django.contrib.auth.models
 from django import forms
 import settings
 
-from twistycms.core import utils
-import twistycms.core
+from zadig.core import utils
+import zadig.core
 
 
 class permissions:
@@ -193,7 +193,7 @@ class Entry(models.Model):
 
     def __init__(self, *args, **kwargs):
         # If called with only two arguments, then it is someone calling the
-        # twistyCMS API, and the two arguments are request and path.
+        # Zadig API, and the two arguments are request and path.
         # Otherwise, it is likely Django calling us in the default Django way.
         if len(args)!=2 or kwargs:
             result = super(Entry, self).__init__(*args, **kwargs)
@@ -465,7 +465,7 @@ class Entry(models.Model):
             e.save()
 
     def edit_view(self, new=False):
-        applet_options = [o for o in twistycms.core.applet_options
+        applet_options = [o for o in zadig.core.applet_options
                                                         if o['entry_options']]
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,

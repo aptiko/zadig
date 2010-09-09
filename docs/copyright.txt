@@ -1,17 +1,17 @@
-TwistyCMS Copyright
-===================
+Zadig Copyright
+===============
 
-The copyright applies to all TwistyCMS files, except those where
+The copyright applies to all Zadig files, except those where
 something else is mentioned.
 
 Copyright (C) 2009-2010 Antonis Christofides
 
-Permission is granted to redistribute and/or modify TwistyCMS under
+Permission is granted to redistribute and/or modify Zadig under
 the terms of the GNU Affero General Public License (AGPL) as published
 by the Free Software Foundation; either version 3 of the License, or,
 at your option, any later version.
 
-TwistyCMS is distributed in the hope that it will be useful, but
+Zadig is distributed in the hope that it will be useful, but
 without any warranty; without even the implied warranty of
 merchantability or fitness for a particular purpose. See the GNU
 Affero General Public License for more details.
@@ -23,26 +23,24 @@ http://www.gnu.org/licenses/.
 Additional permission under the GNU AGPL version 3 section 7:
 
 If you are a core Django developer or a core Python developer, you are
-granted permission to include any portion of
-TwistyCMS in Django and/or Python and distribute it under the same
-terms as Django and/or Python itself, provided that these terms
-qualify as free software according to the `Debian Free Software
-Guidelines`_.  "Core Django developer" and "core Python developer"
-in this context means any person who has the power to decide what code
-can be included in Django and Python respectively; this, for example,
-may include a person who has been granted write access to the Django
-or Python repository.  Obviously, after TwistyCMS code is released as
-part of Django or Python, the Django or Python license is also
-irrevocably added as an option for that code, even if the code is
-subsequently removed from Django/Python. The intent of this provision
-is solely to enable the inclusion of TwistyCMS code in Django and
-Python, and it is explicitly forbidden to make such inclusion with the
-intent of circumventing the normal license (i.e. AGPL 3) of TwistyCMS.
-For example, you may not upload TwistyCMS code to
-the Django repository and then remove it, solely in order to
-circumvent the restrictions in TwistyCMS's normal licensing; you
-may include TwistyCMS code in Django/Python
-for the sole purpose of improving Django/Python.
+granted permission to include any portion of Zadig in Django and/or
+Python and distribute it under the same terms as Django and/or Python
+itself, provided that these terms qualify as free software according
+to the `Debian Free Software Guidelines`_.  "Core Django developer"
+and "core Python developer" in this context means any person who has
+the power to decide what code can be included in Django and Python
+respectively; this, for example, may include a person who has been
+granted write access to the Django or Python repository.  Obviously,
+after Zadig code is released as part of Django or Python, the Django
+or Python license is also irrevocably added as an option for that
+code, even if the code is subsequently removed from Django/Python. The
+intent of this provision is solely to enable the inclusion of Zadig
+code in Django and Python, and it is explicitly forbidden to make such
+inclusion with the intent of circumventing the normal license (i.e.
+AGPL 3) of Zadig.  For example, you may not upload Zadig code to the
+Django repository and then remove it, solely in order to circumvent
+the restrictions in Zadig's normal licensing; you may include Zadig
+code in Django/Python for the sole purpose of improving Django/Python.
 
 If you are not a core Django/Python developer, then the above
 additional permission does not apply to you, and you need to fully

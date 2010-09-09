@@ -1,18 +1,22 @@
-TwistyCMS documentation
-=======================
+Zadig documentation
+===================
 
-TwistyCMS is a content management system (CMS) that wants to be a
-rewrite of Plone. We think that Plone is decent but that is has too
-many bugs and is too difficult to administer and program. TwistyCMS is
-written from scratch using Django, and is carefully and slowly
-designed in order to be simple and intuitive.
+Zadig is a system for collaborative management of a web site (the term
+"content management system" is widely used for that, but `some
+disagree`_, and I'm one of them).  Zadig copies shamelessly from
+Plone. We think that Plone is decent but that is has too many bugs and
+is too difficult to administer and program. Zadig is written from
+scratch using Django, and is carefully and slowly designed in order to
+be simple and intuitive.
+
+.. _some disagree:: http://www.gnu.org/philosophy/words-to-avoid.html#Content
 
 There is no user documentation here. Users don't read documentation,
 they expect the administrators to tell them everything. Therefore we
 have documentation for administrators and developers only.  The most
 important piece of documentation is the :ref:`concepts` document,
 which you must read carefully if you are going to administer a
-TwistyCMS installation or do any development.
+Zadig installation or do any development.
 
 Contents:
 

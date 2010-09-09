@@ -3,7 +3,7 @@ if not globals().has_key('applet_options'):
     from django.conf import settings
     applet_options = []
     applet_groups = [x for x in settings.INSTALLED_APPS
-                                        if x.startswith('twistycms.applets.')]
+                                        if x.startswith('zadig.applets.')]
     for applet_group in applet_groups:
         temp = __import__(applet_group, globals(), locals(),
             ['EntryOptionsForm', 'entry_options', 'portlets'], -1)

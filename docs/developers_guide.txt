@@ -1,10 +1,10 @@
 .. _developers_guide:
 
-===========================
-TwistyCMS Developer's Guide
-===========================
+=======================
+Zadig Developer's Guide
+=======================
 
-There are two things a TwistyCMS developer is expected to do: (1)
+There are two things a Zadig developer is expected to do: (1)
 create applets; and (2) create new object types. We explain those in
 separate chapters below. It is essential to first read the
 :ref:`concepts` document.
@@ -14,7 +14,7 @@ Creating applets
 
 To create an applet (or a set of related applets in a Django
 application), create a directory, say ``myapplet``, inside the
-``twistycms/applets`` directory. Inside ``myapplet``, create an empty
+``zadig/applets`` directory. Inside ``myapplet``, create an empty
 ``__init__.py`` file, an empty ``models.py`` file, and a
 ``templatetags`` directory. Inside ``templatetags``, create an empty
 ``__init__.py`` and a ``myapplet.py`` file.  In ``myapplet.py``, add
@@ -33,7 +33,7 @@ If needed, the template tag can accept arguments.
 
 If you want your applet to store information in the database (usually
 this is configuration options), add models in ``models.py``. You'll
-probably want to reference ``twistycms.core.models.Entry`` if you
+probably want to reference ``zadig.core.models.Entry`` if you
 have options per entry.
 
 If you want your applet to have configuration options, add functions
@@ -78,12 +78,12 @@ Second, in ``myapplet/__init__.py``, add the following::
                 # application defines more than one portlets.
                ]
 
-When TwistyCMS starts, it looks at the ``__init__.py`` file of each
+When Zadig starts, it looks at the ``__init__.py`` file of each
 applet directory. If the file contains ``entry_options``, it registers
-it. Then, when the user edits a page, TwistyCMS calls
+it. Then, when the user edits a page, Zadig calls
 ``entry_options`` with ``form=None``, it gets a form as a response, it
 remembers its class, and it displays it to the user. When the user
-submits it, TwistyCMS creates a bound form of the remembered class
+submits it, Zadig creates a bound form of the remembered class
 with the request data and calls ``entry_options`` supplying the
 created form as the ``form`` argument.  In fact the entry options form
 is not treated as a whole form but as a part of a form that is mixed
@@ -91,20 +91,20 @@ with the entry options of all other installed applets, resulting in
 one form for all applets together; but this makes no difference for
 the applet code.
 
-TwistyCMS also registers the portlets it finds in ``__init__.py``.
+Zadig also registers the portlets it finds in ``__init__.py``.
 
 Creating new object types
 =========================
 
 To create a new object type, you need to subclass
-:class:`twistycms.core.models.Entry` and
-:class:`twistycms.core.models.VObject`, and create a form. Let's
+:class:`zadig.core.models.Entry` and
+:class:`zadig.core.models.VObject`, and create a form. Let's
 assume that the type you want to create is to be called a Snail. Name
-your :class:`twistycms.core.models.Entry` subclass *SnailEntry*, your
-:class:`twistycms.core.models.VObject` subclass *VSnail*, and your
+your :class:`zadig.core.models.Entry` subclass *SnailEntry*, your
+:class:`zadig.core.models.VObject` subclass *VSnail*, and your
 form *EditSnailForm*. The code should be as follows::
 
-    from twistycms.core.models import Entry, VObject
+    from zadig.core.models import Entry, VObject
 
     class SnailEntry(Entry):
 
@@ -167,8 +167,8 @@ form *EditSnailForm*. The code should be as follows::
 The request object
 ==================
 
-:class:`~twistycms.core.models.Entry` and
-:class:`~twistycms.core.models.VObject` objects need to be aware of
+:class:`~zadig.core.models.Entry` and
+:class:`~zadig.core.models.VObject` objects need to be aware of
 the *request* object all the time. They use the *request* object
 for two purposes: (1) they use ``request.user`` to check whether
 the user has permissions to do various operations; (2) they store
@@ -177,20 +177,20 @@ they create an attribute at the *request* object that holds a list
 of multilingual groups that will be checked for integrity on
 commit.
 
-Usually you create :class:`~twistycms.core.models.Entry` objects by
+Usually you create :class:`~zadig.core.models.Entry` objects by
 calling the ``get_by_path()`` method of the :attr:`default manager
-<twistycms.core.models.Entry.objects>`, or by using the default
+<zadig.core.models.Entry.objects>`, or by using the default
 constructor, in which case you supply the *request* object; the entry
 returned will have a *request* attribute with the supplied object.
 Likewise, the usual way to get to a
-:class:`~twistycms.core.models.VObject` object, is via the
-:attr:`~twistycms.core.models.Entry.vobject` property or the
-:meth:`~twistycms.core.models.Entry.get_vobject()` method of an
-:class:`~twistycms.core.models.Entry` object; the returned object will
+:class:`~zadig.core.models.VObject` object, is via the
+:attr:`~zadig.core.models.Entry.vobject` property or the
+:meth:`~zadig.core.models.Entry.get_vobject()` method of an
+:class:`~zadig.core.models.Entry` object; the returned object will
 have the *request* attribute assigned.  If you have a
-:class:`~twistycms.core.models.VObject` and you need to get to its
-entry, use the :attr:`~twistycms.core.models.VObject.rentry` property
-rather than the :attr:`~twistycms.core.models.VObject.entry`
+:class:`~zadig.core.models.VObject` and you need to get to its
+entry, use the :attr:`~zadig.core.models.VObject.rentry` property
+rather than the :attr:`~zadig.core.models.VObject.entry`
 attribute, which will also assign the *request* object to the returned
 entry.
 

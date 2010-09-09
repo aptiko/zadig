@@ -1,13 +1,13 @@
 .. _concepts:
 
-==================
-TwistyCMS concepts
-==================
+==============
+Zadig concepts
+==============
 
 Object containment
 ==================
 
-In TwistyCMS, objects can be contained in other objects. For example,
+In Zadig, objects can be contained in other objects. For example,
 you can have page ``/mypage/hobbies``, and it can contain
 ``/mypage/hobbies/django``. There is no separate "folder" object;
 instead, any object can act as a container of other objects, in
@@ -38,9 +38,9 @@ when no page has been set as the folder's default view).
 
     Also note that, in Moin, /mypage/mysubpage is a completely different
     and unrelated page to /mypage: it's just a name that contains a slash.
-    But in TwistyCMS, /mypage/mysubpage is a page that is contained in
+    But in Zadig, /mypage/mysubpage is a page that is contained in
     /mypage, as if the latter were a folder. Moin is even simpler and maps
-    even better on the URL scheme, but TwistyCMS makes property
+    even better on the URL scheme, but Zadig makes property
     inheritance (e.g. permissions and skins) much simpler and foolproof:
     any object simply inherits the properties of its container objects.
 
@@ -210,7 +210,7 @@ but it won't show in indexes or searches.  Each entry has an
    There are alternative ways of doing it, such as adding a
    *view_history* permission, or allowing individual vobjects to have
    separate *view* permissions. This, however, adds complication.
-   TwistyCMS is not primarily a wiki, and the possibility for
+   Zadig is not primarily a wiki, and the possibility for
    unprivileged users to view the history is not considered essential.
    Therefore, we chose to keep it simple for the moment, and leave it
    for the future to find a way around this problem.
@@ -253,7 +253,7 @@ configuration options per entry, or global. But don't worry if you
 don't understand this yet; just think of "applet" as a synonym for a
 custom template tag.
 
-TwistyCMS is designed so that very little functionality is in the
+Zadig is designed so that very little functionality is in the
 core; the rest is in applets. Like all Django applications, applets
 are installed by adding them to ``INSTALLED_APPS`` in the
 ``settings.py`` file. Details on the applet installation procedure are
@@ -262,7 +262,7 @@ presented further below.
 .. admonition:: Note
 
     For good code structure, a Django application can contain many
-    applets: for example, ``twistycms/applets/standard`` contains all the
+    applets: for example, ``zadig/applets/standard`` contains all the
     standard applets.
 
 A **portlet** is a special kind of applet. There are two things that
@@ -286,7 +286,7 @@ Because portlets conform to that specification, the CSS style sheet
 can define a common look for all portlets.
 
 The second thing that is special about portlets is that they are
-registered: TwistyCMS knows what portlets are available; this makes
+registered: Zadig knows what portlets are available; this makes
 possible to have user interface where the user can select portlets
 from a list, instead of having to specify them in a Django template.
 For example, the left and right panes, used as portlet holders in the
@@ -294,8 +294,8 @@ default template, are applets themselves, and the user that has
 appropriate permissions for a page can select which portlets they will
 show on that page (and the pages contained therein).
 
-Applets included with TwistyCMS, such as the breadcrumbs and the
-navigation, are in ``twistycms/applets/standard``.
+Applets included with Zadig, such as the breadcrumbs and the
+navigation, are in ``zadig/applets/standard``.
 
 .. admonition:: Not implemented yet
 
@@ -311,11 +311,11 @@ Installing applets
 To install an applet (more precisely, a Django application containing
 one or more applets), do the following:
 
-1. Put the directory containing the application under ``twistycms/applets``.
+1. Put the directory containing the application under ``zadig/applets``.
 2. Add the application to ``INSTALLED_APPS`` in the ``settings.py``
    file.
 3. If there is any additional CSS, put it in the ``static`` directory,
    and add an ``@import`` statement in the main stylesheet (in the
    default template it is named ``style.css``).
-4. In the ``twisty`` directory, run ``./manage.py migrate``. This will
+4. In the ``zadig`` directory, run ``./manage.py migrate``. This will
    create any additional database tables needed by the applet.

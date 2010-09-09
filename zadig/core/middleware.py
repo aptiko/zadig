@@ -11,7 +11,7 @@ class GeneralMiddleware(object):
         return None
 
     def process_response(self, request, response):
-        from twistycms.core.models import MultilingualGroup
+        from zadig.core.models import MultilingualGroup
         for mgid in request.multilingual_groups_to_check:
             MultilingualGroup.objects.get(id=mgid).check()
         return response
