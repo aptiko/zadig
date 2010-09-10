@@ -289,6 +289,7 @@ class Entry(models.Model):
         result = set()
         if self.request.user.is_authenticated():
             lentities = [Lentity.objects.get(user=self.request.user),
+                         Lentity.objects.get(special=1),
                          Lentity.objects.get(special=2)]
             lentities.append(Lentity.objects.filter(
                                   group__in=self.request.user.groups.all()))
