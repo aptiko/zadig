@@ -222,6 +222,11 @@ Entry
       Return a :class:`django.http.HttpResponse` object with the
       history view of the entry.
 
+   .. method:: zadig.core.models.Entry.permissions_view()
+
+      Return a :class:`django.http.HttpResponse` object with the
+      permissions view of the entry.
+
    .. method:: zadig.core.models.Entry.rename(newname)
 
       Rename the entry to the specified new name; it also creates a

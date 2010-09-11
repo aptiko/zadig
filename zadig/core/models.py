@@ -614,6 +614,11 @@ class Entry(models.Model):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject })
 
+    def permissions_view(self):
+        vobject = self.vobject
+        return render_to_response('entry_permissions.html',
+                                                    { 'vobject': vobject })
+
     def __unicode__(self):
         result = self.name
         container = self.rcontainer

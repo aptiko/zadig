@@ -62,6 +62,12 @@ def entry_history(request, path):
     entry.request.view_name = _(u'history')
     return entry.history_view()
 
+def entry_permissions(request, path):
+    entry = models.Entry.objects.get_by_path(request, path)
+    _set_languages(entry.vobject)
+    entry.request.view_name = _(u'permissions')
+    return entry.permissions_view()
+
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, path)
     entry = vobject.entry

@@ -234,7 +234,8 @@ class PrimaryButtonsNode(template.Node):
         if re.search(r'__[a-zA-Z]+__/$', vobject.request.path):
             href_prefix = '../'
         result = '<ul class="primaryButtons">'
-        for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history')):
+        for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history'),
+                                                            _(u'permissions')):
             href_suffix = '__' + x + '__/'
             if x == _(u'view'): href_suffix = ''
             href = href_prefix + href_suffix

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block mainContent %}
+  <h1>Permissions of {{vobject.metatags.default.get_short_title}}
+  (/{{vobject.entry.name}}) </h1>
+  <p>Owner: {{vobject.entry.owner}}</p>
+{% endblock %}
