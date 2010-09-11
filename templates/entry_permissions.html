@@ -4,5 +4,10 @@
 {% block mainContent %}
   <h1>Permissions of {{vobject.metatags.default.get_short_title}}
   (/{{vobject.entry.name}}) </h1>
-  <p>Owner: {{vobject.entry.owner}}</p>
+  <form action="" method="POST">
+    <table>
+    {{permissions_form.as_table}}
+    </table>
+    <input type="submit" value="Submit" />
+  </form>
 {% endblock %}

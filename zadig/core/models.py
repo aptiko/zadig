@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
-import django.contrib.auth.models
+from django.contrib.auth.models import User, Group
 from django import forms
 import settings
 
@@ -45,8 +45,8 @@ class Permission(models.Model):
 
 
 class Lentity(models.Model):
-    user = models.ForeignKey(django.contrib.auth.models.User, null=True)
-    group = models.ForeignKey(django.contrib.auth.models.Group, null=True)
+    user = models.ForeignKey(User, null=True)
+    group = models.ForeignKey(Group, null=True)
     special = models.PositiveSmallIntegerField(null=True)
 
     def __unicode__(self):
@@ -185,7 +185,7 @@ class Entry(models.Model):
                                   blank=True, null=True)
     name = models.SlugField(max_length=100, blank=True)
     seq = models.PositiveIntegerField()
-    owner = models.ForeignKey(django.contrib.auth.models.User)
+    owner = models.ForeignKey(User)
     state = models.ForeignKey(State)
     multilingual_group = models.ForeignKey(MultilingualGroup, blank=True,
                                                                 null=True)
@@ -616,8 +616,20 @@ class Entry(models.Model):
 
     def permissions_view(self):
         vobject = self.vobject
+        if self.request.method != 'POST':
+            permissions_form = EntryPermissionsForm({ 'owner': self.owner })
+        else:
+            permissions_form = EntryPermissionsForm(self.request.POST)
+            if self.request.user != self.owner and \
+                                        not self.request.user.is_superuser:
+                raise PermissionDenied(_(u"Permission denied"))
+            if permissions_form.is_valid():
+                new_owner = User.objects.get(username=
+                                permissions_form.cleaned_data['owner'])
+                if new_owner != self.owner:
+                    self.save()
         return render_to_response('entry_permissions.html',
-                                                    { 'vobject': vobject })
+                { 'vobject': vobject,'permissions_form': permissions_form })
 
     def __unicode__(self):
         result = self.name
@@ -778,6 +790,16 @@ class EditEntryForm(forms.Form):
                 raise forms.ValidationError(_(u"The object you specified as "
                     "alternative language has the same language as this "
                     "object"))
+        return c
+
+
+class EntryPermissionsForm(forms.Form):
+    owner = forms.CharField(required=True, max_length=50)
+    def clean(self):
+        c = self.cleaned_data
+        c['owner'] = c['owner'].strip()
+        if User.objects.filter(username=c['owner']).count()==0:
+            raise forms.ValidationError(_(u"Nonexistent user"))
         return c
 
 
