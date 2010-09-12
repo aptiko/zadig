@@ -36,13 +36,14 @@ when no page has been set as the folder's default view).
     a "page"; it rather belongs to a folder. ``/myfolder/myimage`` is much
     better and intuitive than ``/mypage?attachment=myimage``.
 
-    Also note that, in Moin, /mypage/mysubpage is a completely different
-    and unrelated page to /mypage: it's just a name that contains a slash.
-    But in Zadig, /mypage/mysubpage is a page that is contained in
-    /mypage, as if the latter were a folder. Moin is even simpler and maps
-    even better on the URL scheme, but Zadig makes property
-    inheritance (e.g. permissions and skins) much simpler and foolproof:
-    any object simply inherits the properties of its container objects.
+    Also note that, in Moin, ``/mypage/mysubpage`` is a completely
+    different and unrelated page to ``/mypage``: it's just a name that
+    contains a slash.  But in Zadig, ``/mypage/mysubpage`` is a page
+    that is contained in ``/mypage``, as if the latter were a folder.
+    Moin is even simpler and maps even better on the URL scheme, but
+    Zadig makes property inheritance (e.g. permissions and skins) much
+    simpler and foolproof: any object simply inherits the properties
+    of its container objects.
 
 Entries and vobjects
 ====================
@@ -240,6 +241,12 @@ permissions on logged on users; the published state has the *view* and
 *search* permissions on the anonymous user. There are no other
 permissions defined, which means that only the owner can edit, admin
 and delete.
+
+.. admonition:: Not implemented yet
+
+   Currently only the owner and the state can be changed through the user
+   interface. The user interface for directly assigning permissions to users
+   has not been developed yet.
 
 Applets and portlets
 ====================
