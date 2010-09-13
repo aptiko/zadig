@@ -121,14 +121,15 @@ class PloneObject(object):
             return super(PloneObject, cls).__new__(PloneLink)
         raise UnknownPloneObjectType("Unknown object type at "+url)
 
-    def __find_alternative_lang(self):
+    def __find_alternative_lang(self, path):
         """Determine a page in another language which is a translation of
         this page and which exists in the target database."""
         self.alternative_lang = None
         for x in self.soup.find('ul', id='portal-languageselector'
                                                             ).findAll('li'):
             (d1, d2, apath, d4, query, d6) = urlparse(x.a['href'])
-            if parse_qs(query).get('set_language', '')[0] == self.language.id:
+            altlang = parse_qs(query).get('set_language', '')[0] 
+            if altlang==self.language.id or split_path(apath)==split_path(path):
                 continue
             e = models.Entry.objects.get_by_path(request, apath)
             while e:
@@ -179,7 +180,7 @@ class PloneObject(object):
                             'option', attrs={'selected': 'selected'})
         self.language = models.Language.objects.get(id=l['value'] if l
                                                     else DEFAULT_LANGUAGE)
-        self.__find_alternative_lang()
+        self.__find_alternative_lang(path)
 
         # Prepare and save the entry
         self.entry = models.Entry.objects.get_by_path(request, path)
