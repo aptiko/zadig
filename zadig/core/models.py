@@ -282,8 +282,8 @@ class Entry(models.Model):
 
     @property
     def permissions(self):
-        if self.request.user.is_authenticated() and \
-                                        self.owner.pk == self.request.user.pk:
+        if self.request.user.is_authenticated() and (self.owner.pk ==
+                    self.request.user.pk or self.request.user.is_superuser):
             return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
                 permissions.DELETE, permissions.SEARCH))
         result = set()
