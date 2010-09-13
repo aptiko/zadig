@@ -128,7 +128,7 @@ class PloneObject(object):
         for x in self.soup.find('ul', id='portal-languageselector'
                                                             ).findAll('li'):
             (d1, d2, apath, d4, query, d6) = urlparse(x.a['href'])
-            if parse_qs(query).get('set_language', '') == self.language:
+            if parse_qs(query).get('set_language', '')[0] == self.language.id:
                 continue
             e = models.Entry.objects.get_by_path(request, apath)
             while e:
@@ -261,6 +261,7 @@ class PlonePage(PloneObject):
             language=self.language,
             format = models.ContentFormat.objects.get(descr='html'),
             content = sanitize_html(self.content))
+        nvobject.request = request
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
