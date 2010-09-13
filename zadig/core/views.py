@@ -104,6 +104,7 @@ def login(request, path):
             if user is not None:
                 if user.is_active:
                     django.contrib.auth.login(request, user)
+                    models.Lentity.objects.get_or_create(user=user)
                     return end_view(request, path)
                 else:
                     raise Exception(_(u"Account is disabled"))
