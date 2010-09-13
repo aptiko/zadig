@@ -628,6 +628,7 @@ class Entry(models.Model):
                 new_owner = User.objects.get(username=
                                 permissions_form.cleaned_data['owner'])
                 if new_owner != self.owner:
+                    self.owner = new_owner
                     self.save()
         return render_to_response('entry_permissions.html',
                 { 'vobject': vobject,'permissions_form': permissions_form })
