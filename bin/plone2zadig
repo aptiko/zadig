@@ -208,7 +208,7 @@ class PloneObject(object):
         this class, then do any subclass-specific job, then call this method to
         do some common endwork."""
         if self.alternative_lang:
-            self.entry.set_altlang(request, self.alternative_lang)
+            self.entry.set_altlang(self.alternative_lang)
             self.entry.save()
 
 
