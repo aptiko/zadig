@@ -10,10 +10,10 @@
       {{ vobject.metatags.default.title }}
     {% endblock %}
   </title>
-  <link rel="stylesheet" type="text/css" href="/static/style.css"
+  <link rel="stylesheet" type="text/css" href="{{ZADIG_MEDIA_URL}}style.css"
         title="style" />
-  <script src="/static/utils.js"></script>
-  <script src="/static/zadig.js"></script>
+  <script src="{{ZADIG_MEDIA_URL}}utils.js"></script>
+  <script src="{{ZADIG_MEDIA_URL}}zadig.js"></script>
   {% block extrahead %}{% endblock %}
 </head>
 

@@ -110,7 +110,8 @@ def login(request, path):
                     raise Exception(_(u"Account is disabled"))
             message = _(u"Login incorrect")
     return render_to_response('login.html',
-          { 'vobject': vobject, 'form': form, 'message': message })
+          { 'vobject': vobject, 'form': form, 'message': message },
+                context_instance = RequestContext(self.request))
 
 def cut(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
@@ -142,4 +143,5 @@ def delete(request, path):
         return info_view(request, path)
     else:
         return render_to_response('delete_entry.html', 
-                                                { 'vobject': vobject })
+                { 'vobject': vobject },
+                context_instance = RequestContext(self.request))

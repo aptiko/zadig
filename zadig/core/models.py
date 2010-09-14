@@ -9,6 +9,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.models import User, Group
 from django import forms
+from django.template import RequestContext
 import settings
 
 from zadig.core import utils
@@ -518,7 +519,8 @@ class Entry(models.Model):
         return render_to_response(self.template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
-                'subform': subform, 'optionsforms': optionsforms })
+                'subform': subform, 'optionsforms': optionsforms },
+                context_instance = RequestContext(self.request))
 
     def rename(self, newname):
         if not self.rcontainer:
@@ -609,11 +611,13 @@ class Entry(models.Model):
                   'formset': items_formset,
                   'subentries_with_formset': map(lambda x,y: (x,y), subentries,
                                                         items_formset.forms),
-                  'move_item_form': move_item_form})
+                  'move_item_form': move_item_form},
+                context_instance = RequestContext(self.request))
 
     def history_view(self):
         vobject = self.vobject
-        return render_to_response('entry_history.html', { 'vobject': vobject })
+        return render_to_response('entry_history.html', { 'vobject': vobject },
+                context_instance = RequestContext(self.request))
 
     def permissions_view(self):
         vobject = self.vobject
@@ -631,7 +635,8 @@ class Entry(models.Model):
                     self.owner = new_owner
                     self.save()
         return render_to_response('entry_permissions.html',
-                { 'vobject': vobject,'permissions_form': permissions_form })
+                { 'vobject': vobject,'permissions_form': permissions_form },
+                context_instance = RequestContext(self.request))
 
     def __unicode__(self):
         result = self.name
@@ -960,7 +965,8 @@ class VPage(VObject):
     content = models.TextField(blank=True)
 
     def end_view(self):
-        return render_to_response('view_page.html', { 'vobject': self })
+        return render_to_response('view_page.html', { 'vobject': self },
+                context_instance = RequestContext(self.request))
 
     def info_view(self):
         return self.end_view()
@@ -1034,7 +1040,8 @@ class VImage(VObject):
         return response
 
     def info_view(self):
-        return render_to_response('view_image.html', { 'vobject': self })
+        return render_to_response('view_image.html', { 'vobject': self },
+                context_instance = RequestContext(self.request))
 
     class Meta:
         db_table = 'cms_vimage'
@@ -1084,7 +1091,8 @@ class VLink(VObject):
         return HttpResponsePermanentRedirect(self.target)
 
     def info_view(self):
-        return render_to_response('view_link.html', { 'vobject': self })
+        return render_to_response('view_link.html', { 'vobject': self },
+                context_instance = RequestContext(self.request))
 
     @property
     def type(self):
@@ -1143,7 +1151,8 @@ class VInternalRedirection(VObject):
 
     def info_view(self):
         return render_to_response('view_internalredirection.html',
-            { 'vobject': self })
+                { 'vobject': self },
+                context_instance = RequestContext(self.request))
 
     class Meta:
         db_table = 'cms_vinternalredirection'
