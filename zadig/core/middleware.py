@@ -5,7 +5,7 @@ class GeneralMiddleware(object):
     def process_request(self, request):
         if 'set_language' in request.GET:
             lang = request.GET['set_language']
-            if lang in settings.LANGUAGES:
+            if (lang, langdescr) in settings.ZADIG_LANGUAGES:
                 request.session['language'] = lang
         request.multilingual_groups_to_check = set()
         return None

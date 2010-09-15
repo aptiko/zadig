@@ -67,7 +67,7 @@ class LanguageToolsNode(template.Node):
         effective_lang_name = coremodels.Language.objects.get(
                                                     id=effective_lang_id).descr
         object_available_in_preferred_lang = False
-        for lang in settings.LANGUAGES:
+        for (lang, langdescr) in settings.ZADIG_LANGUAGES:
             target = vobject.request.path
             for e in alt_lang_entries:
                 if e.vobject.language.id==lang:
