@@ -393,11 +393,12 @@ class Entry(models.Model):
             subentries[s-1].seq = t
             subentries[s-1].save()
 
+    __langs = [x[0] for x in settings.ZADIG_LANGUAGES]
     @property
     def alt_lang_entries(self):
         def cmp(x, y):
-            xi = settings.LANGUAGES.index(x.vobject.language.id)
-            yi = settings.LANGUAGES.index(y.vobject.language.id)
+            xi = self.__langs.index(x.vobject.language.id)
+            yi = self.__langs.index(y.vobject.language.id)
             return yi-xi
         if not self.multilingual_group:
             return []
@@ -428,7 +429,7 @@ class Entry(models.Model):
                 initial.append({'language': m.language.id, 'title': m.title,
                     'short_title': m.short_title, 'description': m.description})
                 used_langs.append(m.language.id)
-            remaining_langs = set(settings.LANGUAGES).difference(used_langs)
+            remaining_langs = set(self.__langs).difference(used_langs)
             if remaining_langs:
                 initial.append({ 'language': remaining_langs.pop() })
         return MetatagsFormSet(initial=initial)
@@ -760,7 +761,7 @@ class VObjectMetatags(models.Model):
 
 class EditEntryForm(forms.Form):
     language = forms.ChoiceField(choices=[('','')] +
-                [(l, l) for l in settings.LANGUAGES], required=False)
+                            list(settings.ZADIG_LANGUAGES), required=False)
     name = forms.CharField(required=False,
                         max_length=Entry._meta.get_field('name').max_length)
     altlang = forms.CharField(required=False)
@@ -811,7 +812,7 @@ class EntryPermissionsForm(forms.Form):
 
 
 class MetatagsForm(forms.Form):
-    language = forms.ChoiceField(choices=[(l, l) for l in settings.LANGUAGES])
+    language = forms.ChoiceField(settings.ZADIG_LANGUAGES)
     title = forms.CharField(required=False,
                 max_length=VObjectMetatags._meta.get_field('title').max_length)
     short_title = forms.CharField(required=False, max_length=

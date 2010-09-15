@@ -77,8 +77,8 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
         new_contentformat.save()
     if models.Language in created_models:
         stderr.write("Populating %s table\n" % (models.Language._meta.db_table,))
-        for lang in settings.LANGUAGES:
-            new_language = models.Language(id=lang)
+        for lang_id, lang_descr in settings.ZADIG_LANGUAGES:
+            new_language = models.Language(id=lang_id, descr=lang_descr)
             new_language.save()
     if models.VPage in created_models:
         stderr.write("Creating root page\n")
@@ -88,12 +88,12 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
                 .target_state)
         entry.save()
         page = models.VPage(entry=entry, version_number=1,
-                language_id=settings.LANGUAGES[0],
+                language_id=settings.ZADIG_LANGUAGES[0][0],
                 format=models.ContentFormat.objects.get(descr='html'),
                 content='This is the root page')
         page.save()
         nmetatags = models.VObjectMetatags(vobject=page,
-            language_id=settings.LANGUAGES[0], title = 'Welcome',
+            language_id=settings.ZADIG_LANGUAGES[0][0], title = 'Welcome',
             short_title='Home', description='Root page.')
         nmetatags.save()
     

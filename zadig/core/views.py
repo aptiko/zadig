@@ -17,7 +17,7 @@ def _set_languages(vobject):
     import settings
     request = vobject.request
     request.preferred_language = request.session['language'] \
-                    if 'language' in request.session else settings.LANGUAGES[0]
+        if 'language' in request.session else settings.ZADIG_LANGUAGES[0][0]
     request.effective_language = vobject.language.id if vobject.language \
                                                 else request.preferred_language
 

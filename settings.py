@@ -1,4 +1,5 @@
 # Django settings for Zadig project.
+# coding=utf-8
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -79,7 +80,10 @@ INSTALLED_APPS = (
 # Zadig settings
 ZADIG_MEDIA_ROOT = 'static/'         # Directory for JS, CSS, etc.
 ZADIG_MEDIA_URL = '/__static__/'
-LANGUAGES = ('en', 'el')
+ZADIG_LANGUAGES = (
+    ('en', 'English'),
+    ('el', 'Ελληνικά'),
+)
 WORKFLOW_ID = 1
 
 # TinyMCE settings
