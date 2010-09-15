@@ -25,6 +25,7 @@ Contents:
 
    requirements
    concepts
+   administrators_guide
    developers_guide
    api
    copyright

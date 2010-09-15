@@ -1,0 +1,88 @@
+.. _administrators_guide:
+
+===========================
+Zadig Administrator's Guide
+===========================
+
+Zadig is under heavy development. It is unlikely that anything will
+work unless you are a Django developer. These instructions are work in
+progress that, in its current form, is mainly intended to get a Django
+developer make a test installation, or to get an experienced Django
+administrator find his way. If you don't know Django, it is better to
+not attempt to use Zadig at this stage.
+
+Quick install
+=============
+
+Prepare to contact me
+---------------------
+
+Keep my email address handy. anthony@itia.ntua.gr. Send me an email
+whenever you run into problems.
+
+Install prerequisites
+---------------------
+
+Install Django, TinyMCE, django-tinymce, south, and BeautifulSoup, and
+symlink the tinymce www directory (the one containing the tiny_mce.js
+file) to static/tinymce.
+
+How to install prerequisites in Debian 6/Ubuntu 10.04::
+
+   aptitude install python-django-tinymce python-beautifulsoup
+   aptitude install python-django-south
+     
+In Debian 5::
+
+   aptitude install python-django tinymce python-beautifulsoup
+   easy_install django-tinymce
+   easy_install South
+
+Configure
+---------
+
+Edit settings.py as needed.
+
+Prepare database
+----------------
+
+Create the empty database depending on the RDBMS you are using, and
+then run::
+
+   ./manage.py syncdb
+   ./manage.py migrate
+
+Run the development server
+--------------------------
+
+As usual::
+
+   ./manage.py runserver
+
+Logon and test
+--------------
+
+Point your browser to http://localhost:8000/__admin__/ and logon; then
+visit http://localhost:8000/ and experiment.  After that, read the
+documentation carefully.
+
+
+Settings reference
+==================
+
+.. data:: ZADIG_MEDIA_ROOT
+.. data:: ZADIG_MEDIA_URL
+
+   ``ZADIG_MEDIA_ROOT`` is the pathname of the directory that holds
+   the CSS, Javascript and other static files of the web site;
+   ``ZADIG_MEDIA_URL`` is the absolute or relative URL from which this
+   directory is accessed. Note that the Django setting ``MEDIA_ROOT``
+   points instead to the directory where Zadig user content such as
+   images and files is stored; this is not accessible directly from
+   the web (because Zadig needs to check for access permissions), and
+   therefore the Django ``MEDIA_URL`` setting is not used.
+
+.. data:: ZADIG_WORKFLOW_ID
+
+   This is the id of the :class:`~zadig.core.models.Workflow` object
+   that is used in the site.
