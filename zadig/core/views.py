@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django import forms
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError, PermissionDenied
+from django.template import RequestContext
 import django.contrib.auth
 
 from zadig.core import models
