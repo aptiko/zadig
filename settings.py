@@ -26,7 +26,7 @@ SITE_ID = 1
 USE_I18N = True
 
 # Absolute path to the directory that stores binary data.
-# See also STATIC_ROOT below.
+# See also ZADIG_MEDIA_ROOT below.
 MEDIA_ROOT = 'storage/'
 
 # Make this unique, and don't share it with anybody.
