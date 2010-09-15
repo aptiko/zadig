@@ -112,7 +112,7 @@ def login(request, path):
             message = _(u"Login incorrect")
     return render_to_response('login.html',
           { 'vobject': vobject, 'form': form, 'message': message },
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(request))
 
 def cut(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
@@ -145,4 +145,4 @@ def delete(request, path):
     else:
         return render_to_response('delete_entry.html', 
                 { 'vobject': vobject },
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(request))
