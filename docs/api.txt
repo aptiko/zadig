@@ -148,7 +148,7 @@ Entry
 
       A list with the alternative language entries. The order in this
       list is the order with which languages are listed in
-      ``settings.LANGUAGES``.
+      :data:`ZADIG_LANGUAGES`.
 
    .. attribute:: zadig.core.models.Entry.touchable
 

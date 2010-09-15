@@ -70,6 +70,17 @@ documentation carefully.
 Settings reference
 ==================
 
+.. data:: ZADIG_LANGUAGES
+
+   A tuple of (language_id, language_description) pairs, indicating
+   the languages available in this installation. The first of these
+   languages is the default language of the site. Example::
+
+      ZADIG_LANGUAGES = (
+          ('en', 'English'),
+          ('el', 'Ελληνικά'),
+      )
+
 .. data:: ZADIG_MEDIA_ROOT
 .. data:: ZADIG_MEDIA_URL
 
