@@ -32,7 +32,7 @@ class Language(models.Model):
         return self.id
 
     class Meta:
-        db_table = 'cms_language'
+        db_table = 'zadig_language'
 
 
 class Permission(models.Model):
@@ -42,7 +42,7 @@ class Permission(models.Model):
         return self.descr
 
     class Meta:
-        db_table = 'cms_permission'
+        db_table = 'zadig_permission'
 
 
 class Lentity(models.Model):
@@ -56,7 +56,7 @@ class Lentity(models.Model):
 
     class Meta:
         unique_together = ('user', 'group')
-        db_table = "cms_lentity"
+        db_table = "zadig_lentity"
 
     def save(self, force_insert=False, force_update=False):
         """Verify integrity before saving."""
@@ -74,7 +74,7 @@ class State(models.Model):
         return self.descr
 
     class Meta:
-        db_table = 'cms_state'
+        db_table = 'zadig_state'
 
 
 class StatePermission(models.Model):
@@ -87,7 +87,7 @@ class StatePermission(models.Model):
                                                             self.permission)
     class Meta:
         unique_together = ('lentity', 'permission')
-        db_table = 'cms_statepermission'
+        db_table = 'zadig_statepermission'
 
 
 class StateTransition(models.Model):
@@ -99,7 +99,7 @@ class StateTransition(models.Model):
 
     class Meta:
         unique_together = ('source_state', 'target_state')
-        db_table = 'cms_statetransition'
+        db_table = 'zadig_statetransition'
 
 
 class Workflow(models.Model):
@@ -111,7 +111,7 @@ class Workflow(models.Model):
         return self.name
 
     class Meta:
-        db_table = 'cms_workflow'
+        db_table = 'zadig_workflow'
 
 
 class MultilingualGroup(models.Model):
@@ -154,7 +154,7 @@ class MultilingualGroup(models.Model):
         return unicode(self.id)
 
     class Meta:
-        db_table = 'cms_multilingualgroup'
+        db_table = 'zadig_multilingualgroup'
 
 
 def _check_multilingual_group(request, mgid):
@@ -650,7 +650,7 @@ class Entry(models.Model):
     class Meta:
         unique_together = (('container', 'name'),
                            ('container', 'seq'))
-        db_table = 'cms_entry'
+        db_table = 'zadig_entry'
         ordering = ('container__id', 'seq')
 
 
@@ -665,7 +665,7 @@ class EntryPermission(models.Model):
 
     class Meta:
         unique_together = ('lentity', 'permission')
-        db_table = 'cms_entrypermission'
+        db_table = 'zadig_entrypermission'
 
 
 class VObjectManager(models.Manager):
@@ -719,7 +719,7 @@ class VObject(models.Model):
     class Meta:
         ordering = ('entry', 'version_number')
         unique_together = ('entry', 'version_number')
-        db_table = 'cms_vobject'
+        db_table = 'zadig_vobject'
         permissions = (("view", "View"),)
 
 
@@ -756,7 +756,7 @@ class VObjectMetatags(models.Model):
 
     class Meta:
         unique_together = ('vobject', 'language')
-        db_table = 'cms_vobjectmetatags'
+        db_table = 'zadig_vobjectmetatags'
 
 
 class EditEntryForm(forms.Form):
@@ -924,7 +924,7 @@ class ContentFormat(models.Model):
         return self.descr
 
     class Meta:
-        db_table = 'cms_contentformat'
+        db_table = 'zadig_contentformat'
 
 
 class PageEntry(Entry):
@@ -958,7 +958,7 @@ class PageEntry(Entry):
         return _(u"Page")
 
     class Meta:
-        db_table = 'cms_pageentry'
+        db_table = 'zadig_pageentry'
 
 
 class VPage(VObject):
@@ -973,7 +973,7 @@ class VPage(VObject):
         return self.end_view()
 
     class Meta:
-        db_table = 'cms_vpage'
+        db_table = 'zadig_vpage'
 
 
 class EditPageForm(forms.Form):
@@ -1026,7 +1026,7 @@ class ImageEntry(Entry):
         return _(u"Image")
 
     class Meta:
-        db_table = 'cms_imageentry'
+        db_table = 'zadig_imageentry'
 
 
 class VImage(VObject):
@@ -1045,7 +1045,7 @@ class VImage(VObject):
                 context_instance = RequestContext(self.request))
 
     class Meta:
-        db_table = 'cms_vimage'
+        db_table = 'zadig_vimage'
 
 
 class EditImageForm(forms.Form):
@@ -1080,7 +1080,7 @@ class LinkEntry(Entry):
         return VLink
 
     class Meta:
-        db_table = 'cms_linkentry'
+        db_table = 'zadig_linkentry'
 
 
 class VLink(VObject):
@@ -1100,7 +1100,7 @@ class VLink(VObject):
         return _(u"External link")
 
     class Meta:
-        db_table = 'cms_vlink'
+        db_table = 'zadig_vlink'
 
 
 class EditLinkForm(forms.Form):
@@ -1140,7 +1140,7 @@ class InternalRedirectionEntry(Entry):
         return _(u"Internal redirection")
 
     class Meta:
-        db_table = 'cms_internalredirectionentry'
+        db_table = 'zadig_internalredirectionentry'
 
 
 class VInternalRedirection(VObject):
@@ -1156,7 +1156,7 @@ class VInternalRedirection(VObject):
                 context_instance = RequestContext(self.request))
 
     class Meta:
-        db_table = 'cms_vinternalredirection'
+        db_table = 'zadig_vinternalredirection'
 
 
 class EditInternalRedirectionForm(forms.Form):
