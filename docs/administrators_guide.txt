@@ -41,7 +41,8 @@ In Debian 5::
 Configure
 ---------
 
-Edit settings.py as needed.
+Make a copy of the file `settings-template.py` and name it
+`settings.py`. Then edit it as needed.
 
 Prepare database
 ----------------
