@@ -44,6 +44,9 @@ Configure
 Make a copy of the file `settings-template.py` and name it
 `settings.py`. Then edit it as needed.
 
+Also make a copy of the file `templates/base-default.html`, naming it
+`templates/base.html`.
+
 Prepare database
 ----------------
 
