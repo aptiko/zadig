@@ -90,6 +90,14 @@ Entry
       :class:`~zadig.core.models.MultilingualGroup`, indicating
       the multilingual group, if any, to which the entry belongs.
 
+   .. attribute:: zadig.core.models.Entry.btemplate
+
+      A string with the filename of the base template. If empty, it
+      means to use the same template as the parent entry; see
+      :attr:`~zadig.core.models.Entry.base_template` for more
+      information.
+
+
    :class:`~zadig.core.models.Entry` objects also have the
    following properties:
 
@@ -155,6 +163,16 @@ Entry
       ``True`` if the current user has either *edit* or *admin*
       permission on the entry. Primarily used by the template to check
       whether to show the editing buttons.
+
+   .. attribute:: zadig.core.models.Entry.base_template
+
+      A string with the filename the base template the entry should
+      use. This is the base template used to render the page (the base
+      template inherited by the actual template). The result is
+      :attr:`~zadig.core.models.Entry.btemplate`, except if this is
+      empty, in which case the parent's base template is used; if the
+      top level entry's ``btemplate`` attribute is also empty, then
+      ``base.html`` is returned.
 
    :class:`~zadig.core.models.Entry` objects also have the following methods:
 
