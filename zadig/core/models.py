@@ -190,6 +190,7 @@ class Entry(models.Model):
     state = models.ForeignKey(State)
     multilingual_group = models.ForeignKey(MultilingualGroup, blank=True,
                                                                 null=True)
+    btemplate = models.CharField(max_length=100, blank=True)
     objects = EntryManager()
 
     def __init__(self, *args, **kwargs):
@@ -345,6 +346,12 @@ class Entry(models.Model):
     @property
     def type(self):
         return self.descendant.__class__.__name__
+
+    @property
+    def base_template(self):
+        if self.btemplate: return self.btemplate
+        if self.container: return self.rcontainer.base_template
+        return 'base.html'
 
     def contains(self, entry):
         while entry:
