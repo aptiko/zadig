@@ -42,4 +42,7 @@ WORKFLOW_ID = 1
 
 # Leave the following as it is; it imports essential Django settings that are
 # expected to be the same in all Zadig installations.
-execfile('settings-base.py')
+import sys
+import os.path
+PROJECT_DIR = os.path.dirname(sys.modules[__name__].__file__)
+execfile(os.path.join(PROJECT_DIR, 'settings-base.py'))

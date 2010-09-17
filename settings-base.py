@@ -23,10 +23,9 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "zadig.core.context_processors.zadig_media",
 )
 
-import sys
 import os.path
 TEMPLATE_DIRS = (
-    os.path.join(os.path.dirname(sys.modules[__name__].__file__), 'templates'),
+    os.path.join(PROJECT_DIR, 'templates'),
 )
 
 INSTALLED_APPS = (
