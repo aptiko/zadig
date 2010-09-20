@@ -244,11 +244,15 @@ class PlonePage(PloneObject):
             h3.replaceWith(h2)
 
         # Fix internal references to images
+        b = self.soup.find('base')
+        base = urlparse(b['href'])[2] if b else path
+        if not base.endswith('/'):
+            base = '/'.join(split_path(base)[:-1])
         for img in self.content.findAll('img'):
             src = img['src']
             if src.endswith('/image_preview'): src = src[:-13]
             if not src.startswith('/'):
-                src = '/'.join(split_path(path)[:-1]) + '/' + src
+                src = '/'.join(split_path(base)) + '/' + src
             img['src'] = src
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
