@@ -5,38 +5,54 @@
                     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
-  <title>
-    {% block htmltitle %}
-      {{ vobject.metatags.default.title }}
+  {% block htmlhead %}
+    <title>
+      {% block htmltitle %}
+        {{ vobject.metatags.default.title }}
+      {% endblock %}
+    </title>
+    {% block css %}
+      <link rel="stylesheet" type="text/css" href="{{ZADIG_MEDIA_URL}}style.css"
+          title="style" />
     {% endblock %}
-  </title>
-  <link rel="stylesheet" type="text/css" href="{{ZADIG_MEDIA_URL}}style.css"
-        title="style" />
-  <script src="{{ZADIG_MEDIA_URL}}utils.js"></script>
-  <script src="{{ZADIG_MEDIA_URL}}zadig.js"></script>
-  {% block extrahead %}{% endblock %}
+    {% block js %}
+      <script src="{{ZADIG_MEDIA_URL}}utils.js"></script>
+      <script src="{{ZADIG_MEDIA_URL}}zadig.js"></script>
+    {% endblock %}
+    {% block extrahead %}{% endblock %}
+  {% endblock %}
 </head>
 
 <body>
   <div id="portalTop">
-    <h1>Zadig</h1>
-    <div id="portalPersonaltools">
-      {% login %}
-    </div>
-    <div id="toolLine">
-        <div id="portalBreadcrumbs">
-          {% trans "You are here: " %}{% breadcrumbs %}
-        </div>
-        <div id="languageTools">
-          {% language_tools %}
-        </div>
-    </div>
+    {% block top %}
+      {% block logo %}
+        <h1>Zadig</h1>
+      {% endblock %}
+      <div id="portalPersonaltools">
+        {% block personaltools %}
+          {% login %}
+        {% endblock %}
+      </div>
+      <div id="toolLine">
+        {% block toolline %}
+          <div id="portalBreadcrumbs">
+            {% trans "You are here: " %}{% breadcrumbs %}
+          </div>
+          <div id="languageTools">
+            {% language_tools %}
+          </div>
+        {% endblock %}
+      </div>
+    {% endblock %}
   </div>
   <table id="portalColumns">
     <tbody>
     <tr>
       <td id="leftColumn">
-        {% navigation %}
+        {% block leftpane %}
+          {% navigation %}
+        {% endblock %}
       </td>
       <td id="mainColumn">
         {% block buttons %}
@@ -49,19 +65,27 @@
         </div>
       </td>
       <td id="rightColumn">
+        {% block rightpane %}
+        {% endblock %}
       </td>
     </tr>
     </tbody>
   </table>
   <div id="portalBottom">
-    <div id="portalFooter">
-    </div>
-    <div id="portalColophon">
-      <ul>
-        <li>Powered by
-        <a href="http://bitbucket.org/aptiko/zadig/">Zadig</a></li>
-      </ul>
-    </div>
+    {% block bottom %}
+      <div id="portalFooter">
+        {% block footer %}
+        {% endblock %}
+      </div>
+      <div id="portalColophon">
+        {% block colophon %}
+          <ul>
+            <li>Powered by
+            <a href="http://bitbucket.org/aptiko/zadig/">Zadig</a></li>
+          </ul>
+        {% endblock %}
+      </div>
+    {% endblock %}
   </div>
 </body>
 </html>
