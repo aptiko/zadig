@@ -1114,10 +1114,6 @@ class VLink(VObject):
         return render_to_response('view_link.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    @property
-    def type(self):
-        return _(u"External link")
-
     class Meta:
         db_table = 'zadig_vlink'
 
@@ -1132,6 +1128,7 @@ class EditLinkForm(forms.Form):
 class LinkEntry(Entry):
     subform_class = EditLinkForm
     vobject_class = VLink
+    typename = _(u"External link")
 
     def process_edit_subform(self, vobject, form):
         vobject.target = form.cleaned_data['target']
@@ -1146,6 +1143,9 @@ class LinkEntry(Entry):
 
     class Meta:
         db_table = 'zadig_linkentry'
+
+
+user_entry_types.append(LinkEntry)
 
 
 ### InternalRedirection ###
@@ -1184,6 +1184,7 @@ class EditInternalRedirectionForm(forms.Form):
 class InternalRedirectionEntry(Entry):
     subform_class = EditInternalRedirectionForm
     vobject_class = VInternalRedirection
+    typename = _(u"Internal redirection")
 
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
