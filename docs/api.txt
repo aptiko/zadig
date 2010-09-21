@@ -502,6 +502,16 @@ The functions below are in module zadig.core.utils.
    includes an empty string as the first path item, which stands for
    the root entry.
 
+.. function:: zadig.core.utils.join_path(path_items)
+
+   Return a string with the path items joined into a path.
+   *path_items* is a sequence of strings (supplied either as string
+   arguments, or as a single sequence argument); each string may
+   contain slashes. Roughly :samp:`'/'.join(path_items)` but will not
+   result in duplicate slashes (strips leading and trailing slashes
+   from each path item before joining), and the result never includes
+   a trailing or leading slash.
+
 .. function:: zadig.core.utils.get_current_path(request)
 
    Return the path to the current entry. This is something like

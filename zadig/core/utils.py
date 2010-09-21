@@ -11,6 +11,18 @@ def split_path(path):
     if path.endswith('/'): path = path[:-1]
     return ['',] + path.split('/')
 
+def join_path(*path_items):
+    if len(path_items)==1:
+        path_items = path_items[0]
+    result = ''
+    for p in path_items:
+        while p.startswith('/'): p = p[1:]
+        while p.endswith('/'): p = p[:-1]
+        if p:
+            if result: result += '/'
+            result += p
+    return result
+
 def get_current_path(request):
     path = request.path
     assert(path[0] == '/')
