@@ -417,9 +417,7 @@ class Entry(models.Model):
         result.sort(cmp)
         return result
 
-    @property
-    def template_name(self):
-        return 'edit_entry.html'
+    template_name = 'edit_entry.html'
 
     def __create_metatags_formset(self, new):
         """Return a formset of metatags forms, as many as existing metatag sets
@@ -934,55 +932,6 @@ class ContentFormat(models.Model):
         db_table = 'zadig_contentformat'
 
 
-class PageEntry(Entry):
-
-    def create_edit_subform(self, new):
-        if new:
-            result = EditPageForm()
-        else:
-            result = EditPageForm(
-                    initial={'content': self.vobject.content})
-        return result
-
-    def process_edit_subform(self, vobject, form):
-        vobject.format=ContentFormat.objects.get(descr='html')
-        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
-
-    @property
-    def template_name(self):
-        return 'edit_page.html'
-
-    @property
-    def subform_class(self):
-        return EditPageForm
-
-    @property
-    def vobject_class(self):
-        return VPage
-
-    @property
-    def type(self):
-        return _(u"Page")
-
-    class Meta:
-        db_table = 'zadig_pageentry'
-
-
-class VPage(VObject):
-    format = models.ForeignKey(ContentFormat)
-    content = models.TextField(blank=True)
-
-    def end_view(self):
-        return render_to_response('view_page.html', { 'vobject': self },
-                context_instance = RequestContext(self.request))
-
-    def info_view(self):
-        return self.end_view()
-
-    class Meta:
-        db_table = 'zadig_vpage'
-
-
 class EditPageForm(forms.Form):
     from tinymce.widgets import TinyMCE
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
@@ -1004,32 +953,44 @@ class EditPageForm(forms.Form):
         return self['content']
 
 
-### File ###
+class VPage(VObject):
+    format = models.ForeignKey(ContentFormat)
+    content = models.TextField(blank=True)
+
+    def end_view(self):
+        return render_to_response('view_page.html', { 'vobject': self },
+                context_instance = RequestContext(self.request))
+
+    def info_view(self):
+        return self.end_view()
+
+    class Meta:
+        db_table = 'zadig_vpage'
 
 
-class FileEntry(Entry):
+class PageEntry(Entry):
+    template_name = 'edit_page.html'
+    subform_class = EditPageForm
+    vobject_class = VPage
+    typename = _(u"Page")
 
     def create_edit_subform(self, new):
         if new:
-            result = EditFileForm()
+            result = EditPageForm()
         else:
-            result = EditFileForm(initial={'content': self.vobject.content})
+            result = EditPageForm(
+                    initial={'content': self.vobject.content})
         return result
 
     def process_edit_subform(self, vobject, form):
-        vobject.content = form.cleaned_data['content']
-
-    @property
-    def subform_class(self): return EditFileForm
-
-    @property
-    def vobject_class(self): return VFile
-
-    @property
-    def type(self): return _(u"File")
+        vobject.format=ContentFormat.objects.get(descr='html')
+        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
 
     class Meta:
-        db_table = 'zadig_fileentry'
+        db_table = 'zadig_pageentry'
+
+
+### File ###
 
 
 class VFile(VObject):
@@ -1050,42 +1011,34 @@ class VFile(VObject):
     class Meta:
         db_table = 'zadig_vfile'
 
+
 class EditFileForm(forms.Form):
     content = forms.FileField()
 
     def render(self):
         return self.as_table()
 
-### Image ###
 
-
-class ImageEntry(Entry):
+class FileEntry(Entry):
+    subform_class = EditFileForm
+    vobject_class = VFile
+    typename = _(u"File")
 
     def create_edit_subform(self, new):
         if new:
-            result = EditImageForm()
+            result = EditFileForm()
         else:
-            result = EditImageForm(
-                    initial={'content': self.vobject.content})
+            result = EditFileForm(initial={'content': self.vobject.content})
         return result
 
     def process_edit_subform(self, vobject, form):
-        vobject.content=form.cleaned_data['content']
-
-    @property
-    def subform_class(self):
-        return EditImageForm
-
-    @property
-    def vobject_class(self):
-        return VImage
-
-    @property
-    def type(self):
-        return _(u"Image")
+        vobject.content = form.cleaned_data['content']
 
     class Meta:
-        db_table = 'zadig_imageentry'
+        db_table = 'zadig_fileentry'
+
+
+### Image ###
 
 
 class VImage(VObject):
@@ -1114,32 +1067,27 @@ class EditImageForm(forms.Form):
         return self.as_table()
 
 
-### Link ###
-
-
-class LinkEntry(Entry):
-
-    def process_edit_subform(self, vobject, form):
-        vobject.target = form.cleaned_data['target']
+class ImageEntry(Entry):
+    subform_class = EditImageForm
+    vobject_class = VImage
+    typename = _(u"Image")
 
     def create_edit_subform(self, new):
         if new:
-            result = EditLinkForm()
+            result = EditImageForm()
         else:
-            result = EditLinkForm(
-                    initial={'target': self.vobject.target})
+            result = EditImageForm(
+                    initial={'content': self.vobject.content})
         return result
 
-    @property
-    def subform_class(self):
-        return EditLinkForm
-
-    @property
-    def vobject_class(self):
-        return VLink
+    def process_edit_subform(self, vobject, form):
+        vobject.content=form.cleaned_data['content']
 
     class Meta:
-        db_table = 'zadig_linkentry'
+        db_table = 'zadig_imageentry'
+
+
+### Link ###
 
 
 class VLink(VObject):
@@ -1169,37 +1117,28 @@ class EditLinkForm(forms.Form):
         return self.as_table()
 
 
-### InternalRedirection ###
-
-# FIXME: Should subclass link or something
-
-class InternalRedirectionEntry(Entry):
+class LinkEntry(Entry):
+    subform_class = EditLinkForm
+    vobject_class = VLink
 
     def process_edit_subform(self, vobject, form):
-        vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
+        vobject.target = form.cleaned_data['target']
 
     def create_edit_subform(self, new):
         if new:
-            result = EditInternalRedirectionForm()
+            result = EditLinkForm()
         else:
-            result = EditInternalRedirectionForm(
+            result = EditLinkForm(
                     initial={'target': self.vobject.target})
         return result
 
-    @property
-    def subform_class(self):
-        return EditInternalRedirectionForm
-
-    @property
-    def vobject_class(self):
-        return VInternalRedirection
-
-    @property
-    def type(self):
-        return _(u"Internal redirection")
-
     class Meta:
-        db_table = 'zadig_internalredirectionentry'
+        db_table = 'zadig_linkentry'
+
+
+### InternalRedirection ###
+
+# FIXME: Should subclass link or something
 
 
 class VInternalRedirection(VObject):
@@ -1228,3 +1167,23 @@ class EditInternalRedirectionForm(forms.Form):
 
     def render(self):
         return self.as_table()
+
+
+class InternalRedirectionEntry(Entry):
+    subform_class = EditInternalRedirectionForm
+    vobject_class = VInternalRedirection
+    typename = _(u"Internal redirection")
+
+    def process_edit_subform(self, vobject, form):
+        vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
+
+    def create_edit_subform(self, new):
+        if new:
+            result = EditInternalRedirectionForm()
+        else:
+            result = EditInternalRedirectionForm(
+                    initial={'target': self.vobject.target})
+        return result
+
+    class Meta:
+        db_table = 'zadig_internalredirectionentry'
