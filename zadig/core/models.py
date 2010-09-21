@@ -193,6 +193,8 @@ class Entry(models.Model):
     btemplate = models.CharField(max_length=100, blank=True)
     objects = EntryManager()
 
+    template_name = 'edit_entry.html'
+
     def __init__(self, *args, **kwargs):
         # If called with only two arguments, then it is someone calling the
         # Zadig API, and the two arguments are request and path.
@@ -416,8 +418,6 @@ class Entry(models.Model):
                 break
         result.sort(cmp)
         return result
-
-    template_name = 'edit_entry.html'
 
     def __create_metatags_formset(self, new):
         """Return a formset of metatags forms, as many as existing metatag sets
