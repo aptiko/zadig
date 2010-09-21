@@ -1004,6 +1004,58 @@ class EditPageForm(forms.Form):
         return self['content']
 
 
+### File ###
+
+
+class FileEntry(Entry):
+
+    def create_edit_subform(self, new):
+        if new:
+            result = EditFileForm()
+        else:
+            result = EditFileForm(initial={'content': self.vobject.content})
+        return result
+
+    def process_edit_subform(self, vobject, form):
+        vobject.content = form.cleaned_data['content']
+
+    @property
+    def subform_class(self): return EditFileForm
+
+    @property
+    def vobject_class(self): return VFile
+
+    @property
+    def type(self): return _(u"File")
+
+    class Meta:
+        db_table = 'zadig_fileentry'
+
+
+class VFile(VObject):
+    content = models.FileField(upload_to="files")
+
+    def end_view(self):
+        from django.core.servers.basehttp import FileWrapper
+        content_type = mimetypes.guess_type(self.content.path)[0]
+        wrapper = FileWrapper(open(self.content.path))
+        response = HttpResponse(wrapper, content_type=content_type)
+        response['Content-length'] = self.content.size
+        return response
+
+    def info_view(self):
+        return render_to_response('view_file.html', { 'vobject': self },
+                context_instance = RequestContext(self.request))
+
+    class Meta:
+        db_table = 'zadig_vfile'
+
+class EditFileForm(forms.Form):
+    content = forms.FileField()
+
+    def render(self):
+        return self.as_table()
+
 ### Image ###
 
 
