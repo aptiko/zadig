@@ -16,6 +16,9 @@ from zadig.core import utils
 import zadig.core
 
 
+user_entry_types = []
+
+
 class permissions:
     VIEW=1
     EDIT=2
@@ -990,6 +993,9 @@ class PageEntry(Entry):
         db_table = 'zadig_pageentry'
 
 
+user_entry_types.append(PageEntry)
+
+
 ### File ###
 
 
@@ -1036,6 +1042,9 @@ class FileEntry(Entry):
 
     class Meta:
         db_table = 'zadig_fileentry'
+
+
+user_entry_types.append(FileEntry)
 
 
 ### Image ###
@@ -1085,6 +1094,9 @@ class ImageEntry(Entry):
 
     class Meta:
         db_table = 'zadig_imageentry'
+
+
+user_entry_types.append(ImageEntry)
 
 
 ### Link ###
