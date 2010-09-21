@@ -1172,7 +1172,6 @@ class EditInternalRedirectionForm(forms.Form):
 class InternalRedirectionEntry(Entry):
     subform_class = EditInternalRedirectionForm
     vobject_class = VInternalRedirection
-    typename = _(u"Internal redirection")
 
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))

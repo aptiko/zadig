@@ -269,7 +269,9 @@ class SecondaryButtonsNode(template.Node):
         for classname in dir(coremodels):
             if not classname.endswith('Entry'): continue
             cls = eval('coremodels.'+classname)
-            if not issubclass(cls, coremodels.Entry): continue
+            if not issubclass(cls, coremodels.Entry) or \
+                                not 'typename' in dir(cls):
+                continue
             items_of_add_new.append(
                 { 'href': '%s__new__/%s/' % (spath, classname[:-5]),
                   'name': cls.typename })
