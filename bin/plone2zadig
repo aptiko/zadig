@@ -120,6 +120,10 @@ class PloneObject(object):
         if 'template-link_view' in body_classes:
             logging.debug("(It's a link)")
             return super(PloneObject, cls).__new__(PloneLink)
+        if 'template-file_view' in body_classes:
+            logging.debug("(It's a file)")
+            return super(PloneObject, cls).__new__(PloneFile)
+        raise UnknownPloneObjectType("Unknown object type at "+url)
         raise UnknownPloneObjectType("Unknown object type at "+url)
 
     def __find_alternative_lang(self, path):
@@ -310,6 +314,34 @@ class PloneImage(PloneObject):
             description=unicode(self.description))
         nmetatags.save()
         self.post_migrate(request, path, models.ImageEntry)
+
+
+class PloneFile(PloneObject):
+    def __init__(self, url, soup=None, editsoup=None):
+        PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
+        assert(url.endswith('/view'))
+        url = url[:-5]
+        response = get_response(url)
+        self.mimetype = response.info().type
+        self.content =  response.read()
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        from django.core.files.base import ContentFile
+        from mimetypes import guess_extension
+        super(PloneFile, self).migrate(request, path, models.FileEntry)
+        f = ContentFile(self.content)
+        extension = guess_extension(self.mimetype)
+        nvobject = models.VFile(entry=self.entry,
+                            version_number=self.max_existing_version_number+1)
+        nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
+        nvobject.request = request
+        nvobject.save()
+        f.close()
+        nmetatags = models.VObjectMetatags(vobject=nvobject,
+            language=self.language, title=unicode(self.title),
+            description=unicode(self.description))
+        nmetatags.save()
+        self.post_migrate(request, path, models.FileEntry)
 
 
 class PloneLink(PloneObject):
