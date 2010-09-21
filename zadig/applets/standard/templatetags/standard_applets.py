@@ -272,7 +272,7 @@ class SecondaryButtonsNode(template.Node):
             if not issubclass(cls, coremodels.Entry): continue
             items_of_add_new.append(
                 { 'href': '%s__new__/%s/' % (spath, classname[:-5]),
-                  'name': cls.type })
+                  'name': cls.typename })
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
               'items': [ { 'href': '%s__state__/%d' %
