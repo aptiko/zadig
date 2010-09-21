@@ -306,8 +306,8 @@ class PloneImage(PloneObject):
         nvobject.save()
         f.close()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
-            language=self.language, title=self.title,
-            description=self.description)
+            language=self.language, title=unicode(self.title),
+            description=unicode(self.description))
         nmetatags.save()
         self.post_migrate(request, path, models.ImageEntry)
 
