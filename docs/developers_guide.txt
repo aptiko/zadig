@@ -97,46 +97,14 @@ Creating new object types
 =========================
 
 To create a new object type, you need to subclass
-:class:`zadig.core.models.Entry` and
-:class:`zadig.core.models.VObject`, and create a form. Let's
+:class:`~zadig.core.models.Entry` and
+:class:`~zadig.core.models.VObject`, and create a form. Let's
 assume that the type you want to create is to be called a Snail. Name
-your :class:`zadig.core.models.Entry` subclass *SnailEntry*, your
-:class:`zadig.core.models.VObject` subclass *VSnail*, and your
+your :class:`~zadig.core.models.Entry` subclass *SnailEntry*, your
+:class:`~zadig.core.models.VObject` subclass *VSnail*, and your
 form *EditSnailForm*. The code should be as follows::
 
-    from zadig.core.models import Entry, VObject
-
-    class SnailEntry(Entry):
-
-        def create_edit_subform(self, new):
-            if new:
-                result = EditSnailForm()
-            else:
-                result = EditSnailForm(
-                        initial={'content': self.vobject.content})
-            return result
-
-        def process_edit_subform(self, vobject, form):
-            vobject.content=form.cleaned_data['content']
-
-        @property
-        def template_name(self):
-            return 'edit_snail.html'
-
-        @property
-        def subform_class(self):
-            return EditSnailForm
-
-        @property
-        def vobject_class(self):
-            return VSnail
-
-        @property
-        def type(self):
-            return _(u"Snail")
-
-        class Meta:
-            db_table = 'myprefix_snailentry'
+    from zadig.core.models import Entry, VObject, user_entry_types
 
 
     class VSnail(VObject):
@@ -157,6 +125,30 @@ form *EditSnailForm*. The code should be as follows::
 
         def render(self):
             return self.as_table()
+
+
+    class SnailEntry(Entry):
+        template_name = 'edit_snail.html'
+        subform_class = EditSnailForm
+        vobject_class = VSnail
+        typename = _(u"Snail")
+
+        def create_edit_subform(self, new):
+            if new:
+                result = EditSnailForm()
+            else:
+                result = EditSnailForm(
+                        initial={'content': self.vobject.content})
+            return result
+
+        def process_edit_subform(self, vobject, form):
+            vobject.content=form.cleaned_data['content']
+
+        class Meta:
+            db_table = 'myprefix_snailentry'
+
+
+    user_entry_types.append(SnailEntry)
 
 .. admonition:: Incomplete
 
