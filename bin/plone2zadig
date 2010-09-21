@@ -66,8 +66,7 @@ from BeautifulSoup import BeautifulSoup, Tag
 from django.conf import settings
 from django.db import transaction
 
-from zadig.core.utils import sanitize_html
-from zadig.core.utils import split_path
+from zadig.core.utils import sanitize_html, split_path, join_path
 from zadig.core import models
 
 # Read configuration file
@@ -142,6 +141,7 @@ class PloneObject(object):
                     break
             else:
                 continue
+            if split_path(e.path)==split_path(path): continue
             self.alternative_lang = e.path
             break
         logging.debug("Alternative language: "+str(self.alternative_lang))
@@ -389,7 +389,7 @@ class PloneFolder(PlonePage):
             if url.endswith('/folder_contents'): url = url[:-16]
             plone_object = PloneObject(url)
             if url.endswith('/view'): url = url[:-5] # Probably an image 
-            npath = path + '/' + url.split('/')[-1]
+            npath = join_path(path, url.split('/')[-1])
             plone_object.migrate(request, npath)
         self.post_migrate(request, path)
 
