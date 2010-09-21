@@ -73,7 +73,9 @@ from zadig.core import models
 # Read configuration file
 execfile(sys.argv[1])
 
+
 class UnknownPloneObjectType(Exception): pass
+
 
 def get_response(url):
     """Get the data from the url, which should be Plone. Send the logon cookie
@@ -162,6 +164,7 @@ class PloneObject(object):
         self.editsoup = editsoup
         self.title = self.soup.find(True,
                             id='parent-fieldname-title').string.strip()
+        self.short_title = ''
         self.description = self.editsoup.find('textarea', id='description'
                                                             ).string
         if not self.description: self.description = ""
@@ -270,6 +273,7 @@ class PlonePage(PloneObject):
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
+            short_title=unicode(self.short_title),
             description=unicode(self.description))
         nmetatags.save()
         # FIXME: Should be in superclass, other types also have no_nav
@@ -280,6 +284,7 @@ class PlonePage(PloneObject):
 
 
 class PloneImage(PloneObject):
+
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
         assert(url.endswith('/view'))
@@ -306,7 +311,9 @@ class PloneImage(PloneObject):
         nmetatags.save()
         self.post_migrate(request, path, models.ImageEntry)
 
+
 class PloneLink(PloneObject):
+
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
         self.target = self.soup.find('p', attrs={'class':'documentDescription'}
@@ -325,7 +332,9 @@ class PloneLink(PloneObject):
         nmetatags.save()
         self.post_migrate(request, path, models.LinkEntry)
 
+
 class PloneDefaultFolderView(PloneObject):
+
     @transaction.commit_on_success
     def migrate(self, request, path):
         super(PloneDefaultFolderView, self).migrate(request, path,
@@ -342,16 +351,32 @@ class PloneDefaultFolderView(PloneObject):
         self.alternative_lang = None
         self.post_migrate(request, path, models.InternalRedirectionEntry)
 
+
 class PloneFolder(PlonePage):
+
     def __init__(self, url, soup=None, editsoup=None):
         PlonePage.__init__(self, url, soup=soup, editsoup=editsoup)
         # Does it have a default view?
-        if not self.soup.find('a', id='_folderChangeDefaultPage'):
+        if self.soup.find('a', id='_folderChangeDefaultPage'):
+            # Yes - also check its plain view contents then
+            url = self.url
+            if not url.endswith('/'): url += '/'
+            self.foldersoup = BeautifulSoup(get_response(url+'view').read())
+        else:
+            # No - Consider empty content
             self.content = ''
+            self.foldersoup = self.soup
+
     @transaction.commit_on_success
     def migrate(self, request, path):
-        # Zadig does not have folders, so we'll become a page. First
-        # of all migrate the page.
+        # Zadig does not have folders, so we'll become a page. First: the old
+        # folder's title, if different from its default page's title, becomes
+        # the new page's short title.
+        folder_title = self.foldersoup.find(True,
+                            id='parent-fieldname-title').string.strip()
+        if folder_title != self.title:
+            self.short_title = folder_title
+        # Now migrate the page.
         super(PloneFolder, self).migrate(request, path)
         # But also migrate the contents of the folder
         url = self.url
@@ -367,6 +392,7 @@ class PloneFolder(PlonePage):
             npath = path + '/' + url.split('/')[-1]
             plone_object.migrate(request, npath)
         self.post_migrate(request, path)
+
 
 logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()]
     if 'LOG_LEVEL' in globals() else logging.WARNING)
