@@ -28,18 +28,15 @@ def end_view(request, path, version_number=None):
     vobject.request.view_name = _(u'view')
     return vobject.end_view()
 
-def info_view(request, path, version_number=None):
-    vobject = models.VObject.objects.get_by_path(request, path, version_number)\
-                                                                .descendant
+def general_view(request, path, view_name, parms):
+    vobject = models.VObject.objects.get_by_path(request, path).descendant
     _set_languages(vobject)
-    vobject.request.view_name = _(u'view')
-    return vobject.info_view()
-
-def edit_entry(request, path):
-    entry = models.Entry.objects.get_by_path(request, path).descendant
-    _set_languages(entry.vobject)
-    entry.request.view_name = _(u'edit')
-    return entry.edit_view()
+    vobject.request.view_name = view_name
+    method_name = view_name + '_view'
+    if method_name in vobject.__dict__:
+        return eval('vobject.%s_view(%s)' % (view_name, parms))
+    else:
+        return eval('vobject.rentry.%s_view(%s)' % (view_name, parms))
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
@@ -50,24 +47,6 @@ def new_entry(request, parent_path, entry_type):
     entry.request = request
     entry.request.view_name = _(u'edit')
     return entry.edit_view(new=True)
-
-def entry_contents(request, path):
-    entry = models.Entry.objects.get_by_path(request, path)
-    _set_languages(entry.vobject)
-    entry.request.view_name = _(u'contents')
-    return entry.contents_view()
-
-def entry_history(request, path):
-    entry = models.Entry.objects.get_by_path(request, path)
-    _set_languages(entry.vobject)
-    entry.request.view_name = _(u'history')
-    return entry.history_view()
-
-def entry_permissions(request, path):
-    entry = models.Entry.objects.get_by_path(request, path)
-    _set_languages(entry.vobject)
-    entry.request.view_name = _(u'permissions')
-    return entry.permissions_view()
 
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, path)

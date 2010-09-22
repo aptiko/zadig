@@ -17,7 +17,7 @@
         {% for s,f in subentries_with_formset %}
           <tr><td>{{ s.seq }}</td>
               <td>{{ f.select_object }}</td>
-              <td><a href="{{s.spath}}__view__/">{{s.name}}</a></td>
+              <td><a href="{{s.spath}}__info__/">{{s.name}}</a></td>
               <td>{{s.descendant.typename}}</td>
           </tr>
         {% endfor %}

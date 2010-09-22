@@ -520,7 +520,7 @@ class Entry(models.Model):
                     o['entry_options'](self, f)
                 if mainform.cleaned_data['name'] != self.name:
                     self.rename(mainform.cleaned_data['name'])
-                return HttpResponseRedirect(self.spath+'__view__/')
+                return HttpResponseRedirect(self.spath+'__info__/')
         if new:
             vobject = self.rcontainer.vobject
         else:
