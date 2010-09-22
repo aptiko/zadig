@@ -33,7 +33,7 @@ def general_view(request, path, view_name, parms):
     _set_languages(vobject)
     vobject.request.view_name = view_name
     method_name = view_name + '_view'
-    if method_name in vobject.__dict__:
+    if hasattr(vobject, method_name):
         return eval('vobject.%s_view(%s)' % (view_name, parms))
     else:
         return eval('vobject.rentry.%s_view(%s)' % (view_name, parms))
