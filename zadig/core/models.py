@@ -86,10 +86,9 @@ class StatePermission(models.Model):
     permission = models.ForeignKey(Permission)
 
     def __unicode__(self):
-        return "state=%s, %s, permission=%s" (self.state, self.lentity,
+        return "state=%s, %s, permission=%s" % (self.state.descr, self.lentity,
                                                             self.permission)
     class Meta:
-        unique_together = ('lentity', 'permission')
         db_table = 'zadig_statepermission'
 
 
