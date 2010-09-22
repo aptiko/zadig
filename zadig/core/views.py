@@ -36,7 +36,7 @@ def general_view(request, path, view_name, parms):
     if hasattr(vobject, method_name):
         return eval('vobject.%s_view(%s)' % (view_name, parms))
     else:
-        return eval('vobject.rentry.%s_view(%s)' % (view_name, parms))
+        return eval('vobject.rentry.descendant.%s_view(%s)' %(view_name, parms))
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
