@@ -12,6 +12,7 @@ class GeneralMiddleware(object):
 
     def process_response(self, request, response):
         from zadig.core.models import MultilingualGroup
-        for mgid in request.multilingual_groups_to_check:
-            MultilingualGroup.objects.get(id=mgid).check()
+        if hasattr(request, 'multilingual_groups_to_check'):
+            for mgid in request.multilingual_groups_to_check:
+                MultilingualGroup.objects.get(id=mgid).check()
         return response

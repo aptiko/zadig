@@ -257,12 +257,15 @@ class PlonePage(PloneObject):
             base = '/'.join(split_path(base)[:-1])
         for img in self.content.findAll('img'):
             src = img['src']
-            if src.endswith('/image_preview'): src = src[:-13]
+            if src.endswith('/image_preview'):
+                src = join_path(src[:-13], '__resized__')
             if not src.startswith('/'): src = '/' + join_path(base, src)
+            if not src.endswith('/'): src += '/'
             img['src'] = src
         for a in self.content.findAll('a', 'internal-link'):
             href = a['href']
             if not href.startswith('/'): href = '/' + join_path(base, href)
+            if not href.endswith('/'): href += '/'
             a['href'] = href
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
