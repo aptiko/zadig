@@ -94,6 +94,14 @@ def fix_uri(uri, base):
         return uri
     return '/' + join_path(base, uri)
 
+def get_title(soup):
+    """Extract and return the document title from its soup. The title is inside
+    a <h1 class="documentFirstHeading">, which may either contain the title
+    itself, or a <span> containing the title."""
+    h1 = soup.find('h1', 'documentFirstHeading')
+    span = h1.find('span')
+    return span.string.strip() if span else h1.string.strip()
+
 
 class PloneObject(object):
 
@@ -174,8 +182,7 @@ class PloneObject(object):
             editsoup = BeautifulSoup(html)
         self.soup = soup
         self.editsoup = editsoup
-        self.title = self.soup.find(True,
-                            id='parent-fieldname-title').string.strip()
+        self.title = get_title(self.soup)
         self.short_title = ''
         self.description = self.editsoup.find('textarea', id='description'
                                                             ).string
@@ -411,8 +418,7 @@ class PloneFolder(PlonePage):
         # Zadig does not have folders, so we'll become a page. First: the old
         # folder's title, if different from its default page's title, becomes
         # the new page's short title.
-        folder_title = self.foldersoup.find(True,
-                            id='parent-fieldname-title').string.strip()
+        folder_title = get_title(self.foldersoup)
         if folder_title != self.title:
             self.short_title = folder_title
         # Now migrate the page.
