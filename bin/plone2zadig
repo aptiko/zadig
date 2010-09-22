@@ -86,6 +86,14 @@ def get_response(url):
     request.add_header('Cookie', cookies)
     return urllib2.urlopen(request)
 
+def fix_uri(uri, base):
+    """If uri is a relative path, return the absolute path; otherwise return
+    uri itself."""
+    import re
+    if uri.startswith('/') or re.match('\w+://',uri):
+        return uri
+    return '/' + join_path(base, uri)
+
 
 class PloneObject(object):
 
@@ -255,18 +263,11 @@ class PlonePage(PloneObject):
         base = urlparse(b['href'])[2] if b else path
         if not base.endswith('/'):
             base = '/'.join(split_path(base)[:-1])
-        for img in self.content.findAll('img'):
-            src = img['src']
-            if src.endswith('/image_preview'):
-                src = join_path(src[:-13], '__resized__')
-            if not src.startswith('/'): src = '/' + join_path(base, src)
-            if not src.endswith('/'): src += '/'
-            img['src'] = src
-        for a in self.content.findAll('a', 'internal-link'):
-            href = a['href']
-            if not href.startswith('/'): href = '/' + join_path(base, href)
-            if not href.endswith('/'): href += '/'
-            a['href'] = href
+        for attr in ('href', 'src'):
+            for tag in self.content.findAll(True, attrs={attr: True}):
+                tag[attr] = fix_uri(tag[attr], base)
+                if tag.name == u'img' and tag[attr].endswith('/image_preview'):
+                    tag[attr] = tag[attr][:-13] + '__resized__/'
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
 
