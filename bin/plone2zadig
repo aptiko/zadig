@@ -96,9 +96,9 @@ def fix_uri(uri, base):
 
 def get_title(soup):
     """Extract and return the document title from its soup. The title is inside
-    a <h1 class="documentFirstHeading">, which may either contain the title
-    itself, or a <span> containing the title."""
-    h1 = soup.find('h1', 'documentFirstHeading')
+    a <h1>, which may either contain the title itself, or a <span> containing
+    the title."""
+    h1 = soup.find('h1')
     span = h1.find('span')
     return span.string.strip() if span else h1.string.strip()
 
