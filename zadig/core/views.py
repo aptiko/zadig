@@ -105,7 +105,7 @@ def paste(request, path):
         e.request = request
         e.move(target_entry)
     request.session['cut_entries'] = []
-    return entry_contents(request, path)
+    return general_view(request, path, 'contents', '')
 
 def delete(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
@@ -118,7 +118,7 @@ def delete(request, path):
                                             request.POST['confirm']:
         container  = vobject.rentry.rcontainer
         vobject.rentry.delete()
-        return entry_contents(request, container.path)
+        return general_view(request, container.path, 'contents', '')
     elif request.method=='POST':
         return info_view(request, path)
     else:
