@@ -10,4 +10,5 @@ urlpatterns = patterns('zadig.core.views',
     ('^(?P<path>.*)__delete__/$', 'delete'),
     ('^(?P<path>.*)__(?P<view_name>[^/_]+)__/(?P<parms>.*)$', 'general_view'),
     ('^(?P<path>.*)/$', 'end_view'),
+    ('^$', 'end_view', {'path': ''} ),
 )
