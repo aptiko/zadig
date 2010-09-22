@@ -187,8 +187,10 @@ class PloneObject(object):
         self.description = self.editsoup.find('textarea', id='description'
                                                             ).string
         if not self.description: self.description = ""
-        self.state = self.soup.find('dl', id='plone-contentmenu-workflow'
-            ).dt('span')[1].string.strip()
+        self.state = 'Published'
+        workflowmenu = self.soup.find('dl', id='plone-contentmenu-workflow')
+        if workflowmenu:
+            self.state = workflowmenu.dt('span')[1].string.strip()
                             
     def migrate(self, request, path, entry_type):
         """This is always called from a subclass and does a little common part
@@ -196,12 +198,16 @@ class PloneObject(object):
         and save the entry."""
         # Find language and other settings of object by checking the contents of
         # its various views.
+        self.no_nav = False
         a = self.editsoup.find('input', attrs={'id': 'excludeFromNav'})
-        self.no_nav = 'checked' in [x[0] for x in a.attrs]
-        l = self.editsoup.find('select', attrs={'id': 'language'}).find(
-                            'option', attrs={'selected': 'selected'})
-        self.language = models.Language.objects.get(id=l['value'] if l
-                                                    else DEFAULT_LANGUAGE)
+        if a:
+            self.no_nav = 'checked' in [x[0] for x in a.attrs]
+        self.language = models.Language.objects.get(id=DEFAULT_LANGUAGE)
+        selectlang = self.editsoup.find('select', attrs={'id': 'language'})
+        if selectlang:
+            l = selectlang.find('option', attrs={'selected': 'selected'})
+            if l:
+                self.language = models.Language.objects.get(id=l['value'])
         self.__find_alternative_lang(path)
 
         # Prepare and save the entry
