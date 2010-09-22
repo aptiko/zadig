@@ -434,14 +434,16 @@ class PloneFolder(PlonePage):
         if not url.endswith('/'): url += '/'
         url += 'folder_contents'
         soup = BeautifulSoup(get_response(url).read())
-        tr_elements = soup.find('table', id='listing-table').tbody('tr')
-        for tr in tr_elements:
-            url = tr.a['href']
-            if url.endswith('/folder_contents'): url = url[:-16]
-            plone_object = PloneObject(url)
-            if url.endswith('/view'): url = url[:-5] # Probably an image 
-            npath = join_path(path, url.split('/')[-1])
-            plone_object.migrate(request, npath)
+        listing_table = soup.find('table', id='listing-table')
+        if listing_table:
+            tr_elements = listing_table.tbody('tr')
+            for tr in tr_elements:
+                url = tr.a['href']
+                if url.endswith('/folder_contents'): url = url[:-16]
+                plone_object = PloneObject(url)
+                if url.endswith('/view'): url = url[:-5] # Probably an image 
+                npath = join_path(path, url.split('/')[-1])
+                plone_object.migrate(request, npath)
         self.post_migrate(request, path)
 
 
