@@ -686,16 +686,19 @@ class VObject(models.Model):
     object_class = models.CharField(max_length=100)
     entry = models.ForeignKey(Entry, related_name="vobject_set")
     version_number = models.PositiveIntegerField()
-    date = models.DateTimeField(auto_now_add=True)
+    date = models.DateTimeField()
     language = models.ForeignKey(Language, blank=True, null=True)
     objects = VObjectManager()
 
     def save(self, *args, **kwargs):
+        from datetime import datetime
         if not self.object_class:
             self.object_class = self._meta.object_name
         if self.entry.multilingual_group:
             _check_multilingual_group(self.request,
                                             self.entry.multilingual_group.id)
+        if not self.date:
+            self.date = datetime.now()
         return super(VObject, self).save(args, kwargs)
 
     @property
