@@ -439,17 +439,22 @@ class PloneFolder(PlonePage):
         url = self.url
         if not url.endswith('/'): url += '/'
         url += 'folder_contents'
-        soup = BeautifulSoup(get_response(url).read())
-        listing_table = soup.find('table', id='listing-table')
-        if listing_table:
-            tr_elements = listing_table.tbody('tr')
-            for tr in tr_elements:
-                url = tr.a['href']
-                if url.endswith('/folder_contents'): url = url[:-16]
-                plone_object = PloneObject(url)
-                if url.endswith('/view'): url = url[:-5] # Probably an image 
-                npath = join_path(path, url.split('/')[-1])
-                plone_object.migrate(request, npath)
+        while True:
+            soup = BeautifulSoup(get_response(url).read())
+            listing_table = soup.find('table', id='listing-table')
+            if listing_table:
+                tr_elements = listing_table.tbody('tr')
+                for tr in tr_elements:
+                    url = tr.a['href']
+                    if url.endswith('/folder_contents'): url = url[:-16]
+                    plone_object = PloneObject(url)
+                    if url.endswith('/view'): url = url[:-5] # Probably an image
+                    npath = join_path(path, url.split('/')[-1])
+                    plone_object.migrate(request, npath)
+            # Does the page have a "Next N items" link?
+            span = soup.find('span', 'next')
+            if not span: break # No, it doesn't; we're finished
+            url=span.a['href'] # Otherwise, follow the link and continue
         self.post_migrate(request, path)
 
 
