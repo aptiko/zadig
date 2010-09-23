@@ -158,6 +158,27 @@ class PloneObject(object):
             break
         logging.debug("Alternative language: "+str(self.alternative_lang))
 
+    def __find_modification_time(self):
+        """Determine the "last modified" time of the plone object."""
+        from datetime import datetime
+        import re
+        self.modification_time = datetime.now()
+        span_documentModified = self.soup.find('span', 'documentModified')
+        if not span_documentModified: return
+        m = re.search(r'\s([A-Z][a-z]{2})\s+(\d{1,2}),\s+(\d{4})\s+'
+                      r'(\d{2}):(\d{2})\s+([AP]M)\s',
+                      str(span_documentModified))
+        if not m: return
+        (monthname, day, year, hour, minute, ampm) = m.groups()
+        month = {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+                 'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct':10, 'Nov':11, 'Dec':12
+                }[monthname]
+        (day, year, hour, minute) = [int(x) for x in (day, year, hour, minute)]
+        if hour==12: hour = 0
+        if ampm=="PM": hour+=12
+        self.modification_time = datetime(year, month, day, hour, minute)
+        logging.debug("Last modified: " + self.modification_time.isoformat(' '))
+
     def __init__(self, url, soup=None, editsoup=None):
         """Retrieve title, description and state from a Plone page;
         for subclasses, also retrieve content. soup is the BeautifulSoup object
@@ -201,6 +222,7 @@ class PloneObject(object):
             if l:
                 self.language = models.Language.objects.get(id=l['value'])
         self.__find_alternative_lang(path)
+        self.__find_modification_time()
 
         # Prepare and save the entry
         self.entry = models.Entry.objects.get_by_path(request, path)
@@ -213,7 +235,7 @@ class PloneObject(object):
             self.entry = entry_type(request, path)
         if not isinstance(self.entry, entry_type):
             raise Exception(('Error creating entry at %s: apparently it '
-                +'already existed was type %s rather than %s') % (path,
+                +'already existed and was type %s rather than %s') % (path,
                 self.entry.__class__.__name__, entry_type.__name__))
         self.entry.state = models.State.objects.get(descr=self.state)
         self.entry.save()
@@ -298,7 +320,7 @@ class PlonePage(PloneObject):
             version_number=self.max_existing_version_number+1,
             language=self.language,
             format = models.ContentFormat.objects.get(descr='html'),
-            content = sanitize_html(self.content))
+            date = self.modification_time, content = sanitize_html(self.content))
         nvobject.request = request
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
@@ -322,6 +344,7 @@ class PloneImage(PloneObject):
         response = get_response(url)
         self.mimetype = response.info().type
         self.content =  response.read()
+
     @transaction.commit_on_success
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
@@ -329,7 +352,7 @@ class PloneImage(PloneObject):
         super(PloneImage, self).migrate(request, path, models.ImageEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VImage(entry=self.entry,
+        nvobject = models.VImage(entry=self.entry, date=self.modification_time,
                             version_number=self.max_existing_version_number+1)
         nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.request = request
@@ -350,6 +373,7 @@ class PloneFile(PloneObject):
         response = get_response(url)
         self.mimetype = response.info().type
         self.content =  response.read()
+
     @transaction.commit_on_success
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
@@ -357,7 +381,7 @@ class PloneFile(PloneObject):
         super(PloneFile, self).migrate(request, path, models.FileEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VFile(entry=self.entry,
+        nvobject = models.VFile(entry=self.entry, date=self.modification_time,
                             version_number=self.max_existing_version_number+1)
         nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.request = request
@@ -376,10 +400,11 @@ class PloneLink(PloneObject):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
         self.target = self.soup.find('p', attrs={'class':'documentDescription'}
                                 ).findNextSibling('p').a['href']
+
     @transaction.commit_on_success
     def migrate(self, request, path):
         super(PloneLink, self).migrate(request, path, models.LinkEntry)
-        nvobject = models.VLink(entry=self.entry,
+        nvobject = models.VLink(entry=self.entry, date=self.modification_time,
             version_number=self.max_existing_version_number+1,
             language=self.language, target = self.target)
         nvobject.request = request
