@@ -1067,7 +1067,7 @@ class VImage(VObject):
     def resized_view(self):
         import Image
         im = Image.open(self.content.path)
-        factor = 400.0/max(im.size)
+        factor = min(1, 400.0/max(im.size))
         newsize = [factor*x for x in im.size]
         im = im.resize(newsize, Image.BILINEAR)
         content_type = mimetypes.guess_type(self.content.path)[0]
