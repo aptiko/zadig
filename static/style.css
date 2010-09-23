@@ -38,6 +38,13 @@ img { border: None; }
 .mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
 .mainContent ul li { margin-bottom: 0.5em; }
 .mainContent table tr { vertical-align: top; }
+.mainContent table.listing { border-bottom: 1px solid #8CACBB; border-left: 1px solid #8CACBB; border-collapse: collapse; font-size: 90%; margin: 1em 0; }
+.mainContent table.listing th { background:none repeat scroll 0 0 #DEE7EC; border-bottom:1px solid #8CACBB; border-right:1px solid #8CACBB; border-top:1px solid #8CACBB; font-weight:normal; padding:0.25em 0.5em; text-transform:none; }
+.mainContent table.listing td { border-right:1px solid #8CACBB; padding:0.25em 0.5em; }
+.mainContent table.listing a { text-decoration:none; }
+.mainContent table.listing a:hover { text-decoration:underline; }
+.mainContent table.listing img { vertical-align:middle; }
+.mainContent table.listing td a label { cursor:pointer; }
 
 .primaryButtons { background-color: transparent; padding-left: 1em; line-height: normal; margin: 0; list-style: none; border: 1px solid #74ae0b; border-top-width: 0px; border-left-width: 0px; border-right-width: 0px; }
 .primaryButtons li { display: inline; padding-top: 0.5em; }
