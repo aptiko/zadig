@@ -474,7 +474,7 @@ class Entry(models.Model):
             e.multilingual_group = amultilingual_group
             e.save()
 
-    def edit_view(self, new=False):
+    def edit_view(self, new=False, parms=None):
         applet_options = [o for o in zadig.core.applet_options
                                                         if o['entry_options']]
         if self.request.method != 'POST':
@@ -591,7 +591,7 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
 
-    def contents_view(self):
+    def contents_view(self, parms=None):
         subentries = self.subentries
         vobject = self.vobject
         if self.request.method == 'POST' and 'move' in self.request.POST:
@@ -622,12 +622,12 @@ class Entry(models.Model):
                   'move_item_form': move_item_form},
                 context_instance = RequestContext(self.request))
 
-    def history_view(self):
+    def history_view(self, parms=None):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject },
                 context_instance = RequestContext(self.request))
 
-    def permissions_view(self):
+    def permissions_view(self, parms=None):
         vobject = self.vobject
         if self.request.method != 'POST':
             permissions_form = EntryPermissionsForm({ 'owner': self.owner })
@@ -959,11 +959,11 @@ class VPage(VObject):
     format = models.ForeignKey(ContentFormat)
     content = models.TextField(blank=True)
 
-    def end_view(self):
+    def end_view(self, parms=None):
         return render_to_response('view_page.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def info_view(self):
+    def info_view(self, parms=None):
         return self.end_view()
 
     class Meta:
@@ -1001,7 +1001,7 @@ user_entry_types.append(PageEntry)
 class VFile(VObject):
     content = models.FileField(upload_to="files")
 
-    def end_view(self):
+    def end_view(self, parms=None):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -1009,7 +1009,7 @@ class VFile(VObject):
         response['Content-length'] = self.content.size
         return response
 
-    def info_view(self):
+    def info_view(self, parms=None):
         return render_to_response('view_file.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
@@ -1052,7 +1052,7 @@ user_entry_types.append(FileEntry)
 class VImage(VObject):
     content = models.ImageField(upload_to="images")
 
-    def end_view(self):
+    def end_view(self, parms=None):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -1060,11 +1060,11 @@ class VImage(VObject):
         response['Content-length'] = self.content.size
         return response
 
-    def info_view(self):
+    def info_view(self, parms=None):
         return render_to_response('view_image.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def resized_view(self, parms):
+    def resized_view(self, parms="400"):
         import Image
         im = Image.open(self.content.path)
         target_size = int(parms.strip('/'))
@@ -1116,12 +1116,12 @@ user_entry_types.append(ImageEntry)
 class VLink(VObject):
     target = models.URLField()
 
-    def end_view(self):
+    def end_view(self, parms=None):
         # FIXME: This should not work like this, should directly link outside
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target)
 
-    def info_view(self):
+    def info_view(self, parms=None):
         return render_to_response('view_link.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
@@ -1167,11 +1167,11 @@ user_entry_types.append(LinkEntry)
 class VInternalRedirection(VObject):
     target = models.ForeignKey(Entry)
 
-    def end_view(self):
+    def end_view(self, parms=None):
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
 
-    def info_view(self):
+    def info_view(self, parms=None):
         return render_to_response('view_internalredirection.html',
                 { 'vobject': self },
                 context_instance = RequestContext(self.request))
