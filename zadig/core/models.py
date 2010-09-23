@@ -1064,10 +1064,11 @@ class VImage(VObject):
         return render_to_response('view_image.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def resized_view(self):
+    def resized_view(self, parms):
         import Image
         im = Image.open(self.content.path)
-        factor = min(1, 400.0/max(im.size))
+        target_size = int(parms.strip('/'))
+        factor = min(1, float(target_size)/max(im.size))
         newsize = [factor*x for x in im.size]
         im = im.resize(newsize, Image.BILINEAR)
         content_type = mimetypes.guess_type(self.content.path)[0]
