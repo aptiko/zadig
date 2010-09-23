@@ -86,14 +86,6 @@ def get_response(url):
     request.add_header('Cookie', cookies)
     return urllib2.urlopen(request)
 
-def fix_uri(uri, base):
-    """If uri is a relative path, return the absolute path; otherwise return
-    uri itself."""
-    import re
-    if uri.startswith('/') or re.match('\w+://',uri):
-        return uri
-    return '/' + join_path(base, uri)
-
 def get_title(soup):
     """Extract and return the document title from its soup. The title is inside
     a <h1>, which may either contain the title itself, or a <span> containing
@@ -242,6 +234,22 @@ class PloneObject(object):
 
 
 class PlonePage(PloneObject):
+    __plone_image_views = { '/image_large': 768, '/image_preview': 400,
+        '/image_mini': 200, '/image_thumb': 128, '/image_tile': 64,
+        '/image_icon': 32, '/image_listing': 16 }
+
+    def __fix_tag_ref(self, tag, attr, base):
+        """attr is string holding a referencing attribute, such as "href" or
+        "src"; tag is a tag having attr; and base is the url base. This method
+        converts tag so that its attr is an absolute path (in case it was
+        relative), and also fixes Plone's image references."""
+        import re
+        if not tag[attr].startswith('/') and not re.match('\w+://', tag[attr]):
+            tag[attr] = '/' + join_path(base, tag[attr])
+        if tag[attr].endswith(tuple(self.__plone_image_views.keys())):
+            image_view = '/' + tag[attr].rsplit('/', 1)[1]
+            tag[attr] = '%s/__resized__/%d' % (tag[attr].rpartition('/')[0],
+                                           self.__plone_image_views[image_view])
 
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
@@ -278,9 +286,7 @@ class PlonePage(PloneObject):
             base = '/'.join(split_path(base)[:-1])
         for attr in ('href', 'src'):
             for tag in self.content.findAll(True, attrs={attr: True}):
-                tag[attr] = fix_uri(tag[attr], base)
-                if tag.name == u'img' and tag[attr].endswith('/image_preview'):
-                    tag[attr] = tag[attr][:-13] + '__resized__/'
+                self.__fix_tag_ref(tag, attr, base)
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
 
