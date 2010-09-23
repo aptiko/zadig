@@ -34,7 +34,7 @@ img { border: None; }
 
 .mainContent { padding: 1em 1em 2em 1em; font-size: 110%; }
 .mainContent.withButtons { border: solid #74ae0b 1px; }
-.mainContent p { line-height: 1.5em; }
+.mainContent p { line-height: 1.5em; margin: 0 0 0.75em; }
 .mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
 .mainContent ul li { margin-bottom: 0.5em; }
 .mainContent table tr { vertical-align: top; }
