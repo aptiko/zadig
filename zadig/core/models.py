@@ -1068,9 +1068,10 @@ class VImage(VObject):
         import Image
         im = Image.open(self.content.path)
         target_size = int(parms.strip('/'))
-        factor = min(1, float(target_size)/max(im.size))
-        newsize = [factor*x for x in im.size]
-        im = im.resize(newsize, Image.BILINEAR)
+        factor = float(target_size)/max(im.size)
+        if factor<1.0:
+            newsize = [factor*x for x in im.size]
+            im = im.resize(newsize, Image.BILINEAR)
         content_type = mimetypes.guess_type(self.content.path)[0]
         response = HttpResponse(content_type=content_type)
         im.save(response, content_type.split('/')[1])
