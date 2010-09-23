@@ -1,5 +1,6 @@
 body { font: 69% "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif; background-color: white; color: black; margin: 0; padding: 0; }
 a { color: #436976; }
+img { border: None; }
 #portalTop { margin: 0; padding: 0; background: transparent; }
 #portalPersonaltools { background-color: #dee7ec; border-top: solid #8cacbb 1px; border-bottom: solid #8cacbb 1px; line-height: 1.6em; padding: 0 3em 0 3em; margin: 0; text-align: right; list-style-type: none; list-style-image: none; list-style-position: outside; }
 
