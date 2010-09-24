@@ -23,7 +23,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "zadig.core.context_processors.zadig_media",
 )
 
-TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates')
+TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates',)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
