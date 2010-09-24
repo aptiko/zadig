@@ -182,7 +182,8 @@ class PloneObject(object):
             unlock_form = msg_dl.dd.form
             if unlock_form and unlock_form['action'].endswith('force_unlock'):
                 logging.warn("Object %s is locked; unlocking" % (self.url))
-                get_response(unlock_form['action']).read()
+                self.soup = BeautifulSoup(
+                                    get_response(unlock_form['action']).read())
         editurl = self.soup.find('li', attrs={'id': 'contentview-edit'}
                                                                     ).a['href']
         html = get_response(editurl).read()
