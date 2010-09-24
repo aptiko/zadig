@@ -1,6 +1,13 @@
 # Configuration file template for Zadig.
 # coding=utf-8
 
+ZADIG_PROGRAM_DIR = '.'
+
+# Leave following three lines as they are, to import several Django settings.
+import sys
+import os.path
+execfile(os.path.join(ZADIG_PROGRAM_DIR, 'settings-base.py'))
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -19,6 +26,8 @@ DATABASE_USER = ''
 DATABASE_PASSWORD = ''
 DATABASE_HOST = ''
 DATABASE_PORT = ''
+
+#TEMPLATE_DIRS.append('/etc/zadig/mycustomtemplates')
 
 TIME_ZONE = 'UTC'
 
@@ -40,9 +49,5 @@ ZADIG_LANGUAGES = (
 )
 WORKFLOW_ID = 1
 
-# Leave the following as it is; it imports essential Django settings that are
-# expected to be the same in all Zadig installations.
-import sys
-import os.path
-PROJECT_DIR = os.path.dirname(sys.modules[__name__].__file__)
-execfile(os.path.join(PROJECT_DIR, 'settings-base.py'))
+TINYMCE_JS_URL = ZADIG_MEDIA_URL + 'tinymce/tiny_mce.js'
+TINYMCE_JS_ROOT = os.path.join(ZADIG_MEDIA_ROOT, 'tinymce')

@@ -23,10 +23,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "zadig.core.context_processors.zadig_media",
 )
 
-import os.path
-TEMPLATE_DIRS = (
-    os.path.join(PROJECT_DIR, 'templates'),
-)
+TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates')
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -40,6 +37,3 @@ INSTALLED_APPS = (
     'zadig.applets.standard',
     'tinymce',
 )
-
-TINYMCE_JS_URL = ZADIG_MEDIA_URL + 'tinymce/tiny_mce.js'
-TINYMCE_JS_ROOT = os.path.join(ZADIG_MEDIA_ROOT, 'tinymce')
