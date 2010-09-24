@@ -27,7 +27,7 @@ DATABASE_PASSWORD = ''
 DATABASE_HOST = ''
 DATABASE_PORT = ''
 
-#TEMPLATE_DIRS.append('/etc/zadig/mycustomtemplates')
+#TEMPLATE_DIRS = TEMPLATE_DIRS + ('/etc/zadig/mycustomtemplates',)
 
 TIME_ZONE = 'UTC'
 
