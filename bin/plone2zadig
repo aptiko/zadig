@@ -15,7 +15,11 @@ The options are:
 
   PLONE_URL
       The topmost Plone url to start converting. That page and all its
-      subpages will be read and converted.
+      subpages (except those marked for exclusion) will be read and converted.
+
+  PLONE_EXCLUDE
+      The URIs of this tuple will be excluded from conversion. The URIs can be
+      full URLs or relative paths whose base is PLONE_URL.
 
   PLONE_AUTH
       The value the __ac cookie should have. It must be a user capable
@@ -52,7 +56,7 @@ All the above except TARGET_PATH and LOG_LEVEL are compulsory.
 import sys
 import urllib2
 import logging
-from urlparse import urlparse
+from urlparse import urlparse, urljoin
 from cgi import parse_qs
 
 from BeautifulSoup import BeautifulSoup, Tag
@@ -85,7 +89,6 @@ def get_title(soup):
     h1 = soup.find('h1')
     span = h1.find('span')
     return span.string.strip() if span else h1.string.strip()
-
 
 class PloneObject(object):
 
@@ -493,7 +496,9 @@ class PloneFolder(PlonePage):
                         subobject_url = tr.a['href']
                         if subobject_url.endswith('/folder_contents'):
                             subobject_url = subobject_url[:-16]
-                        result.add(subobject_url)
+                        if urljoin(PLONE_URL, subobject_url) not in \
+                                                                PLONE_EXCLUDE: 
+                            result.add(subobject_url)
                 # Does the page have a "Next N items" link?
                 span = soup.find('span', 'next')
                 if not span: break # No, it doesn't; we're finished
@@ -524,6 +529,9 @@ class PloneFolder(PlonePage):
 
 logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()]
     if 'LOG_LEVEL' in globals() else logging.WARNING)
+
+# Convert PLONE_EXCLUDE to absolute urls
+PLONE_EXCLUDE = [urljoin(PLONE_URL, x) for x in PLONE_EXCLUDE]
 
 # We use HttpRequest as a small hack. Some Entry methods require request to be
 # passed to them, but they hardly use anything but request.user. So we set
