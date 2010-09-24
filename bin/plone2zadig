@@ -21,11 +21,6 @@ The options are:
       The value the __ac cookie should have. It must be a user capable
       of editing all the objects from PLONE_URL downwards.
 
-  PLONE_LANG
-      If present, it is the value of the I18N_LANGUAGE cookie, which
-      defines the LinguaPlone language requested. If absent, no
-      I18N_LANGUAGE cookie is sent.
-
   TARGET_PATH
       Will migrate PLONE_URL to this Zadig path, and subobjects to
       subpaths.
@@ -50,8 +45,7 @@ The options are:
       CRITICAL.  Default is WARNING. Don't use CRITICAL, it will miss
       the errors.
 
-All the above except PLONE_LANG, TARGET_PATH and LOG_LEVEL are
-compulsory.
+All the above except TARGET_PATH and LOG_LEVEL are compulsory.
 
 """
 
@@ -81,8 +75,6 @@ def get_response(url):
     during the request, to make sure we are logged on to Plone."""
     request = urllib2.Request(url)
     cookies = '__ac="%s"' % (PLONE_AUTH,)
-    if ('PLONE_LANG' in globals()) and PLONE_LANG:
-        cookies += '; I18N_LANGUAGE="%s"' % (PLONE_LANG,)
     request.add_header('Cookie', cookies)
     return urllib2.urlopen(request)
 
