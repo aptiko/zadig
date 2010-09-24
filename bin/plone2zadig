@@ -181,7 +181,7 @@ class PloneObject(object):
         for msg_dl in self.soup.findAll('dl', 'portalMessage info'):
             unlock_form = msg_dl.dd.form
             if unlock_form and unlock_form['action'].endswith('force_unlock'):
-                logging.warn("Object is locked; unlocking")
+                logging.warn("Object %s is locked; unlocking" % (self.url))
                 get_response(unlock_form['action']).read()
         editurl = self.soup.find('li', attrs={'id': 'contentview-edit'}
                                                                     ).a['href']
@@ -496,13 +496,15 @@ class PloneFolder(PlonePage):
                         subobject_url = tr.a['href']
                         if subobject_url.endswith('/folder_contents'):
                             subobject_url = subobject_url[:-16]
-                        if urljoin(PLONE_URL, subobject_url) not in \
-                                                                PLONE_EXCLUDE: 
-                            result.add(subobject_url)
+                        if urljoin(PLONE_URL, subobject_url) in PLONE_EXCLUDE: 
+                            logging.debug("Excluding "+subobject_url)
+                            continue
+                        result.add(subobject_url)
                 # Does the page have a "Next N items" link?
                 span = soup.find('span', 'next')
                 if not span: break # No, it doesn't; we're finished
                 url=span.a['href'] # Otherwise, follow the link and continue
+        logging.debug("Folder contents: " + str(result),)
         return result
 
     def __migrate_folder_contents(self, path):
