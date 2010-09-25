@@ -49,7 +49,7 @@ The options are:
       CRITICAL.  Default is WARNING. Don't use CRITICAL, it will miss
       the errors.
 
-All the above except TARGET_PATH and LOG_LEVEL are compulsory.
+All the above except LOG_LEVEL and PLONE_EXCLUDE are compulsory.
 
 """
 
@@ -66,9 +66,6 @@ from django.db import transaction
 
 from zadig.core.utils import sanitize_html, split_path, join_path
 from zadig.core import models
-
-# Read configuration file
-execfile(sys.argv[1])
 
 
 class UnknownPloneObjectType(Exception): pass
@@ -529,9 +526,14 @@ class PloneFolder(PlonePage):
         self.__migrate_folder_contents(path)
         self.post_migrate(request, path)
 
+# Default configuration values
+LOG_LEVEL = 'warn'
+PLONE_EXCLUDE = ()
 
-logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()]
-    if 'LOG_LEVEL' in globals() else logging.WARNING)
+# Read configuration file
+execfile(sys.argv[1])
+
+logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()])
 
 # Convert PLONE_EXCLUDE to absolute urls
 PLONE_EXCLUDE = [urljoin(PLONE_URL, x) for x in PLONE_EXCLUDE]
