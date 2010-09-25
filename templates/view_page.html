@@ -7,6 +7,7 @@
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
   {% if vobject.content %}
     {{vobject.content|safe}}
+    <div style="clear: both"></div>
   {% else %}
     <dl class="pageIndex">
       {% for s in vobject.rentry.subentries %}
