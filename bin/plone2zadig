@@ -56,6 +56,7 @@ All the above except LOG_LEVEL and PLONE_EXCLUDE are compulsory.
 import sys
 import urllib2
 import logging
+import re
 from urlparse import urlparse, urljoin
 from cgi import parse_qs
 
@@ -155,7 +156,6 @@ class PloneObject(object):
     def __find_modification_time(self):
         """Determine the "last modified" time of the plone object."""
         from datetime import datetime
-        import re
         self.modification_time = datetime.now()
         span_documentModified = self.soup.find('span', 'documentModified')
         if not span_documentModified: return
@@ -267,7 +267,6 @@ class PlonePage(PloneObject):
         "src"; tag is a tag having attr; and base is the url base. This method
         converts tag so that its attr is an absolute path (in case it was
         relative), and also fixes Plone's image references."""
-        import re
         if not tag[attr].startswith('/') and not re.match('\w+://', tag[attr]):
             tag[attr] = '/' + join_path(base, tag[attr])
         if tag[attr].endswith(tuple(self.__plone_image_views.keys())):
@@ -293,12 +292,14 @@ class PlonePage(PloneObject):
             self.content = u''
             return
 
-        # Take headings one level up
+        # Take headings one level up: h2 becomes h1 and h3 becomes h2. h4 to
+        # h9 should not exist, but if they do they are converted to h2 - they
+        # may break but at least they won't get lost.
         for h2 in self.content.findAll('h2'):
             h1 = Tag(self.soup, "h1")
             h1.insert(0, h2.renderContents())
             h2.replaceWith(h1)
-        for h3 in self.content.findAll('h3'):
+        for h3 in self.content.findAll(re.compile('^h[3456789]$')):
             h2 = Tag(self.soup, "h2")
             h2.insert(0, h3.renderContents())
             h3.replaceWith(h2)
