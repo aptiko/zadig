@@ -538,9 +538,7 @@ logging.basicConfig(level=logging.__dict__[LOG_LEVEL.upper()])
 # Convert PLONE_EXCLUDE to absolute urls
 PLONE_EXCLUDE = [urljoin(PLONE_URL, x) for x in PLONE_EXCLUDE]
 
-# We use HttpRequest as a small hack. Some Entry methods require request to be
-# passed to them, but they hardly use anything but request.user. So we set
-# that and we're OK.
+# Prepare a request.user object to have ready
 from django.http import HttpRequest
 from django.contrib.auth.models import User
 request = HttpRequest()
