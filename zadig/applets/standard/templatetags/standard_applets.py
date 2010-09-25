@@ -220,6 +220,10 @@ register.tag('navigation', do_navigation)
 
 class PrimaryButtonsNode(template.Node):
 
+    views = ( ('contents', _(u'contents')), ('info', _(u'view')),
+              ('edit', _(u'edit')), ('history', _(u'history')),
+              ('permissions', _(u'permissions')) )
+
     def __init__(self):
         pass
 
@@ -234,13 +238,13 @@ class PrimaryButtonsNode(template.Node):
         if re.search(r'__[a-zA-Z]+__/$', vobject.request.path):
             href_prefix = '../'
         result = '<ul class="primaryButtons">'
-        for x in (_(u'contents'), _(u'view'), _(u'edit'), _(u'history'),
-                                                            _(u'permissions')):
-            href_suffix = '__' + x + '__/'
-            if x == _(u'view'): href_suffix = ''
+        for viewname, viewstring in self.views:
+            href_suffix = '__' + viewname + '__/'
             href = href_prefix + href_suffix
+            current_view = vobject.request.view_name
+            if current_view=='view': current_view='info'
             result += '<li %s><a href="%s">%s</a></li>' % ('class="selected"'
-                            if x==vobject.request.view_name else '', href, x)
+                        if viewname==current_view else '', href, viewstring)
         result += '</ul>'
         return result
 
