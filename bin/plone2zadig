@@ -312,6 +312,12 @@ class PlonePage(PloneObject):
         for attr in ('href', 'src'):
             for tag in self.content.findAll(True, attrs={attr: True}):
                 self.__fix_tag_ref(tag, attr, base)
+
+        # Modify some classes of images: image-right becomes floatRight etc.
+        for tag in self.soup.findAll('img', { 'class': 'image-right' }):
+            tag['class'] = 'floatRight'
+        for tag in self.soup.findAll('img', { 'class': 'image-left' }):
+            tag['class'] = 'floatLeft'
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
 
