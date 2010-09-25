@@ -64,6 +64,8 @@ class sanitize_html(unicode):
                 if (attr in cls.url_attrs) and not cls.url_is_safe(val):
                     continue
                 tag.attrs.append((attr, val))
+            # Remove empty <a> tags
+            if tag.name=='a' and not tag.attrs: tag.extract()
         result = soup.renderContents().decode('utf8')
         # I don't understand what the unicode() does below, but if it's not
         # there, then the postgresql_psycopg2 backend causes a ProgrammingError
