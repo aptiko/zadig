@@ -5,8 +5,8 @@ from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
-from django.shortcuts import render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.models import User, Group
 from django import forms
 from django.template import RequestContext
@@ -175,15 +175,12 @@ def _check_multilingual_group(request, mgid):
 class EntryManager(models.Manager):
 
     def get_by_path(self, request, path):
-        entry=None
+        entry = None
         for name in utils.split_path(path):
-            try:
-                entry = self.get(name=name, container=entry)
-            except Entry.DoesNotExist:
-                return None
+            entry = get_object_or_404(self, name=name, container=entry)
             entry.request = request
             if not permissions.VIEW in entry.permissions:
-                return None
+                raise Http404
         return entry
 
 class Entry(models.Model):
@@ -459,8 +456,10 @@ class Entry(models.Model):
         if not altlang:
             self.multilingual_group = None
             return
-        e = Entry.objects.get_by_path(self.request, altlang)
-        if not e: return
+        try:
+            e = Entry.objects.get_by_path(self.request, altlang)
+        except Http404:
+            return
         if not self.vobject.language:
             raise IntegrityError(_(
                 u'self.vobject does not have a language specified'))
@@ -797,8 +796,9 @@ class EditEntryForm(forms.Form):
             if not c['language']:
                 raise forms.ValidationError(_(u"Specify a language, or "
                     "don't specify an alternative language"))
-            e = Entry.objects.get_by_path(self.request, c['altlang'])
-            if e is None:
+            try:
+                e = Entry.objects.get_by_path(self.request, c['altlang'])
+            except Http404:
                 raise forms.ValidationError(_(u"The object specified as "
                     "alternative language does not exist, or you do not have "
                     "permission to view it."))

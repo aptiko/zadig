@@ -34,9 +34,11 @@ Entry
 
       .. method:: get_by_path(request, path)
 
-         Return the entry at the specified path, or
-         :const:`None` if such an entry does not exist or the user
-         does not have permissions to view it.
+         Return the entry at the specified path; raise
+         ``django.http.Http404`` if such an entry does not exist or
+         the user does not have permissions to view it (you normally
+         don't need to handle that exception: it will result in a 404
+         page).
 
          Generally you should much prefer to use the above method
          when retrieving Entries, because it will take care of
@@ -368,9 +370,10 @@ VObject
 
          Return the vobject that corresponds to the entry at the
          specified path. If *version_number* is not specified,
-         it returns the latest vobject. An exception is raised if the
-         entry does not exist, or if the user does not have permission to
-         view it.
+         it returns the latest vobject.  ``django.http.Http404`` is
+         raised if the entry does not exist or the user does not have
+         permissions to view it (you normally don't need to handle
+         that exception: it will result in a 404 page).
 
 Other models
 ------------
