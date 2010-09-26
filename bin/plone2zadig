@@ -319,6 +319,10 @@ class PlonePage(PloneObject):
             tag['class'] = 'floatRight'
         for tag in self.soup.findAll('img', { 'class': 'image-left' }):
             tag['class'] = 'floatLeft'
+
+        # Remove any <div>s, but leaving their contents intact
+        for div in  self.soup.findAll('div'):
+            div.replaceWith(''.join([str(x) for x in div.contents]))
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
 
