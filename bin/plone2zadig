@@ -64,6 +64,7 @@ from BeautifulSoup import BeautifulSoup, Tag
 
 from django.conf import settings
 from django.db import transaction
+from django.http import Http404
 
 from zadig.core.utils import sanitize_html, split_path, join_path
 from zadig.core import models
@@ -138,15 +139,12 @@ class PloneObject(object):
             altlang = parse_qs(query).get('set_language', '')[0] 
             if altlang==self.language.id or split_path(apath)==split_path(path):
                 continue
-            e = models.Entry.objects.get_by_path(request, apath)
-            while e:
-                e = e.descendant
-                if isinstance(e, models.InternalRedirectionEntry):
-                    e = e.vobject.target
-                else:
-                    break
-            else:
+            try:
+                e = models.Entry.objects.get_by_path(request, apath).descendant
+            except Http404:
                 continue
+            while isinstance(e, models.InternalRedirectionEntry):
+                e = e.vobject.target
             if split_path(e.path)==split_path(path):
                 continue
             self.alternative_lang = e.path
@@ -225,13 +223,13 @@ class PloneObject(object):
         self.__find_modification_time()
 
         # Prepare and save the entry
-        self.entry = models.Entry.objects.get_by_path(request, path)
         # No need to check REMOVE_TARGET at this point, if True then the entry
-        # will have already been removed and self.entry at this point will be
-        # None.
-        if self.entry:
-            self.entry = self.entry.descendant
-        else:
+        # will have already been removed and an Http404 exception will be raised
+        # and handled below.
+        try: 
+            self.entry = models.Entry.objects.get_by_path(request, path
+                                                                ).descendant
+        except Http404:
             self.entry = entry_type(request, path)
         if not isinstance(self.entry, entry_type):
             raise Exception(('Error creating entry at %s: apparently it '
@@ -553,7 +551,10 @@ request.user = User.objects.get(username=OWNER)
 
 plone_object = PloneObject(PLONE_URL)
 path = TARGET_PATH
-entry = models.Entry.objects.get_by_path(request, path)
-if entry and ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
-    entry.delete()
+try:
+    entry = models.Entry.objects.get_by_path(request, path)
+    if ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
+        entry.delete()
+except Http404:
+    pass
 plone_object.migrate(request, path)
