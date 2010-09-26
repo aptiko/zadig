@@ -437,8 +437,18 @@ class PloneDefaultFolderView(PloneObject):
             language=self.language, title=unicode(self.title),
             description=unicode(self.description))
         nmetatags.save()
-        self.alternative_lang = None
         self.post_migrate(request, path, models.InternalRedirectionEntry)
+
+    def post_migrate(self, request, path, entry_type=None):
+        # We need to handle alternative language specially; it applies to our
+        # folder, not to us.
+        if self.alternative_lang:
+            target = self.entry.rcontainer
+            target.set_altlang(self.alternative_lang)
+            target.save()
+            self.alternative_lang = None
+        super(PloneDefaultFolderView, self).post_migrate(request, path,
+                                            models.InternalRedirectionEntry)
 
 
 class PloneFolder(PlonePage):
