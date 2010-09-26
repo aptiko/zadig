@@ -1073,7 +1073,7 @@ class VImage(VObject):
         return render_to_response('view_image.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def foufotos_view(self, parms="400"):
+    def resized_view(self, parms="400"):
         import Image
         im = Image.open(self.content.path)
         target_size = int(parms.strip('/'))

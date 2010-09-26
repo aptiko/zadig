@@ -2,7 +2,7 @@
 import re
 
 from django.shortcuts import render_to_response
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from django import forms
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError, PermissionDenied
@@ -35,9 +35,10 @@ def general_view(request, path, view_name, parms):
     method_name = view_name + '_view'
     if hasattr(vobject, method_name):
         return eval('vobject.%s_view(parms=r"%s")' % (view_name, parms))
-    else:
+    elif hasattr(vobject.rentry.descendant, method_name):
         return eval('vobject.rentry.descendant.%s_view(parms=r"%s")'
                                                         %(view_name, parms))
+    raise Http404
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
