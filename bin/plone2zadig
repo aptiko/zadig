@@ -484,39 +484,33 @@ class PloneFolder(PlonePage):
         # The 'base url' is the folder url ending in '/folder_contents'.
         baseurl = self.url
         if not baseurl.endswith('/'): baseurl += '/'
-        baseurl += 'folder_contents'
+        baseurl += 'folder_contents?show_all=true'
         # Find all possible urls to examine;
-        # .../folder_contents?set_language=en and so on, depending on available
-        # languages, and put them in urls_to_examine
+        # .../folder_contents?show_all=true&set_language=en and so on,
+        # depending on available languages, and put them in urls_to_examine
         langs = self.__get_language_list()
         urls_to_examine = []
         if not langs:
             urls_to_examine.append(baseurl)
         else:
             for lang in langs:
-                urls_to_examine.append('%s?set_language=%s' % (baseurl, lang))
+                urls_to_examine.append('%s&set_language=%s' % (baseurl, lang))
         # Now actually examine each of these urls
         result = []
         for contents_url in urls_to_examine:
-            url = contents_url
-            while True:
-                soup = BeautifulSoup(get_response(url).read())
-                listing_table = soup.find('table', id='listing-table')
-                if listing_table:
-                    tr_elements = listing_table.tbody('tr')
-                    for tr in tr_elements:
-                        subobject_url = tr.a['href']
-                        if subobject_url.endswith('/folder_contents'):
-                            subobject_url = subobject_url[:-16]
-                        if urljoin(PLONE_URL, subobject_url) in PLONE_EXCLUDE: 
-                            logging.debug("Excluding "+subobject_url)
-                            continue
-                        if not subobject_url in result:
-                            result.append(subobject_url)
-                # Does the page have a "Next N items" link?
-                span = soup.find('span', 'next')
-                if not span: break # No, it doesn't; we're finished
-                url=span.a['href'] # Otherwise, follow the link and continue
+            soup = BeautifulSoup(get_response(contents_url).read())
+            listing_table = soup.find('table', id='listing-table')
+            if listing_table:
+                tr_elements = listing_table.tbody('tr')
+                for tr in tr_elements:
+                    subobject_url = tr.a['href']
+                    if subobject_url.endswith('/folder_contents'):
+                        subobject_url = subobject_url[:-16]
+                    if urljoin(PLONE_URL, subobject_url) in PLONE_EXCLUDE: 
+                        logging.debug("Excluding "+subobject_url)
+                        continue
+                    if not subobject_url in result:
+                        result.append(subobject_url)
         logging.debug("Folder contents: " + str(result),)
         return result
 
