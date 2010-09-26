@@ -445,12 +445,15 @@ class Entry(models.Model):
             nmetatags.save()
 
     def set_altlang(self, altlang):
+        mg = self.multilingual_group
         if not altlang:
             self.multilingual_group = None
+            _check_multilingual_group(mg.id)
             return
         try:
             e = Entry.objects.get_by_path(self.request, altlang)
         except Http404:
+            _check_multilingual_group(mg.id)
             return
         if not self.vobject.language:
             raise IntegrityError(_(
