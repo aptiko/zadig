@@ -124,12 +124,8 @@ class MultilingualGroup(models.Model):
 
     def check(self):
         entries = list(self.entry_set.all())
-        if len(entries)==1:
-            raise IntegrityError(_(u"The MultilingualGroup (id=%d) contains "
-                "only one Entry (id=%d)") % (self.id, entries[0].id))
-        if not len(entries):
-            raise IntegrityError(_(u"The MultilingualGroup (id=%d) does not "
-                "contain any Entry") % (self.id,))
+        if len(entries)<2:
+            self.delete()
         languages_in_group = set()
         for entry in entries:
             latest_vobject = entry.vobject_set.order_by('-version_number')[0]
@@ -151,10 +147,6 @@ class MultilingualGroup(models.Model):
             e.multilingual_group = None
             e.save()
         return super(MultilingualGroup, self).delete(*args, **kwargs)
-
-    def delete_if_useless(self):
-        if self.entry_set.count() < 2:
-            self.delete()
 
     def __unicode__(self):
         return unicode(self.id)
@@ -267,7 +259,7 @@ class Entry(models.Model):
             raise PermissionDenied(_(u"The root object cannot be deleted"))
         mg = self.multilingual_group
         result = super(Entry, self).delete(*args, **kwargs)
-        if mg: mg.delete_if_useless()
+        _check_multilingual_group(self.request, mg.id)
         container.__renumber_subentries()
         return result
 
