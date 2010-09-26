@@ -240,6 +240,11 @@ class PloneObject(object):
         self.entry.state = models.State.objects.get(descr=self.state)
         self.entry.save()
 
+        # Save options
+        from zadig.applets.standard.models import EntryOptions
+        options = EntryOptions(entry=self.entry, no_navigation=self.no_nav)
+        options.save()
+
         # Determine the max existing version number
         self.max_existing_version_number = 0
         if self.entry.vobject_set.count():
@@ -335,10 +340,6 @@ class PlonePage(PloneObject):
             short_title=unicode(self.short_title),
             description=unicode(self.description))
         nmetatags.save()
-        # FIXME: Should be in superclass, other types also have no_nav
-        from zadig.applets.standard.models import EntryOptions
-        options = EntryOptions(entry=self.entry, no_navigation=self.no_nav)
-        options.save()
         self.post_migrate(request, path, models.PageEntry)
 
 
