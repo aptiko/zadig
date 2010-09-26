@@ -564,12 +564,21 @@ from django.contrib.auth.models import User
 request = HttpRequest()
 request.user = User.objects.get(username=OWNER)
 
-plone_object = PloneObject(PLONE_URL)
-path = TARGET_PATH
+# Increase recursion limit - needed because of deepcopy
+sys.setrecursionlimit(1500)
+
 try:
-    entry = models.Entry.objects.get_by_path(request, path)
-    if ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
-        entry.delete()
-except Http404:
-    pass
-plone_object.migrate(request, path)
+    plone_object = PloneObject(PLONE_URL)
+    path = TARGET_PATH
+    try:
+        entry = models.Entry.objects.get_by_path(request, path)
+        if ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
+            entry.delete()
+    except Http404:
+        pass
+    plone_object.migrate(request, path)
+except:
+    # Limit traceback to a few entries (otherwise deepcopy's
+    # recursion makes it too long)
+    from traceback import print_exc
+    print_exc(10)
