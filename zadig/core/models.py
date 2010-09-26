@@ -942,6 +942,7 @@ class EditPageForm(forms.Form):
         mce_attrs={
             'content_css': settings.ZADIG_MEDIA_URL + '/style.css',
             'convert_urls': False,
+            'entity_encoding': 'raw',
             'theme': 'advanced',
             'plugins': 'table, inlinepopups,autosave',
             'theme_advanced_blockformats': 'p,h1,h2',
