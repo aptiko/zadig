@@ -470,7 +470,7 @@ class PloneFolder(PlonePage):
         return result
 
     def __get_folder_contents(self):
-        """Return the set of urls of the objects contained in the folder by
+        """Return the list of urls of the objects contained in the folder by
         looking in its contents view in all available languages."""
         # The 'base url' is the folder url ending in '/folder_contents'.
         baseurl = self.url
@@ -487,7 +487,7 @@ class PloneFolder(PlonePage):
             for lang in langs:
                 urls_to_examine.append('%s?set_language=%s' % (baseurl, lang))
         # Now actually examine each of these urls
-        result = set()
+        result = []
         for contents_url in urls_to_examine:
             url = contents_url
             while True:
@@ -502,7 +502,8 @@ class PloneFolder(PlonePage):
                         if urljoin(PLONE_URL, subobject_url) in PLONE_EXCLUDE: 
                             logging.debug("Excluding "+subobject_url)
                             continue
-                        result.add(subobject_url)
+                        if not subobject_url in result:
+                            result.append(subobject_url)
                 # Does the page have a "Next N items" link?
                 span = soup.find('span', 'next')
                 if not span: break # No, it doesn't; we're finished
