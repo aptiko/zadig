@@ -277,16 +277,23 @@ class PlonePage(PloneObject):
 
     def __init__(self, url, soup=None, editsoup=None):
         PloneObject.__init__(self, url, soup=soup, editsoup=editsoup)
+        # We create a copy of self.soup that we will modify later when we clean
+        # it up (we want to retain the original self.soup; if we're a
+        # PloneFolder we'll need it as it is when we search for its
+        # subfolders).
+        from copy import deepcopy
+        self.changeablesoup = deepcopy(self.soup)
         # Plone sometimes contains an identical div inside the div, therefore
         # rather than searching for an assumed single div with a given id,
         # we pick the innermost.
-        divs = self.soup.findAll('div', id='parent-fieldname-text')
+        divs = self.changeablesoup.findAll('div', id='parent-fieldname-text')
         text = divs[-1] if divs else None
         self.content = text
 
     def fix_content(self, request, path):
         """Make several appropriate changes to the HTML read from Plone. On
-        entry self.content is practically a soup; on exit it's a string."""
+        entry self.content is a Tag containing the main body of the page
+        content; on exit it's a string."""
 
         # Empty if empty
         if not self.content:
@@ -297,11 +304,11 @@ class PlonePage(PloneObject):
         # h9 should not exist, but if they do they are converted to h2 - they
         # may break but at least they won't get lost.
         for h2 in self.content.findAll('h2'):
-            h1 = Tag(self.content, "h1")
+            h1 = Tag(self.changeablesoup, "h1")
             h1.insert(0, h2.renderContents())
             h2.replaceWith(h1)
         for h3 in self.content.findAll(re.compile('^h[3456789]$')):
-            h2 = Tag(self.content, "h2")
+            h2 = Tag(self.changeablesoup, "h2")
             h2.insert(0, h3.renderContents())
             h3.replaceWith(h2)
 
