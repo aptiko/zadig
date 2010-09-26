@@ -448,7 +448,7 @@ class Entry(models.Model):
         mg = self.multilingual_group
         if not altlang:
             self.multilingual_group = None
-            _check_multilingual_group(mg.id)
+            if mg: _check_multilingual_group(mg.id)
             return
         try:
             e = Entry.objects.get_by_path(self.request, altlang)
