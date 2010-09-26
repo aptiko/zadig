@@ -34,6 +34,10 @@ class Language(models.Model):
     def __unicode__(self):
         return self.id
 
+    @classmethod
+    def get_default(cls):
+        return cls.objects.get(id=settings.ZADIG_LANGUAGES[0][0])
+
     class Meta:
         db_table = 'zadig_language'
 
@@ -552,7 +556,7 @@ class Entry(models.Model):
         nvobject.save()
         nmetatags = VObjectMetatags(
             vobject=nvobject,
-            language=nvobject.language,
+            language=Language.get_default(),
             title=_("Redirection"))
         nmetatags.save()
 
@@ -587,7 +591,7 @@ class Entry(models.Model):
         nvobject.save()
         nmetatags = VObjectMetatags(
             vobject=nvobject,
-            language=nvobject.language,
+            language=Language.get_default(),
             title=_("Redirection"))
         nmetatags.save()
 
