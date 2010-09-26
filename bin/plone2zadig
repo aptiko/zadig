@@ -297,16 +297,16 @@ class PlonePage(PloneObject):
         # h9 should not exist, but if they do they are converted to h2 - they
         # may break but at least they won't get lost.
         for h2 in self.content.findAll('h2'):
-            h1 = Tag(self.soup, "h1")
+            h1 = Tag(self.content, "h1")
             h1.insert(0, h2.renderContents())
             h2.replaceWith(h1)
         for h3 in self.content.findAll(re.compile('^h[3456789]$')):
-            h2 = Tag(self.soup, "h2")
+            h2 = Tag(self.content, "h2")
             h2.insert(0, h3.renderContents())
             h3.replaceWith(h2)
 
         # Fix internal references
-        b = self.soup.find('base')
+        b = self.content.find('base')
         base = urlparse(b['href'])[2] if b else path
         if not base.endswith('/'):
             base = '/'.join(split_path(base)[:-1])
@@ -315,13 +315,13 @@ class PlonePage(PloneObject):
                 self.__fix_tag_ref(tag, attr, base)
 
         # Modify some classes of images: image-right becomes floatRight etc.
-        for tag in self.soup.findAll('img', { 'class': 'image-right' }):
+        for tag in self.content.findAll('img', { 'class': 'image-right' }):
             tag['class'] = 'floatRight'
-        for tag in self.soup.findAll('img', { 'class': 'image-left' }):
+        for tag in self.content.findAll('img', { 'class': 'image-left' }):
             tag['class'] = 'floatLeft'
 
         # Remove any <div>s, but leaving their contents intact
-        for div in  self.soup.findAll('div'):
+        for div in  self.content.findAll('div'):
             div.replaceWith(''.join([str(x) for x in div.contents]))
         
         self.content = u''.join([unicode(x) for x in self.content.contents])
