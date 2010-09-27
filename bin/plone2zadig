@@ -212,7 +212,7 @@ class PloneObject(object):
         # Find language and other settings of object by checking the contents of
         # its various views.
         nonav = self.editsoup.find('input', id='excludeFromNav')
-        self.no_nav = nonav and nonav.has_key('checked')
+        self.no_nav = nonav is not None and nonav.has_key('checked')
         self.language = models.Language.objects.get(id=DEFAULT_LANGUAGE)
         selectlang = self.editsoup.find('select', attrs={'id': 'language'})
         if selectlang:
