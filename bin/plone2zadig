@@ -339,7 +339,8 @@ class PlonePage(PloneObject):
             version_number=self.max_existing_version_number+1,
             language=self.language,
             format = models.ContentFormat.objects.get(descr='html'),
-            date = self.modification_time, content = sanitize_html(self.content))
+            date = self.modification_time,
+            content = sanitize_html(self.content))
         nvobject.request = request
         nvobject.save()
         nmetatags = models.VObjectMetatags(vobject=nvobject,
