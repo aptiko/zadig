@@ -52,7 +52,7 @@ def new_entry(request, parent_path, entry_type):
 
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, path)
-    entry = vobject.entry
+    entry = vobject.rentry
     new_state_id = int(new_state_id)
     if new_state_id not in [x.target_state.id
                             for x in entry.state.source_rules.all()]:
