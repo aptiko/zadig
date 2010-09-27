@@ -259,7 +259,7 @@ class Entry(models.Model):
             raise PermissionDenied(_(u"The root object cannot be deleted"))
         mg = self.multilingual_group
         result = super(Entry, self).delete(*args, **kwargs)
-        _check_multilingual_group(self.request, mg.id)
+        if mg: _check_multilingual_group(self.request, mg.id)
         container.__renumber_subentries()
         return result
 
