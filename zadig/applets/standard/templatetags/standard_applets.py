@@ -272,7 +272,7 @@ class SecondaryButtonsNode(template.Node):
         items_of_add_new = []
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
-              'items': [ { 'href': '%s__state__/%d' %
+              'items': [ { 'href': '%s__state__/%d/' %
                                                     (spath, x.target_state.id,),
                            'name': x.target_state.descr,
                          } for x in vobject.entry.state.source_rules.all()
