@@ -421,7 +421,8 @@ class Entry(models.Model):
         initial = []
         if new:
             vobject = self.rcontainer.vobject.descendant
-            initial.append({ 'language': vobject.language.id })
+            lang = vobject.language or Language.get_default()
+            initial.append({ 'language': lang.id })
         else:
             vobject = self.vobject.descendant
             used_langs = []
