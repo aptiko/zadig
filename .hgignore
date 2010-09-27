@@ -8,4 +8,8 @@ syntax: glob
 *.orig
 docs/_build
 static/tinymce
-testdb
+storage/
+testdb*
+settings.py
+templates/base.html
+plone2zadig.conf
