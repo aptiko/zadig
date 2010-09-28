@@ -626,21 +626,29 @@ class Entry(models.Model):
         return render_to_response('entry_history.html', { 'vobject': vobject },
                 context_instance = RequestContext(self.request))
 
+    def __change_owner(self, new_owner, recursive):
+
+        if self.request.user != self.owner and \
+                                        not self.request.user.is_superuser:
+            raise PermissionDenied(_(u"Permission denied"))
+        if new_owner != self.owner:
+            self.owner = new_owner
+            self.save()
+        if recursive:
+            for e in self.subentries:
+                e.__change_owner(new_owner, recursive)
+
     def permissions_view(self, parms=None):
         vobject = self.vobject
         if self.request.method != 'POST':
             permissions_form = EntryPermissionsForm({ 'owner': self.owner })
         else:
             permissions_form = EntryPermissionsForm(self.request.POST)
-            if self.request.user != self.owner and \
-                                        not self.request.user.is_superuser:
-                raise PermissionDenied(_(u"Permission denied"))
             if permissions_form.is_valid():
                 new_owner = User.objects.get(username=
                                 permissions_form.cleaned_data['owner'])
-                if new_owner != self.owner:
-                    self.owner = new_owner
-                    self.save()
+                recursive = permissions_form.cleaned_data['recursive']
+                self.__change_owner(new_owner, recursive)
         return render_to_response('entry_permissions.html',
                 { 'vobject': vobject,'permissions_form': permissions_form },
                 context_instance = RequestContext(self.request))
@@ -813,6 +821,7 @@ class EditEntryForm(forms.Form):
 
 class EntryPermissionsForm(forms.Form):
     owner = forms.CharField(required=True, max_length=50)
+    recursive = forms.BooleanField(required=False)
     def clean(self):
         c = self.cleaned_data
         c['owner'] = c['owner'].strip()
