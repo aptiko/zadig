@@ -23,18 +23,19 @@ whenever you run into problems.
 Install prerequisites
 ---------------------
 
-Install Django, TinyMCE, django-tinymce, south, and BeautifulSoup, and
-symlink the tinymce www directory (the one containing the tiny_mce.js
-file) to static/tinymce.
+Install Django, TinyMCE, django-tinymce, south, BeautifulSoup, and the
+Python Imaging Library, and symlink the tinymce www directory (the one
+containing the tiny_mce.js file) to static/tinymce.
 
 How to install prerequisites in Debian 6/Ubuntu 10.04::
 
-   aptitude install python-django-tinymce python-beautifulsoup
-   aptitude install python-django-south
+   aptitude install python-django-tinymce python-beautifulsoup \
+                                python-imaging python-django-south
      
 In Debian 5::
 
-   aptitude install python-django tinymce python-beautifulsoup
+   aptitude install python-django tinymce python-beautifulsoup \
+                                                    python-imaging
    easy_install django-tinymce
    easy_install South
 
@@ -44,8 +45,14 @@ Configure
 Make a copy of the file `settings-template.py` and name it
 `settings.py`. Then edit it as needed.
 
-Also make a copy of the file `templates/base-default.html`, naming it
-`templates/base.html`.
+Also create a `templates/base.html` file that contains the following::
+
+   {% extends "base-default.html" %}    
+
+Finally, create a `static/style.css` file that contains the
+following::
+
+   @import "style-default.css"
 
 Prepare database
 ----------------
