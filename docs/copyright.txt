@@ -5,6 +5,7 @@ The copyright applies to all Zadig files, except those where
 something else is mentioned.
 
 Copyright (C) 2009-2010 Antonis Christofides
+Copyright (C) 2010 National Technical University of Athens
 
 Permission is granted to redistribute and/or modify Zadig under
 the terms of the GNU Affero General Public License (AGPL) as published
@@ -19,33 +20,3 @@ Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public
 License along with this program. If not, see
 http://www.gnu.org/licenses/.
-
-Additional permission under the GNU AGPL version 3 section 7:
-
-If you are a core Django developer or a core Python developer, you are
-granted permission to include any portion of Zadig in Django and/or
-Python and distribute it under the same terms as Django and/or Python
-itself, provided that these terms qualify as free software according
-to the `Debian Free Software Guidelines`_.  "Core Django developer"
-and "core Python developer" in this context means any person who has
-the power to decide what code can be included in Django and Python
-respectively; this, for example, may include a person who has been
-granted write access to the Django or Python repository.  Obviously,
-after Zadig code is released as part of Django or Python, the Django
-or Python license is also irrevocably added as an option for that
-code, even if the code is subsequently removed from Django/Python. The
-intent of this provision is solely to enable the inclusion of Zadig
-code in Django and Python, and it is explicitly forbidden to make such
-inclusion with the intent of circumventing the normal license (i.e.
-AGPL 3) of Zadig.  For example, you may not upload Zadig code to the
-Django repository and then remove it, solely in order to circumvent
-the restrictions in Zadig's normal licensing; you may include Zadig
-code in Django/Python for the sole purpose of improving Django/Python.
-
-If you are not a core Django/Python developer, then the above
-additional permission does not apply to you, and you need to fully
-comply with the AGPL. You may, however, pass on the additional
-permission when you convey the program, or you may delete it according
-to the AGPL section 7.
-
-.. _Debian Free Software Guidelines: http://www.debian.org/social_contract
