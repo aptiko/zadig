@@ -960,7 +960,7 @@ class EditPageForm(forms.Form):
             'table_styles': settings.ZADIG_TINYMCE_TABLE_STYLES,
             'theme_advanced_toolbar_location': 'top',
             'theme_advanced_toolbar_align': 'left',
-            'theme_advanced_buttons1': 'bold,italic,sup,sub,justifyleft,justifycenter,justifyright,numlist,bullist,outdent,indent,removeformat,image,link,unlink,anchor,code,formatselect,styleselect',
+            'theme_advanced_buttons1': 'bold,italic,sup,sub,|,numlist,bullist,outdent,indent,|,image,link,unlink,|,removeformat,code,formatselect,styleselect',
             'theme_advanced_buttons2': 'tablecontrols',
             'theme_advanced_buttons3': '',
             'popup_css': settings.ZADIG_MEDIA_URL + '/tinymce_popup.css',
