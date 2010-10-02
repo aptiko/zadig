@@ -1,1 +1,55 @@
 Read docs/administrators_guide.txt for installation instructions.
+
+The remainder of this file contains the Requirements document that I
+wrote long ago (probably 2008 or early 2009); its place is not the
+README file, but I don't have any better place to put it.
+
+Requirements and principles for Zadig
+=====================================
+
+These are the requirements for Version 1.0 of Zadig:
+
+* Must provide most of Plone's default objects; namely folders, pages,
+  images, files, news, and events. These objects must have all the
+  attributes that Plone gives them, in order to ease migration from
+  Plone without loss of data.
+
+* Must provide Plone's four basic portlets, namely navigation, news,
+  upcoming events, and calendar.
+
+* Must provide Plone's permissions and workflow model.
+
+* Must be truly multilingual from the ground up. LinguaPlone-like
+  functionality must be present out of the box without the need to
+  install any further plugins.
+
+* Must have Plone migration functionality out of the box.
+
+* Must be at least 5 times better than Plone in terms of memory
+  consumption, response times, and startup time.
+
+* PostgreSQL shall be well-supported. Although other RDBMS's may be
+  supported through Django's ORM, there will be no warranty and no
+  database upgrade script between versions, unless Django gets to
+  provide that functionality. [Update 2010-10-02: Upgrading databases
+  is easy with South; therefore supporting RDBMS's besides PostgreSQL
+  should not be a big deal.]
+
+* No duplication of functionality from Django. User authentication,
+  session management, etc., all done at the Django level. Wherever
+  Django's functionality is insufficient, improvements will preferably
+  be contributed to Django rather than to Zadig.
+
+* Great documentation, faithful to the tradition of Python and Django.
+
+* End product, not a platform. Other applications shall be written on
+  Django, not on Zadig. But this does not mean that Zadig's APIs won't
+  be perfectly documented, or that some good practices for
+  customizations will not be provided. [Update 2010-10-02: This is
+  also no big deal.  It means what you mean by "application". If you
+  write a Django application as a Zadig object, so that it integrates
+  with the rest of your site, it could work nicely]
+
+* Configuration through either a file or a well-documented API.
+  Configuration through the web, if present, will only be an
+  additional, secondary accessory.
