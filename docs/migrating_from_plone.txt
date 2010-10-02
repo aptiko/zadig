@@ -1,0 +1,201 @@
+.. _api:
+
+====================
+Migrating from Plone
+====================
+
+Important things to have in mind
+================================
+
+The migration script works by reading Plone's web site; it does not
+read the Zope database. I don't expect this change; people comfortable
+with the Plone/Zope API will probably not be interested in becoming
+Zadig developers, whereas Zadig developers are unlikely to learn the
+Plone/Zope API.
+
+The fact that the migration script reads Plone's web site has several
+side-effects:
+
+* Migration is slow.
+
+* Parsing of the Plone pages could be unreliable and may depend on the
+  skin Plone is using. For example, the main content of a page is
+  assumed to be the content of a div with id='parent-fieldname-text',
+  but this might not always be the case. (My Plone sites were using
+  the classic skin.)
+
+* Much of the information the migration script needs to dig out is in
+  the Plone's "Edit" page. Therefore, the script (which must log on to
+  Plone as an administrator) visits the Edit page; if the page is
+  locked, it unlocks it; and since clicking the "Cancel" button
+  afterwards is not trivial for the script and was not very important
+  for my sites, the script currently leaves all pages locked. Since
+  migration may take you days or weeks of tests, your users may be
+  viewing locked pages all the time, and, worse, their locks may be
+  unlocked. A workaround, besides making a copy of the entire Plone
+  site, is to do tests at a small subdirectory each time; or, maybe
+  better, modify the migration script to skip locked pages, and to
+  unlock those it locked after it's done.
+
+Another problem is that the migration is a one-off thing; once you do
+it, you don't care much about it again. I've migrated two of my sites,
+there are two remaining (and they are easier), and once I'm done, I
+don't think I will ever care about the migration script again; the
+same applies more or less to everyone, which means that the migration
+script will be poorly maintained. In addition, when I wrote the
+migration code, I did do careful work, but I did not put into it the
+care that I put in Zadig core (which I don't know how many times I've
+rewritten and reorganized).
+
+That said, I did migrate my sites with the migration script, and it
+worked wonderfully. Consider it, therefore, a good start, which you
+can use further develop until it does what you want. Further below I
+document its internals in order to make it easier for you. Please
+consider submitting your patches.
+
+Using the migration script
+==========================
+
+The migration script is in ``bin/plone2zadig``. It converts a Plone
+site to a Zadig site. It does so by visiting the Plone site on the
+web. The script must log on the Plone site as a user who has edit
+permissions on all pages (the administrator for example). Use it like
+this::
+
+   bin/plone2zadig config_file
+
+The *config_file* a collection of lines of the form ``OPTION=value``.
+It is actually a Python program that defines several variables. The
+options are:
+
+The options are:
+
+.. data::  PLONE_URL
+
+   The topmost Plone url to start converting. That page and all its
+   subpages (except those marked for exclusion) will be read and
+   converted.
+
+.. data:: PLONE_EXCLUDE
+
+   The URIs of this tuple will be excluded from conversion. The URIs
+   can be full URLs or relative paths whose base is :data:`PLONE_URL`.
+
+.. data:: PLONE_AUTH
+
+   The value the Plone ``__ac`` cookie should have. It must be a user
+   capable of editing all the objects from :data:`PLONE_URL`
+   downwards.
+
+.. data:: TARGET_PATH
+
+    Will migrate :data:`PLONE_URL` to this Zadig path, and subobjects
+    to subpaths.
+
+.. data:: REMOVE_TARGET
+
+    Specifies what happens if :data:`TARGET_PATH` already exists. If
+    True, the TARGET_PATH and its subentries are deleted before
+    migration; if False (the default), its content is overwritten, as
+    is the content of any already existing subentry. When such
+    overwriting occurs, the existing object and the overwriting object
+    must be of the same type, or an exception is raised.
+
+.. data:: OWNER
+
+    The objects created in Zadig will belong to this user.
+
+.. data:: DEFAULT_LANGUAGE
+
+    When a Plone page is "language neutral", it will be considered
+    to be in this language.
+
+.. data:: LOG_LEVEL
+
+    The logging level; one of DEBUG, INFO, WARNING, ERROR, and
+    CRITICAL.  Default is WARNING. Don't use CRITICAL, it will miss
+    the errors.
+
+All the above except :data:`LOG_LEVEL` and :data:`PLONE_EXCLUDE` are
+compulsory.
+
+Migration script internal API
+=============================
+
+In case you haven't noticed, the migration script is quite small---530
+lines at the time of this writing. This is because practically all the
+work is done by the Zadig core API and BeautifulSoup_. You need to be
+comfortable with both.
+
+The most important item in the migration script is the
+:class:`PloneObject` class, which represents, unsurprisingly, a Plone
+object.
+
+.. class:: PloneObject(url, soup=None)
+
+   :class:`PloneObject` is always subclassed, as a
+   :class:`PloneFolder`, a :class:`PlonePage`, and so on. However, in
+   order to create a :class:`PloneObject` instance, you merely supply
+   the object's URL, without needing to know what kind of object it
+   is; the constructor will retrieve the data from the URL, find out
+   what kind of object it is, and return an instance not of
+   :class:`PloneObject`, but of the appropriate subclass. It will visit and
+   parse both the URL and the equivalent "edit" page. It will
+   unconditionally unlock the page if it is locked, and when it's
+   finished it will leave it locked (this is a bug).
+
+   The *soup* argument must not be supplied, or it must be
+   :const:`None`. It is used internally, because the constructor reads
+   the URL, decides what type of object it is, and calls the
+   constructor of its appropriate subclass (I think my code has a bug
+   there: it does not seem to pass the *soup* to the constructor of
+   the subclass, which means the URL must be re-read. Probably trivial
+   to fix, but I'm not touching it in case I break the script.)
+
+   :class:`PloneObject` instances have the following attributes:
+
+   .. attribute:: PloneObject.soup
+
+      The :class:`BeautifulSoup` object that represents the parsed HTML
+      retrieved from the URL.
+
+   .. attribute:: PloneObject.editsoup
+
+      The :class:`BeautifulSoup` object that represents the parsed HTML
+      of the Plone's "edit" view for the object.
+
+   .. attribute:: PloneObject.title
+
+   .. attribute:: PloneObject.short_title
+
+   .. attribute:: PloneObject.description
+
+      These three attributes store the title and description of the
+      Plone object. The :attr:`~PloneObject.short_title` is always
+      empty, as Plone does not have this feature; however, sometimes
+      it is set by subclasses; in particular, when we have a Plone
+      folder with a default view, we consider the default view's title
+      to be the title and the folder's title to be the short title.
+
+   .. attribute:: PloneObject.state
+
+      The state of the Plone object as a string, such as "Private" or
+      "Published".
+      
+   :class:`PloneObject` instances of subclasses have the following
+   method:
+
+   .. method:: PloneObject.migrate(request, path)
+
+      This method does the migration. First it calls the same method
+      of the superclass (which essentially creates and saves the
+      entry), then it creates and saves the vobject, and the metatags,
+      and finally it calls the :meth:`~PloneObject.post_migrate` method
+      of the superclass, which does some common endwork (sets
+      alternative language).
+
+Now all the above is only the basic idea. It's not perfectly
+documented, and the code is a bit messy, but the above should be
+more than enough to get you find your way in the code.
+
+.. _BeautifulSoup: http://www.crummy.com/software/BeautifulSoup/
