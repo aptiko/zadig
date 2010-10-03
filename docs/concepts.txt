@@ -4,6 +4,9 @@
 Zadig concepts
 ==============
 
+.. index::
+   single: folders
+
 Object containment
 ==================
 
@@ -30,11 +33,12 @@ when no page has been set as the folder's default view).
     user needs to decide a priori whether the page he is about to create
     will contain subpages or whether it is likely to remain a single page.
 
-    On the other hand, other CMS's, like MoinMoin, have pages and
-    subpages, and each page can have attachments. This is also
-    unintuitive, because, for example, an image does not always belong to
-    a "page"; it rather belongs to a folder. ``/myfolder/myimage`` is much
-    better and intuitive than ``/mypage?attachment=myimage``.
+    On the other hand, other web management systems, like MoinMoin,
+    have pages and subpages, and each page can have attachments. This
+    is also unintuitive, because, for example, an image does not
+    always belong to a "page"; it rather belongs to a folder.
+    ``/myfolder/myimage`` is much better and intuitive than
+    ``/mypage?attachment=myimage``.
 
     Also note that, in Moin, ``/mypage/mysubpage`` is a completely
     different and unrelated page to ``/mypage``: it's just a name that
@@ -44,6 +48,11 @@ when no page has been set as the folder's default view).
     Zadig makes property inheritance (e.g. permissions and skins) much
     simpler and foolproof: any object simply inherits the properties
     of its container objects.
+
+.. index::
+   single: entry
+   single: vobject
+   single: object
 
 Entries and vobjects
 ====================
@@ -61,6 +70,14 @@ entry.  An entry can be a page entry, an image entry, etc., and a
 vobject can be a vpage, a vimage, etc.  Developers should be very
 clear about that. The end users should not be bothered, and the word
 **object** should be used for everything.
+
+.. index::
+   single: metatag
+   single: title
+   single: title pair
+   single: title; short
+   single: title; long
+   single: description
 
 Metatags
 ========
@@ -111,6 +128,12 @@ In this section we have been talking of "objects". To be precise,
 each *entry* has a name, and each *vobject* has a set of metatags
 (i.e. a set of title pairs and a set of descriptions).
 
+.. index::
+   single: language
+   single: language; preferred
+   single: language; effective
+   single: multilingual group
+
 Languages
 =========
 
@@ -139,6 +162,11 @@ language; but if an object exists in a language which is not the
 preferred language and does not have an equivalent in the preferred
 language, the navigation shows it anyway.
 
+.. index::
+   single: remove entry
+   single: mark object as deleted
+   single: delete object
+   
 Deletions
 =========
 
@@ -155,6 +183,19 @@ entry, including the history, is permanently and irrevocably deleted.
 .. admonition:: Not implemented yet
 
    Marking as deleted is not yet implemented in the user interface.
+
+.. index::
+   single: view
+   single: end view
+   single: view; end
+   single: info view
+   single: view; info
+   single: edit view
+   single: view; edit
+   single: contents view
+   single: view; contents
+   single: history view
+   single: view; history
 
 Views
 =====
@@ -181,6 +222,17 @@ whereas http://localhost/myobject/__view__/ provides the info view.
 We also call the rest of the operations *views*. Specifically, there
 are the **edit view**, the **contents view**, and the **history
 view**.
+
+.. index::
+   single: user
+   single: anonymous user
+   single: user; anonymous
+   single: group
+   single: permissions
+   single: owner
+   single: state
+   single: workflow
+   single: state-transition rule
 
 Permissions and workflows
 =========================
@@ -248,6 +300,12 @@ and delete.
    interface. The user interface for directly assigning permissions to users
    has not been developed yet.
 
+.. index::
+   single: applet
+   single: portlet
+   single: breadcrumbs
+   single: navigation
+
 Applets and portlets
 ====================
 
@@ -262,15 +320,15 @@ custom template tag.
 
 Zadig is designed so that very little functionality is in the
 core; the rest is in applets. Like all Django applications, applets
-are installed by adding them to ``INSTALLED_APPS`` in the
-``settings.py`` file. Details on the applet installation procedure are
-presented further below.
+are installed by adding them to :data:`INSTALLED_APPS` in the
+:file:`settings.py` file. Details on the applet installation procedure
+are presented further below.
 
 .. admonition:: Note
 
     For good code structure, a Django application can contain many
-    applets: for example, ``zadig/applets/standard`` contains all the
-    standard applets.
+    applets: for example, :file:`zadig/applets/standard` contains all
+    the standard applets.
 
 A **portlet** is a special kind of applet. There are two things that
 are special about portlets: the first one is that they have a certain
