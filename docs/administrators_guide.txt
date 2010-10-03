@@ -49,21 +49,23 @@ Installing a development/testing instance
 You need to:
 
 1. Download Zadig from http://bitbucket.org/aptiko/zadig (but don't
-   name the directory ``zadig``; name it ``Zadig`` instead, otherwise
+   name the directory :file:`zadig`; name it :file:`Zadig` instead, otherwise
    Python gets confused; if your file system is case insensitive, name
-   it ``zadig-dev`` or something).
-2. Make copies of three files: ``settings-example.py``,
-   ``templates/base-example.html``, and ``static/style-example.css``; the
-   copies should be in the same location as the originals and have the
-   same name but without the ``-example`` part.
+   it :file:`zadig-dev` or something).
+2. Make copies of three files: :file:`settings-example.py`,
+   :file:`templates/base-example.html`, and :file:`static/style-example.css`;
+   the copies should be in the same location as the originals and have
+   the same name but without the ``-example`` part.
 3. Symlink the tinymce www directory (the one containing the
-   ``tiny_mce.js`` file) to ``static/tinymce``.
-4. If needed, edit your copied ``settings.py`` (although it will work
-   as it is, using SQLite to create a database called ``testdb``.
+   :file:`tiny_mce.js` file) to :file:`static/tinymce`.
+4. If needed, edit your copied :file:`settings.py` (although it will
+   work as it is, using SQLite to create a database called
+   :file:`testdb`).
 5. Create the empty database, depending on the RDBMS you are using
    (you can skip this step for SQLite).
-6. Run ``python manage.py syncdb`` and then ``python manage.py migrate``.
-7. Run ``python manage.py runserver``.
+6. Run :command:`python manage.py syncdb` and then :command:`python
+   manage.py migrate`.
+7. Run :command:`python manage.py runserver`.
 
 In Debian/Ubuntu the commands are::
 
@@ -90,11 +92,11 @@ There are the following differences from installing a
 development/testing instance:
 
 1. You should keep your configuration, custom template files, and
-   custom CSS in a separate directory, such as ``/etc/zadig``. In
+   custom CSS in a separate directory, such as :file:`/etc/zadig`. In
    addition, you should store binary files in a separate directory,
-   such as ``/var/local/lib/zadig``, rather than in the ``storage``
-   subdirectory of the Zadig distribution, as it is configured by
-   default to do.
+   such as :file:`/var/local/lib/zadig`, rather than in the
+   :file:`storage` subdirectory of the Zadig distribution, as it is
+   configured by default to do.
 2. You should precompile the Zadig distribution Python files, since
    your web server (or your Django WSGI process, or whatever it is)
    should not have permission to write the ``.pyc`` files in the Zadig
@@ -103,20 +105,21 @@ development/testing instance:
    use PostgreSQL_.
 4. You should deploy Django as described in `Deploying Django`_, and
    configure your web server to serve the static files properly, i.e.
-   the ``/__static__/`` URI should be aliased to the Zadig
-   distribution's ``static`` directory.
+   the :file:`/__static__/` URI should be aliased to the Zadig
+   distribution's :file:`static` directory.
 
 The details depend on your setup. Here is what I do: I use Debian_,
 Apache_ and mod_wsgi_; I have the Zadig distribution files in
-``/usr/local/Zadig``; the configuration files in ``/etc/zadig/sitename``,
-where *sitename* is the name of the site (I serve many sites, using
+:file:`/usr/local/Zadig`; the configuration files in
+:file:`/etc/zadig/{sitename}`, where :samp:`{sitename}` is the name of
+the site (I serve many sites, using
 many Zadig instances, from the same machine); and the binary files in 
-``/var/local/Zadig/storage-sitename``, which has two subdirectories,
-``images`` and ``files``. The directories ``/usr/local/Zadig`` and
-``/etc/zadig/`` are writeable by my user account (because I make
-frequent  updates with ``hg pull -u`` and frequent configuration
+:file:`/var/local/Zadig/storage-{sitename}`, which has two subdirectories,
+:file:`images` and :file:`files`. The directories :file:`/usr/local/Zadig` and
+:file:`/etc/zadig/` are writeable by my user account (because I make
+frequent  updates with :command:`hg pull -u` and frequent configuration
 changes); alternatively they can be owned by ``root``. I have created
-a ``django`` system user, and ``/var/local/Zadig`` (and anything it
+a ``django`` system user, and :file:`/var/local/Zadig` (and anything it
 contains) is writable by it; you may also use ``www-data``, which is
 easier; in my setup the WSGI process runs as user ``django``, because
 I have the following directive in Apache's general configuration::
@@ -140,8 +143,8 @@ Apache's virtual host configuration also contains::
     Alias /__static__/ /usr/local/Zadig/static
     WSGIScriptAlias / /etc/zadig/sitename/zadig.wsgi
 
-Now the configuration directory, ``/etc/zadig/sitename``, contains the
-following files:
+Now the configuration directory, :file:`/etc/zadig/sitename`, contains
+the following files:
 
 .. describe:: zadig.wsgi
 
@@ -158,18 +161,18 @@ following files:
 
 .. describe:: __init__.py
 
-   I have an empty ``__init__.py`` file, otherwise Python cannot read
-   ``settings.py``.
+   I have an empty :file:`__init__.py` file, otherwise Python cannot
+   read :file:`settings.py`.
 
 .. describe:: style.css
 
-   This is a copy of the distributed ``static/style-example.css``, but
-   you can use it to customize the style.
+   This is a copy of the distributed :file:`static/style-example.css`,
+   but you can use it to customize the style.
 
 .. describe:: templates
 
-   This is a directory which contains ``base.html``, a copy of the
-   distributed ``templates/base-example.html``, which can be
+   This is a directory which contains :file:`base.html`, a copy of the
+   distributed :file:`templates/base-example.html`, which can be
    customized. (Other template files can also be used here, which can
    be assigned to specific subpaths.)
 
@@ -177,7 +180,7 @@ following files:
 
    The settings that are of particular important interest in this
    setup are (don't write them together, as below;
-   ``ZADIG_PROGRAM_DIR`` must be at the top of the file)::
+   :data:`ZADIG_PROGRAM_DIR` must be at the top of the file)::
 
       ZADIG_PROGRAM_DIR = '/usr/local/Zadig'
       # --Snip--
@@ -188,8 +191,8 @@ following files:
 
    I have setup Apache so that it redirects login requests to SSL, and
    use a slightly different setup for SSL, so that it uses secure
-   session cookies; so Apache, for SSL, instead of ``zadig.wsgi``, is
-   setup to run ``zadig-ssl.wsgi``, which is the following::
+   session cookies; so Apache, for SSL, instead of :data:`zadig.wsgi`,
+   is setup to run :file:`zadig-ssl.wsgi`, which is the following::
 
       # Essentially use zadig.wsgi
       import os.path
@@ -199,7 +202,7 @@ following files:
       # except that we want to change the following setting
       os.environ['DJANGO_SETTINGS_MODULE'] = 'settings-ssl'
 
-   whereas ``settings-ssl`` is the following::
+   whereas :file:`settings-ssl` is the following::
 
       # Essentially use settings.py
       import os.path
@@ -242,6 +245,11 @@ applicable.
    images and files is stored; this is not accessible directly from
    the web (because Zadig needs to check for access permissions), and
    therefore the Django ``MEDIA_URL`` setting is not used.
+
+.. data:: ZADIG_PROGRAM_DIR
+
+   The directory where the Zadig program files are installed, such as
+   :file:`/usr/local/Zadig`.
 
 .. data:: ZADIG_WORKFLOW_ID
 
