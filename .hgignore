@@ -8,6 +8,7 @@ syntax: glob
 *.orig
 docs/_build
 static/tinymce
+static/style.css
 storage/
 testdb*
 settings.py
