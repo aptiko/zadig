@@ -76,7 +76,8 @@ def login(request, path):
     _set_languages(vobject)
     message = ''
     if request.user.is_authenticated():
-        message = _(u"You are already logged on; logout to log in again.")
+        request.message = _(
+                u"You are already logged on; logout to log in again.")
         return end_view(request, path)
     elif request.method!='POST':
         form = LoginForm()
@@ -93,7 +94,7 @@ def login(request, path):
                     return end_view(request, path)
                 else:
                     raise Exception(_(u"Account is disabled"))
-            message = _(u"Login incorrect")
+            request.message = _(u"Login incorrect.")
     return render_to_response('login.html',
           { 'vobject': vobject, 'form': form, 'message': message },
                 context_instance = RequestContext(request))

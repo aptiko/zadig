@@ -32,6 +32,7 @@ img { border: None; }
 #mainColumn p.authorAndDate { font-size: 90%; font-weight: normal; margin-bottom: 0.5em; margin-top: 0; color: #76797c; }
 #mainColumn .objectDescription { font-weight: bold; margin: 0 0 0.5em 0; line-height: 1.5em; }
 
+p.message { background-color: #FFFFE3; border: 1px solid #999966; font-size: 90%; line-height: 1.25em; margin: 0; padding: 0.5em; }
 .mainContent { padding: 1em 1em 2em 1em; font-size: 110%; }
 .mainContent.withButtons { border: solid #74ae0b 1px; }
 .mainContent p { line-height: 1.5em; margin: 0 0 0.75em; }
