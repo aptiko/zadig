@@ -75,7 +75,10 @@ def login(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
     _set_languages(vobject)
     message = ''
-    if request.method!='POST':
+    if request.user.is_authenticated():
+        message = _(u"You are already logged on; logout to log in again.")
+        return end_view(request, path)
+    elif request.method!='POST':
         form = LoginForm()
     else:
         form = LoginForm(request.POST)
