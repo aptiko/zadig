@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.translation import ugettext as _
 from zadig.core import models as coremodels
-from zadig.applets.standard import models
+from zadig.zstandard import models
 
 class EntryOptionsForm(forms.Form):
     # TODO: A problem occurs (at least in syncdb) if the labels below are

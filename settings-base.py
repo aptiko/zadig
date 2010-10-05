@@ -34,7 +34,7 @@ INSTALLED_APPS = (
     'django.contrib.markup',
     'south',
     'zadig.core',
-    'zadig.applets.standard',
+    'zadig.zstandard',
     'tinymce',
 )
 

@@ -5,7 +5,7 @@ import settings
 
 from zadig.core import models as coremodels
 from zadig.core.utils import get_current_path
-from zadig.applets.standard import models
+from zadig.zstandard import models
 
 register = template.Library()
 
