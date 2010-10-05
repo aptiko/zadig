@@ -943,7 +943,7 @@ class ContentFormat(models.Model):
         return self.descr
 
     class Meta:
-        db_table = 'zadig_contentformat'
+        db_table = 'zstandard_contentformat'
 
 
 class EditPageForm(forms.Form):
@@ -982,7 +982,7 @@ class VPage(VObject):
         return self.end_view()
 
     class Meta:
-        db_table = 'zadig_vpage'
+        db_table = 'zstandard_vpage'
 
 
 class PageEntry(Entry):
@@ -1004,7 +1004,7 @@ class PageEntry(Entry):
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
 
     class Meta:
-        db_table = 'zadig_pageentry'
+        db_table = 'zstandard_pageentry'
 
 
 user_entry_types.append(PageEntry)
@@ -1029,7 +1029,7 @@ class VFile(VObject):
                 context_instance = RequestContext(self.request))
 
     class Meta:
-        db_table = 'zadig_vfile'
+        db_table = 'zstandard_vfile'
 
 
 class EditFileForm(forms.Form):
@@ -1055,7 +1055,7 @@ class FileEntry(Entry):
         vobject.content = form.cleaned_data['content']
 
     class Meta:
-        db_table = 'zadig_fileentry'
+        db_table = 'zstandard_fileentry'
 
 
 user_entry_types.append(FileEntry)
@@ -1093,7 +1093,7 @@ class VImage(VObject):
         return response
 
     class Meta:
-        db_table = 'zadig_vimage'
+        db_table = 'zstandard_vimage'
 
 
 class EditImageForm(forms.Form):
@@ -1120,7 +1120,7 @@ class ImageEntry(Entry):
         vobject.content=form.cleaned_data['content']
 
     class Meta:
-        db_table = 'zadig_imageentry'
+        db_table = 'zstandard_imageentry'
 
 
 user_entry_types.append(ImageEntry)
@@ -1142,7 +1142,7 @@ class VLink(VObject):
                 context_instance = RequestContext(self.request))
 
     class Meta:
-        db_table = 'zadig_vlink'
+        db_table = 'zstandard_vlink'
 
 
 class EditLinkForm(forms.Form):
@@ -1169,7 +1169,7 @@ class LinkEntry(Entry):
         return result
 
     class Meta:
-        db_table = 'zadig_linkentry'
+        db_table = 'zstandard_linkentry'
 
 
 user_entry_types.append(LinkEntry)
@@ -1193,7 +1193,7 @@ class VInternalRedirection(VObject):
                 context_instance = RequestContext(self.request))
 
     class Meta:
-        db_table = 'zadig_vinternalredirection'
+        db_table = 'zstandard_vinternalredirection'
 
 
 class EditInternalRedirectionForm(forms.Form):
@@ -1225,4 +1225,4 @@ class InternalRedirectionEntry(Entry):
         return result
 
     class Meta:
-        db_table = 'zadig_internalredirectionentry'
+        db_table = 'zstandard_internalredirectionentry'

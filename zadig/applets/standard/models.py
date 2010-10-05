@@ -6,3 +6,5 @@ class EntryOptions(models.Model):
     no_navigation = models.BooleanField()
     no_breadcrumbs = models.BooleanField()
     navigation_toplevel = models.BooleanField()
+    class Meta:
+        db_table = 'zstandard_entryoptions'
