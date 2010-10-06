@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 import settings
 
 from zadig.core.models import Entry, VObject, user_entry_types
+from zadig.core import utils
 
 
 ### Page ###
