@@ -150,79 +150,6 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'VObjectMetatags', fields ['vobject', 'language']
         db.create_unique('zadig_vobjectmetatags', ['vobject_id', 'language_id'])
 
-        # Adding model 'ContentFormat'
-        db.create_table('zadig_contentformat', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('descr', self.gf('django.db.models.fields.CharField')(max_length=20)),
-        ))
-        db.send_create_signal('core', ['ContentFormat'])
-
-        # Adding model 'VPage'
-        db.create_table('zadig_vpage', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('format', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.ContentFormat'])),
-            ('content', self.gf('django.db.models.fields.TextField')(blank=True)),
-        ))
-        db.send_create_signal('core', ['VPage'])
-
-        # Adding model 'PageEntry'
-        db.create_table('zadig_pageentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('core', ['PageEntry'])
-
-        # Adding model 'VFile'
-        db.create_table('zadig_vfile', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.FileField')(max_length=100)),
-        ))
-        db.send_create_signal('core', ['VFile'])
-
-        # Adding model 'FileEntry'
-        db.create_table('zadig_fileentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('core', ['FileEntry'])
-
-        # Adding model 'VImage'
-        db.create_table('zadig_vimage', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.ImageField')(max_length=100)),
-        ))
-        db.send_create_signal('core', ['VImage'])
-
-        # Adding model 'ImageEntry'
-        db.create_table('zadig_imageentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('core', ['ImageEntry'])
-
-        # Adding model 'VLink'
-        db.create_table('zadig_vlink', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('target', self.gf('django.db.models.fields.URLField')(max_length=200)),
-        ))
-        db.send_create_signal('core', ['VLink'])
-
-        # Adding model 'LinkEntry'
-        db.create_table('zadig_linkentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('core', ['LinkEntry'])
-
-        # Adding model 'VInternalRedirection'
-        db.create_table('zadig_vinternalredirection', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('target', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Entry'])),
-        ))
-        db.send_create_signal('core', ['VInternalRedirection'])
-
-        # Adding model 'InternalRedirectionEntry'
-        db.create_table('zadig_internalredirectionentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('core', ['InternalRedirectionEntry'])
-
 
     def backwards(self, orm):
         
@@ -289,39 +216,6 @@ class Migration(SchemaMigration):
         # Deleting model 'VObjectMetatags'
         db.delete_table('zadig_vobjectmetatags')
 
-        # Deleting model 'ContentFormat'
-        db.delete_table('zadig_contentformat')
-
-        # Deleting model 'VPage'
-        db.delete_table('zadig_vpage')
-
-        # Deleting model 'PageEntry'
-        db.delete_table('zadig_pageentry')
-
-        # Deleting model 'VFile'
-        db.delete_table('zadig_vfile')
-
-        # Deleting model 'FileEntry'
-        db.delete_table('zadig_fileentry')
-
-        # Deleting model 'VImage'
-        db.delete_table('zadig_vimage')
-
-        # Deleting model 'ImageEntry'
-        db.delete_table('zadig_imageentry')
-
-        # Deleting model 'VLink'
-        db.delete_table('zadig_vlink')
-
-        # Deleting model 'LinkEntry'
-        db.delete_table('zadig_linkentry')
-
-        # Deleting model 'VInternalRedirection'
-        db.delete_table('zadig_vinternalredirection')
-
-        # Deleting model 'InternalRedirectionEntry'
-        db.delete_table('zadig_internalredirectionentry')
-
 
     models = {
         'auth.group': {
@@ -360,11 +254,6 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        'core.contentformat': {
-            'Meta': {'object_name': 'ContentFormat', 'db_table': "'zadig_contentformat'"},
-            'descr': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
         'core.entry': {
             'Meta': {'ordering': "('container__id', 'seq')", 'unique_together': "(('container', 'name'), ('container', 'seq'))", 'object_name': 'Entry', 'db_table': "'zadig_entry'"},
             'btemplate': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
@@ -384,18 +273,6 @@ class Migration(SchemaMigration):
             'lentity': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Lentity']"}),
             'permission': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Permission']"})
         },
-        'core.fileentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'FileEntry', 'db_table': "'zadig_fileentry'", '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'core.imageentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'ImageEntry', 'db_table': "'zadig_imageentry'", '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'core.internalredirectionentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'InternalRedirectionEntry', 'db_table': "'zadig_internalredirectionentry'", '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
         'core.language': {
             'Meta': {'object_name': 'Language', 'db_table': "'zadig_language'"},
             'descr': ('django.db.models.fields.CharField', [], {'max_length': '63'}),
@@ -408,17 +285,9 @@ class Migration(SchemaMigration):
             'special': ('django.db.models.fields.PositiveSmallIntegerField', [], {'null': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'})
         },
-        'core.linkentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'LinkEntry', 'db_table': "'zadig_linkentry'", '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
         'core.multilingualgroup': {
             'Meta': {'object_name': 'MultilingualGroup', 'db_table': "'zadig_multilingualgroup'"},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        'core.pageentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'PageEntry', 'db_table': "'zadig_pageentry'", '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
         },
         'core.permission': {
             'Meta': {'object_name': 'Permission', 'db_table': "'zadig_permission'"},
@@ -443,26 +312,6 @@ class Migration(SchemaMigration):
             'source_state': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'source_rules'", 'to': "orm['core.State']"}),
             'target_state': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'target_rules'", 'to': "orm['core.State']"})
         },
-        'core.vfile': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VFile', 'db_table': "'zadig_vfile'", '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'core.vimage': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VImage', 'db_table': "'zadig_vimage'", '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'core.vinternalredirection': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VInternalRedirection', 'db_table': "'zadig_vinternalredirection'", '_ormbases': ['core.VObject']},
-            'target': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Entry']"}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'core.vlink': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VLink', 'db_table': "'zadig_vlink'", '_ormbases': ['core.VObject']},
-            'target': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
         'core.vobject': {
             'Meta': {'ordering': "('entry', 'version_number')", 'unique_together': "(('entry', 'version_number'),)", 'object_name': 'VObject', 'db_table': "'zadig_vobject'"},
             'date': ('django.db.models.fields.DateTimeField', [], {}),
@@ -480,12 +329,6 @@ class Migration(SchemaMigration):
             'short_title': ('django.db.models.fields.CharField', [], {'max_length': '250', 'blank': 'True'}),
             'title': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'vobject': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'metatags_set'", 'to': "orm['core.VObject']"})
-        },
-        'core.vpage': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VPage', 'db_table': "'zadig_vpage'", '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'format': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.ContentFormat']"}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
         },
         'core.workflow': {
             'Meta': {'object_name': 'Workflow', 'db_table': "'zadig_workflow'"},
