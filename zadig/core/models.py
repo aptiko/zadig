@@ -472,7 +472,7 @@ class Entry(models.Model):
             e.save()
 
     def edit_view(self, new=False, parms=None):
-        applet_options = [o for o in zadig.core.applet_options
+        application_options = [o for o in zadig.core.application_options
                                                         if o['entry_options']]
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
@@ -483,14 +483,14 @@ class Entry(models.Model):
             metatagsformset = self.__create_metatags_formset(new)
             subform = self.create_edit_subform(new)
             optionsforms = [o['entry_options'](self)
-                                                    for o in applet_options]
+                                                for o in application_options]
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
                                                         current_entry=self)
             metatagsformset = MetatagsFormSet(self.request.POST)
             subform = self.subform_class(self.request.POST, self.request.FILES)
             optionsforms = [o['EntryOptionsForm'](self.request.POST)
-                                                    for o in applet_options]
+                                                for o in application_options]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
@@ -512,7 +512,8 @@ class Entry(models.Model):
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
-                for o,f in map(lambda x,y:(x,y), applet_options, optionsforms):
+                for o,f in map(lambda x,y:(x,y), application_options,
+                                                                 optionsforms):
                     o['entry_options'](self, f)
                 if mainform.cleaned_data['name'] != self.name:
                     self.rename(mainform.cleaned_data['name'])
