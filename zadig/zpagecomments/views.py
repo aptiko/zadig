@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.utils.translation import ugettext as _
 
 from zadig.core.models import Entry
 from zadig.zstandard.models import PageEntry
@@ -23,6 +24,9 @@ def add_comment(vobject, parms=None):
             comment=form.cleaned_data['comment'],
             state=STATE_PUBLISHED)
         comment.save()
+        vobject.request.message = _(u"Your comment has been added.")
     else:
         vobject.request.pagecommentsform = form
+        vobject.request.message = _(
+                    u"There was an error in your comment; see below.")
     return vobject.end_view()

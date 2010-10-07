@@ -63,3 +63,11 @@ class CommentForm(forms.Form):
             'theme_advanced_buttons3': '',
             'popup_css': settings.ZADIG_MEDIA_URL + '/tinymce_popup.css',
         }), required=True)
+
+    def clean_comment(self):
+        from zadig.core.utils import sanitize_html
+        result = sanitize_html( self.cleaned_data['comment'])
+        if not result:
+            raise forms.ValidationError(_(
+                        u"Don't try to be too clever with the HTML."))
+        return result
