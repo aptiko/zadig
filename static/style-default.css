@@ -36,6 +36,7 @@ p.message { background-color: #FFFFE3; border: 1px solid #999966; font-size: 90%
 .mainContent { padding: 1em 1em 2em 1em; font-size: 110%; }
 .mainContent.withButtons { border: solid #74ae0b 1px; }
 .mainContent p { line-height: 1.5em; margin: 0 0 0.75em; }
+.mainContent p.author { color: #76797C; font-size: 90%; margin-bottom: 0.5em; }
 .mainContent ol { line-height: 1.5em; margin: 0.5em 0 0 2.5em; padding: 0; }
 .mainContent ul { line-height: 1.5em; list-style-image: url("bullet.gif"); list-style-type: square; margin: 0.5em 0 0 1.5em; padding: 0; }
 .mainContent li { margin-bottom: 0.5em; }

@@ -278,9 +278,11 @@ class InternalRedirectionEntry(Entry):
 
 
 class EntryOptions(models.Model):
-    entry = models.OneToOneField(Entry, primary_key=True)
+    entry = models.OneToOneField(Entry, primary_key=True,
+                                    related_name='ZstandardEntryOptions')
     no_navigation = models.BooleanField()
     no_breadcrumbs = models.BooleanField()
     navigation_toplevel = models.BooleanField()
+    show_author = models.BooleanField()
     class Meta:
         db_table = 'zstandard_entryoptions'

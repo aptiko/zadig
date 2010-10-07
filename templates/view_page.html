@@ -4,6 +4,13 @@
 
 {% block mainContent %}
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
+  {% if vobject.entry.ZstandardEntryOptions.show_author %}
+    <p class="author">
+      {% trans "by" %} {{ vobject.entry.owner }}
+      —
+      {% trans "last modified" %} {{ vobject.date|date:"Y-m-d H:i" }}
+    </p>
+  {% endif %}
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
   {% if vobject.content %}
     {{vobject.content|safe}}

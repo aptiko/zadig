@@ -12,6 +12,8 @@ class EntryOptionsForm(forms.Form):
                                                     required=False)
     navigation_toplevel = forms.BooleanField(required=False,
                         label=u"Show this page as top level in navigation")
+    show_author = forms.BooleanField(required=False,
+                        label=u"Show author")
 
 def entry_options(entry, form=None):
     try:
@@ -22,13 +24,15 @@ def entry_options(entry, form=None):
     if not form:
         form = EntryOptionsForm({'no_breadcrumbs': entryoptions.no_breadcrumbs,
             'no_navigation': entryoptions.no_navigation,
-            'navigation_toplevel': entryoptions.navigation_toplevel})
+            'navigation_toplevel': entryoptions.navigation_toplevel,
+            'show_author': entryoptions.show_author})
         return form
     else:
         entryoptions.no_breadcrumbs = form.cleaned_data['no_breadcrumbs']
         entryoptions.no_navigation = form.cleaned_data['no_navigation']
         entryoptions.navigation_toplevel = form.cleaned_data[
                                                         'navigation_toplevel']
+        entryoptions.show_author = form.cleaned_data['show_author']
         entryoptions.save()
 
 portlets = [
