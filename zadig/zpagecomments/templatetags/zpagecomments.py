@@ -33,7 +33,8 @@ class PageCommentsNode(template.Node):
                 <p class="authorLine">%s</p>
                 <p class="date">%s</p>
                 %s
-                </div>''' % (authorline, c.date.isoformat(), body)
+                </div>''' % (authorline, c.date.strftime('%Y-%m-%d %H:%M %Z'),
+                                                                        body)
         if 'pagecommentsform' in vobject.request.__dict__:
             form = vobject.request.pagecommentsform
         else:
