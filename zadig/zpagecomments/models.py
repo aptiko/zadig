@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.utils.translation import ugettext as _
 import settings
 
 from zadig.zstandard.models import PageEntry
@@ -13,6 +14,10 @@ class CommentStateField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 20
         super(CommentStateField, self).__init__(*args, **kwargs)
+
+
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], [r"^zadig.zpagecomments.models.CommentStateField"])
 
 
 class PageComment(models.Model):
@@ -30,10 +35,12 @@ class PageComment(models.Model):
 
 class CommentForm(forms.Form):
     from tinymce.widgets import TinyMCE
-    commenter_name = forms.CharField(max_length=100, required=True)
-    commenter_email = forms.EmailField(required=True)
-    commenter_website = forms.URLField(required=False)
-    comment = forms.CharField(widget=TinyMCE(attrs={'cols':40, 'rows':10},
+    commenter_name = forms.CharField(max_length=100, required=True,
+                                label=_(u'Name'))
+    commenter_email = forms.EmailField(required=True, label=_(u'Email'))
+    commenter_website = forms.URLField(required=False, label=_(u'Website'))
+    comment = forms.CharField(label='',
+        widget=TinyMCE(attrs={'cols':40, 'rows':10},
         mce_attrs={
             'content_css': settings.ZADIG_MEDIA_URL + '/style.css',
             'convert_urls': True,
