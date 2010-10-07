@@ -19,6 +19,7 @@ class PageCommentsNode(template.Node):
         vobject = context.get('vobject', None)
         entry = vobject.rentry.descendant
         if not isinstance(entry, PageEntry): return result
+        if vobject.request.view_name not in ('view', 'info'): return result
         comments = PageComment.objects.filter(page=entry,
                 state__in=(STATE_PUBLISHED, STATE_DELETED)).order_by('id')
         for c in comments:

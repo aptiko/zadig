@@ -25,7 +25,7 @@ def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
     _set_languages(vobject)
-    vobject.request.view_name = _(u'view')
+    vobject.request.view_name = 'view'
     return vobject.end_view()
 
 def general_view(request, path, view_name, parms):
@@ -59,7 +59,7 @@ def new_entry(request, parent_path, entry_type):
     new_entry_class = eval('models.%sEntry' % (entry_type,))
     entry = new_entry_class(container=parent_entry)
     entry.request = request
-    entry.request.view_name = _(u'edit')
+    entry.request.view_name = 'edit'
     return entry.edit_view(new=True)
 
 def change_state(request, path, new_state_id):
