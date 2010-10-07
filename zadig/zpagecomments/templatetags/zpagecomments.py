@@ -22,8 +22,12 @@ class PageCommentsNode(template.Node):
         comments = PageComment.objects.filter(page=entry,
                 state__in=(STATE_PUBLISHED, STATE_DELETED)).order_by('id')
         for c in comments:
+            authorname = escape(c.commenter_name)
+            if c.commenter_website:
+                authorname = '<a href="%s">%s</a>' % (c.commenter_website,
+                                                            authorname)
             authorline = _(u'<span class="author">%s</span> says:') % (
-                                            escape(c.commenter_name),)
+                                            authorname,)
             if c.state==STATE_DELETED:
                 body = '<p class="notice">%s</p>' % (
                     _(u'This comment has been deleted by an administrator.'),)
