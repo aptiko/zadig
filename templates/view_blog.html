@@ -1,0 +1,18 @@
+{% extends vobject.entry.base_template %}
+{% load i18n %}
+
+{% block mainContent %}
+  <div class="blogIndex">
+    {% for p in vobject.rentry.descendant.posts %}
+      <div class="blogPost">
+        <p class="title">{{ p.vobject.metatags.default.title }}</p>
+        <p class="author">{% trans "by" %} {{ p.ownername }}
+           — {{ p.creation_date|date:"Y-m-d H:i" }}
+        </p>
+        <p class="description">{{ p.vobject.metatags.default.description }}</p>
+        {{ p.vobject.object_class|safe }}
+        <p class="readMore"><a href="{{p.spath}}">{% trans "Read more" %}</a></p>
+      </div>
+    {% endfor %}
+  </div>
+{% endblock %}

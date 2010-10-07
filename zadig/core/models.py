@@ -269,6 +269,14 @@ class Entry(models.Model):
         return result
 
     @property
+    def creation_date(self):
+        return self.get_vobject(1).date
+
+    @property
+    def last_modification_date(self):
+        return self.vobject.date
+
+    @property
     def rcontainer(self):
         result = self.container
         if result:
@@ -483,6 +491,10 @@ class Entry(models.Model):
             self.multilingual_group = amultilingual_group
             e.multilingual_group = amultilingual_group
             e.save()
+
+    subform_class = forms.Form
+    def create_edit_subform(self, new): return None
+    def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
         application_options = [o for o in zadig.core.application_options
@@ -709,10 +721,14 @@ class VObject(models.Model):
     language = models.ForeignKey(Language, blank=True, null=True)
     objects = VObjectManager()
 
-    def save(self, *args, **kwargs):
-        from datetime import datetime
+    def __init__(self, *args, **kwargs):
+        result = super(VObject, self).__init__(*args, **kwargs)
+        self.request = None
         if not self.object_class:
             self.object_class = self._meta.object_name
+
+    def save(self, *args, **kwargs):
+        from datetime import datetime
         if self.entry.multilingual_group:
             _check_multilingual_group(self.request,
                                             self.entry.multilingual_group.id)
