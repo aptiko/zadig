@@ -38,8 +38,10 @@ class PageCommentsNode(template.Node):
            <p class="heading">%s</p>
            <p class="notice">%s</p>
            <form method="POST" action="%s__zpagecomments.add_comment__/">
-           <table>%s</table>
-           <input class="button" type="submit" value="%s" />
+           <table>
+           %s
+           <th></th><td><input type="submit" value="%s" /></td>
+           </table>
            </form>
            </div>''' % (_(u"Add comment"),
                 _(u"Your email address will not be published"),
