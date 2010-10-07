@@ -10,7 +10,7 @@ from django.template import RequestContext
 import django.contrib.auth
 
 from zadig.core import models
-from zadig.core.models import permissions
+from zadig.core.models import permissions, user_entry_types
 
 def _set_languages(vobject):
     """Set preferred and effective language."""
@@ -56,7 +56,8 @@ def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
     _set_languages(parent_vobject)
     parent_entry = parent_vobject.entry.descendant
-    new_entry_class = eval('models.%sEntry' % (entry_type,))
+    class_name = '%sEntry' % (entry_type,)
+    new_entry_class = [u for u in user_entry_types if u.__name__==class_name][0]
     entry = new_entry_class(container=parent_entry)
     entry.request = request
     entry.request.view_name = 'edit'

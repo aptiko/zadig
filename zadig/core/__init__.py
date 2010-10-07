@@ -6,7 +6,7 @@ if not globals().has_key('application_options'):
                if x.startswith('zadig.') and not x.startswith('zadig.core.')]
     for zadig_application in zadig_applications:
         temp = __import__(zadig_application, globals(), locals(),
-            ['EntryOptionsForm', 'entry_options', 'portlets'], -1)
+                ['EntryOptionsForm', 'entry_options', 'portlets'], -1)
         application_options.append({
             'application':      zadig_application,
             'EntryOptionsForm': temp.__dict__.get('EntryOptionsForm', None),

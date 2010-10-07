@@ -272,10 +272,16 @@ class Entry(models.Model):
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
-        else:
-            a = getattr(self, self.object_class.lower())
-            a.request = self.request
-            return a
+        cls = [x for x in user_entry_types if x.__name__==self.object_class][0]
+        hierarchy = []
+        while cls!=type(self):
+            hierarchy.insert(0, cls)
+            cls = cls.__bases__[0]
+        result = self
+        for a in hierarchy:
+            result = getattr(result, a.__name__.lower())
+        result.request = self.request
+        return result
 
     @property
     def permissions(self):
@@ -711,10 +717,17 @@ class VObject(models.Model):
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
-        else:
-            a = getattr(self, self.object_class.lower())
-            a.request = self.request
-            return a
+        cls = [x.vobject_class for x in user_entry_types
+                            if x.vobject_class.__name__==self.object_class][0]
+        hierarchy = []
+        while cls!=type(self):
+            hierarchy.insert(0, cls)
+            cls = cls.__bases__[0]
+        result = self
+        for a in hierarchy:
+            result = getattr(result, a.__name__.lower())
+        result.request = self.request
+        return result
 
     @property
     def rentry(self):
