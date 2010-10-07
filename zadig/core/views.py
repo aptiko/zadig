@@ -42,7 +42,8 @@ def general_view(request, path, view_name, parms):
     (app, sep, viewfuncname) = view_name.partition('.')
     if not viewfuncname: raise Http404
     try:
-        temp = __import__('zadig.%s.views' % (app,), globals(), locals(), [])
+        temp = __import__('zadig.%s.views' % (app,), globals(), locals(),
+                                                                [viewfuncname])
         viewfunc = temp.__dict__.get(viewfuncname, None)
     except ImportError:
         raise Http404
