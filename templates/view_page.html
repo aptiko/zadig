@@ -6,7 +6,7 @@
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
   {% if vobject.entry.ZstandardEntryOptions.show_author %}
     <p class="author">
-      {% trans "by" %} {{ vobject.entry.owner }}
+      {% trans "by" %} {{ vobject.entry.ownername }}
       —
       {% trans "last modified" %} {{ vobject.date|date:"Y-m-d H:i" }}
     </p>

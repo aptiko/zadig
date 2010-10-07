@@ -262,6 +262,13 @@ class Entry(models.Model):
         return result
 
     @property
+    def ownername(self):
+        result = self.owner.get_full_name()
+        if not result.strip():
+            result = self.owner.username
+        return result
+
+    @property
     def rcontainer(self):
         result = self.container
         if result:
