@@ -12,19 +12,19 @@ STATE_DELETED = u'DELETED'
 class CommentStateField(models.CharField):
     def __init__(self, *args, **kwargs):
         kwargs['max_length'] = 20
-        super(CommentStatusField, self).__init__(*args, **kwargs)
+        super(CommentStateField, self).__init__(*args, **kwargs)
 
 
 class PageComment(models.Model):
     page = models.ForeignKey(PageEntry)
     commenter_name = models.CharField(max_length=100)
-    commenter_email = models.MailField()
+    commenter_email = models.EmailField()
     commenter_website = models.URLField(blank=True)
     comment = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
     state = CommentStateField()
 
-    class __unicode__(self):
+    def __unicode__(self):
         return u'Comment id=%s' % (self.id,)
 
 
