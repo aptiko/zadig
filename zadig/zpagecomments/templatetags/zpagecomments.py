@@ -34,7 +34,9 @@ class PageCommentsNode(template.Node):
                 <p class="date">%s</p>
                 %s
                 </div>''' % (authorline, c.date.isoformat(), body)
+        form = CommentForm()
         result += '''<div class="addComment">
+           %s
            <p class="heading">%s</p>
            <p class="notice">%s</p>
            <form method="POST" action="%s__zpagecomments.add_comment__/">
@@ -43,9 +45,9 @@ class PageCommentsNode(template.Node):
            <th></th><td><input type="submit" value="%s" /></td>
            </table>
            </form>
-           </div>''' % (_(u"Add comment"),
+           </div>''' % (form.media, _(u"Add comment"),
                 _(u"Your email address will not be published"),
-                entry.spath, CommentForm().as_table(), _(u"Add comment"))
+                entry.spath, form.as_table(), _(u"Add comment"))
         return result
 
 
