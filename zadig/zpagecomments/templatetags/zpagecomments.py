@@ -34,7 +34,10 @@ class PageCommentsNode(template.Node):
                 <p class="date">%s</p>
                 %s
                 </div>''' % (authorline, c.date.isoformat(), body)
-        form = CommentForm()
+        if 'pagecommentsform' in vobject.request.__dict__:
+            form = vobject.request.pagecommentsform
+        else:
+            form = CommentForm()
         result += '''<div class="addComment">
            %s
            <p class="heading">%s</p>
