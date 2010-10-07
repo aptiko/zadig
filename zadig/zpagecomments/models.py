@@ -3,6 +3,7 @@ from django import forms
 from django.utils.translation import ugettext as _
 import settings
 
+from zadig.core.models import Entry
 from zadig.zstandard.models import PageEntry
 
 STATE_MODERATED = u'MODERATED'
@@ -31,6 +32,12 @@ class PageComment(models.Model):
 
     def __unicode__(self):
         return u'Comment id=%s' % (self.id,)
+
+
+class EntryOptions(models.Model):
+    entry = models.OneToOneField(Entry, primary_key=True,
+                                related_name="ZpagecommentsEntryOptions")
+    allow_comments = models.BooleanField()
 
 
 class CommentForm(forms.Form):
