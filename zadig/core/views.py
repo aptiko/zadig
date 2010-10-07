@@ -38,7 +38,18 @@ def general_view(request, path, view_name, parms):
     elif hasattr(vobject.rentry.descendant, method_name):
         return eval('vobject.rentry.descendant.%s_view(parms=r"%s")'
                                                         %(view_name, parms))
-    raise Http404
+    # Assume view name is in 'app.viewfuncname' format
+    (app, sep, viewfuncname) = view_name.partition('.')
+    if not viewfuncname: raise Http404
+    try:
+        temp = __import__('zadig.%s.views' % (app,), globals(), locals(), [])
+        viewfunc = temp.__dict__.get(viewfuncname, None)
+    except ImportError:
+        raise Http404
+    if not viewfunc:
+        raise Http404
+    return viewfunc(vobject, parms=parms)
+
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(request, parent_path)
