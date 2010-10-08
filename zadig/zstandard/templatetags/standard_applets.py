@@ -269,7 +269,6 @@ class SecondaryButtonsNode(template.Node):
         if not vobject: return ''
         spath = vobject.entry.spath
         if not vobject.rentry.touchable: return ''
-        items_of_add_new = []
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
               'items': [ { 'href': '%s__state__/%d/' %
@@ -280,7 +279,8 @@ class SecondaryButtonsNode(template.Node):
             },
             { 'name': _(u'Add new…'),
               'items': [{ 'href': '%s__new__/%s/' % (spath, cls.__name__[:-5]),
-                  'name': cls.typename } for cls in coremodels.user_entry_types]
+                  'name': cls.typename } for cls in coremodels.entry_types
+                              if cls.can_create(vobject.rentry.descendant)]
             },
             { 'name': _(u'Actions'),
               'items': [ { 'href': '%s__cut__/' % (spath,) ,

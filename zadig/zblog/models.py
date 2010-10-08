@@ -2,7 +2,7 @@ from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
 from django.template import RequestContext
 
-from zadig.core.models import Entry, VObject, user_entry_types
+from zadig.core.models import Entry, VObject, entry_types
 from zadig.zstandard.models import PageEntry, VPage
 
 
@@ -22,6 +22,13 @@ class BlogEntry(Entry):
     vobject_class = VBlog
     typename = _(u"Blog")
 
+    @classmethod
+    def can_create(cls, parent):
+        # Quick hack: only if the user is an admin, and not inside another blog
+        return super(BlogEntry, cls).can_create(parent) and \
+            parent.request.user.is_superuser and \
+            not isinstance(parent, BlogEntry)
+
     @property
     def posts(self):
         result = self.subentries
@@ -32,7 +39,7 @@ class BlogEntry(Entry):
         return result
         
 
-user_entry_types.append(BlogEntry)
+entry_types.append(BlogEntry)
 
 
 ### Blog post ###
@@ -61,5 +68,10 @@ class BlogPostEntry(PageEntry):
     vobject_class = VBlogPost
     typename = _(u"Blog post")
 
+    @classmethod
+    def can_create(cls, parent):
+        return super(BlogPostEntry, cls).can_create(parent) \
+                                        and isinstance(parent, BlogEntry)
 
-user_entry_types.append(BlogPostEntry)
+
+entry_types.append(BlogPostEntry)

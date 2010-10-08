@@ -14,7 +14,7 @@ from zadig.core import utils
 import zadig.core
 
 
-user_entry_types = []
+entry_types = []
 
 
 class permissions:
@@ -222,6 +222,10 @@ class Entry(models.Model):
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
+    @classmethod
+    def can_create(cls, parent):
+        return (permissions.EDIT in parent.permissions)
+        
     def save(self, *args, **kwargs):
         if self.multilingual_group:
             _check_multilingual_group(self.request, self.multilingual_group.id)
@@ -287,7 +291,7 @@ class Entry(models.Model):
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
-        cls = [x for x in user_entry_types if x.__name__==self.object_class][0]
+        cls = [x for x in entry_types if x.__name__==self.object_class][0]
         hierarchy = []
         while cls!=type(self):
             hierarchy.insert(0, cls)
@@ -740,7 +744,7 @@ class VObject(models.Model):
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
-        cls = [x.vobject_class for x in user_entry_types
+        cls = [x.vobject_class for x in entry_types
                             if x.vobject_class.__name__==self.object_class][0]
         hierarchy = []
         while cls!=type(self):

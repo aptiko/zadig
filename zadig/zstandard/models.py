@@ -8,7 +8,7 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 import settings
 
-from zadig.core.models import Entry, VObject, user_entry_types
+from zadig.core.models import Entry, VObject, entry_types
 from zadig.core import utils
 
 
@@ -77,7 +77,7 @@ class PageEntry(Entry):
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
 
 
-user_entry_types.append(PageEntry)
+entry_types.append(PageEntry)
 
 
 ### File ###
@@ -122,7 +122,7 @@ class FileEntry(Entry):
         vobject.content = form.cleaned_data['content']
 
 
-user_entry_types.append(FileEntry)
+entry_types.append(FileEntry)
 
 
 ### Image ###
@@ -181,7 +181,7 @@ class ImageEntry(Entry):
         vobject.content=form.cleaned_data['content']
 
 
-user_entry_types.append(ImageEntry)
+entry_types.append(ImageEntry)
 
 
 ### Link ###
@@ -224,7 +224,7 @@ class LinkEntry(Entry):
         return result
 
 
-user_entry_types.append(LinkEntry)
+entry_types.append(LinkEntry)
 
 
 ### InternalRedirection ###
@@ -262,6 +262,10 @@ class InternalRedirectionEntry(Entry):
     vobject_class = VInternalRedirection
     typename = _(u"Internal redirection")
 
+    @classmethod
+    def can_create(cls, parent):
+        return False
+
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
 
@@ -272,6 +276,9 @@ class InternalRedirectionEntry(Entry):
             result = EditInternalRedirectionForm(
                     initial={'target': self.vobject.target})
         return result
+
+
+entry_types.append(InternalRedirectionEntry)
 
 
 ### Other ###
