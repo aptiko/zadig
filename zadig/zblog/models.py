@@ -38,19 +38,7 @@ user_entry_types.append(BlogEntry)
 ### Blog post ###
 
 
-class BlogPostEntry(PageEntry):
-    typename = _(u"Blog post")
-
-
 class VBlogPost(VPage):
-
-    def __init__(self, *args, **kwargs):
-        # If I don't do the following, object_class is set as VPage. I don't
-        # know why, and I'm not happy about this hack. And I don't know why it
-        # happens in VBlogPost but it does not happen in BlogPostEntry.
-        # FIXME: But it's still not working. I'm too tired. Fix me.
-        self.object_class='VBlogPost'
-        return super(VBlogPost, self).__init__(*args, **kwargs)
 
     @property
     def top(self):
@@ -64,9 +52,14 @@ class VBlogPost(VPage):
             try: n = str(soup.contents[i])
             except IndexError: break
             length += len(n)
-            if length>700: break
+            if length>1200: break
             result += n
         return result
+
+
+class BlogPostEntry(PageEntry):
+    vobject_class = VBlogPost
+    typename = _(u"Blog post")
 
 
 user_entry_types.append(BlogPostEntry)

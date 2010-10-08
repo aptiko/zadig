@@ -10,7 +10,7 @@
            — {{ p.creation_date|date:"Y-m-d H:i" }}
         </p>
         <p class="description">{{ p.vobject.metatags.default.description }}</p>
-        {{ p.vobject.object_class|safe }}
+        {{ p.vobject.top|safe }}
         <p class="readMore"><a href="{{p.spath}}">{% trans "Read more" %}</a></p>
       </div>
     {% endfor %}
