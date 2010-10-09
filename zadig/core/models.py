@@ -186,7 +186,7 @@ class Entry(models.Model):
     btemplate = models.CharField(max_length=100, blank=True)
     objects = EntryManager()
 
-    template_name = 'edit_entry.html'
+    edit_template_name = 'edit_entry.html'
 
     def __init__(self, *args, **kwargs):
         # If called with only two arguments, then it is someone calling the
@@ -223,12 +223,11 @@ class Entry(models.Model):
             .get(source_state__descr="Nonexistent").target_state
 
     def can_contain(self, cls):
-        return True
+        return permissions.EDIT in self.permissions
 
     @classmethod
-    def can_create(cls, parent):
-        return (permissions.EDIT in parent.permissions) and \
-                                                parent.can_contain(cls)
+    def can_be_contained(cls, parent):
+        return parent.can_contain(cls)
         
     def save(self, *args, **kwargs):
         if self.multilingual_group:
@@ -500,8 +499,7 @@ class Entry(models.Model):
             e.multilingual_group = amultilingual_group
             e.save()
 
-    subform_class = forms.Form
-    def create_edit_subform(self, new): return None
+    def edit_subform(self, new): return forms.Form
     def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
@@ -514,14 +512,15 @@ class Entry(models.Model):
                             if self.alt_lang_entries else '',
                         })
             metatagsformset = self.__create_metatags_formset(new)
-            subform = self.create_edit_subform(new)
+            subform = self.edit_subform(new=new)
             optionsforms = [o['entry_options'](self)
                                                 for o in application_options]
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
                                                         current_entry=self)
             metatagsformset = MetatagsFormSet(self.request.POST)
-            subform = self.subform_class(self.request.POST, self.request.FILES)
+            subform = self.edit_subform(self.request.POST, self.request.FILES,
+                                                                    new=new)
             optionsforms = [o['EntryOptionsForm'](self.request.POST)
                                                 for o in application_options]
             all_forms_are_valid = all(
@@ -555,7 +554,7 @@ class Entry(models.Model):
             vobject = self.rcontainer.vobject
         else:
             vobject = self.vobject
-        return render_to_response(self.template_name,
+        return render_to_response(self.edit_template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms },

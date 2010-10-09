@@ -59,18 +59,13 @@ class VPage(VObject):
 
 
 class PageEntry(Entry):
-    template_name = 'edit_page.html'
-    subform_class = EditPageForm
+    edit_template_name = 'edit_page.html'
     vobject_class = VPage
     typename = _(u"Page")
 
-    def create_edit_subform(self, new):
-        if new:
-            result = EditPageForm()
-        else:
-            result = EditPageForm(
-                    initial={'content': self.vobject.content})
-        return result
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'content': self.vobject.content} 
+        return EditPageForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
         vobject.format=ContentFormat.objects.get(descr='html')
@@ -107,16 +102,12 @@ class EditFileForm(forms.Form):
 
 
 class FileEntry(Entry):
-    subform_class = EditFileForm
     vobject_class = VFile
     typename = _(u"File")
 
-    def create_edit_subform(self, new):
-        if new:
-            result = EditFileForm()
-        else:
-            result = EditFileForm(initial={'content': self.vobject.content})
-        return result
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'content': self.vobject.content} 
+        return EditFileForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
         vobject.content = form.cleaned_data['content']
@@ -165,17 +156,12 @@ class EditImageForm(forms.Form):
 
 
 class ImageEntry(Entry):
-    subform_class = EditImageForm
     vobject_class = VImage
     typename = _(u"Image")
 
-    def create_edit_subform(self, new):
-        if new:
-            result = EditImageForm()
-        else:
-            result = EditImageForm(
-                    initial={'content': self.vobject.content})
-        return result
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'content': self.vobject.content} 
+        return EditImageForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
         vobject.content=form.cleaned_data['content']
@@ -208,20 +194,16 @@ class EditLinkForm(forms.Form):
 
 
 class LinkEntry(Entry):
-    subform_class = EditLinkForm
+    edit_subform_class = EditLinkForm
     vobject_class = VLink
     typename = _(u"External link")
 
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'target': self.vobject.target} 
+        return EditLinkForm(data=data, files=files, initial=initial)
+
     def process_edit_subform(self, vobject, form):
         vobject.target = form.cleaned_data['target']
-
-    def create_edit_subform(self, new):
-        if new:
-            result = EditLinkForm()
-        else:
-            result = EditLinkForm(
-                    initial={'target': self.vobject.target})
-        return result
 
 
 entry_types.append(LinkEntry)
@@ -258,7 +240,7 @@ class EditInternalRedirectionForm(forms.Form):
 
 
 class InternalRedirectionEntry(Entry):
-    subform_class = EditInternalRedirectionForm
+    edit_subform_class = EditInternalRedirectionForm
     vobject_class = VInternalRedirection
     typename = _(u"Internal redirection")
 
@@ -266,16 +248,13 @@ class InternalRedirectionEntry(Entry):
     def can_create(cls, parent):
         return False
 
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'target': self.vobject.target} 
+        return EditInternalRedirectionForm(data=data, files=files,
+                                                        initial=initial)
+
     def process_edit_subform(self, vobject, form):
         vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
-
-    def create_edit_subform(self, new):
-        if new:
-            result = EditInternalRedirectionForm()
-        else:
-            result = EditInternalRedirectionForm(
-                    initial={'target': self.vobject.target})
-        return result
 
 
 entry_types.append(InternalRedirectionEntry)
