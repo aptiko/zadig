@@ -318,18 +318,6 @@ configuration options per entry, or global. But don't worry if you
 don't understand this yet; just think of "applet" as a synonym for a
 custom template tag.
 
-Zadig is designed so that very little functionality is in the
-core; the rest is in applets. Like all Django applications, applets
-are installed by adding them to :data:`INSTALLED_APPS` in the
-:file:`settings.py` file. Details on the applet installation procedure
-are presented further below.
-
-.. admonition:: Note
-
-    For good code structure, a Django application can contain many
-    applets: for example, :file:`zadig/applets/standard` contains all
-    the standard applets.
-
 A **portlet** is a special kind of applet. There are two things that
 are special about portlets: the first one is that they have a certain
 kind of look: they have a title and a body, and the body consists of
@@ -354,33 +342,11 @@ The second thing that is special about portlets is that they are
 registered: Zadig knows what portlets are available; this makes
 possible to have user interface where the user can select portlets
 from a list, instead of having to specify them in a Django template.
-For example, the left and right panes, used as portlet holders in the
-default template, are applets themselves, and the user that has
-appropriate permissions for a page can select which portlets they will
-show on that page (and the pages contained therein).
-
-Applets included with Zadig, such as the breadcrumbs and the
-navigation, are in ``zadig/applets/standard``.
 
 .. admonition:: Not implemented yet
 
    The portlets for recent changes, pending events, news, and calendar
-   have not been implemented yet. In addition, the portlet holders
-   have also not been implemented, and, instead, the showing of the
-   portlets is merely hacked into the template.
-
-
-Installing applets
-------------------
-
-To install an applet (more precisely, a Django application containing
-one or more applets), do the following:
-
-1. Put the directory containing the application under ``zadig/applets``.
-2. Add the application to ``INSTALLED_APPS`` in the ``settings.py``
-   file.
-3. If there is any additional CSS, put it in the ``static`` directory,
-   and add an ``@import`` statement in the main stylesheet (in the
-   default template it is named ``style.css``).
-4. In the ``zadig`` directory, run ``./manage.py migrate``. This will
-   create any additional database tables needed by the applet.
+   have not been implemented yet. In addition, no functionality that
+   uses registered portlets has been implemented. I think it might be
+   nice if the left and right panes, where portlets are shown, were
+   applets themselves.

@@ -4,59 +4,73 @@
 Zadig Developer's Guide
 =======================
 
-There are two things a Zadig developer is expected to do: (1)
-create applets; and (2) create new object types. We explain those in
-separate chapters below. It is essential to first read the
-:ref:`concepts` document.
+There are two things a Zadig developer is expected to do: (1) create
+new object types; and (2) create applets. We explain those in separate
+chapters below. It is essential to first read the :ref:`concepts`
+document.
+
+Creating Zadig applications
+===========================
+
+A Zadig application is a Django application, and, as such, is added in
+the :data:`INSTALLED_APPS` setting. The application can reside
+anywhere in the Python path. The Zadig applications (e.g.
+``zadig.zstandard`` included in the Zadig distribution are under the
+:file:`zadig` directory.
+
+Such applications should have an :file:`__init__.py` file and a
+:file:`__models__.py`. If they have any extra templates, they should
+also have a :file:`templates` directory (for example, the
+``zadig.zstandard`` application, which contains the standard objects,
+has templates such as :file:`view_page.html` etc.). If they have
+applets, they should also have a :file:`templatetags` directory. If
+they have any additional general views, these should be in
+:file:`views.py` (general views will be examined below).
+
+Creating new object types
+=========================
+
+New object types are declared in :file:`models.py`.  You need to
+subclass :class:`~zadig.core.models.Entry` and
+:class:`~zadig.core.models.VObject`, and create a form for editing the
+object.
+
+The :class:`~zadig.core.models.Entry` subclass must define the
+:attr:`~zadig.core.models.Entry.vobject_class` class attribute, whose
+value must be the :class:`~zadig.core.models.VObject` subclass.  The
+:class:`~zadig.core.models.Entry` subclass should also define 
+:attr:`~zadig.core.models.Entry.typename`. Finally, when necessary, it
+should also override
+:attr:`~zadig.core.models.Entry.edit_template_name`,
+:meth:`~zadig.core.models.Entry.edit_subform`, and
+:meth:`~zadig.core.models.Entry.process_edit_subform`.
+
+The :class:`~zadig.core.models.VObject` subclass should have Django
+fields for storing the vobject content, and it should also define the 
+:meth:`~zadig.core.models.VObject.end_view` and
+:meth:`~zadig.core.models.VObject.info_view` methods.
+
+If you use the existing applications' object types implementation as
+an example, you should not have any problem understanding things
+better.
+
+.. admonition:: Incomplete
+
+   I've not yet gotten to write about general views.
 
 Creating applets
 ================
 
-To create an applet (or a set of related applets in a Django
-application), create a directory, say ``myapplet``, inside the
-``zadig/applets`` directory. Inside ``myapplet``, create an empty
-``__init__.py`` file, an empty ``models.py`` file, and a
-``templatetags`` directory. Inside ``templatetags``, create an empty
-``__init__.py`` and a ``myapplet.py`` file.  In ``myapplet.py``, add
-Django code that implements a template tag (we'll assume
-``myapplettag``).
+To create an applet, create a custom template tag (read the Django
+documentation for that).  If you want your applet to store information
+in the database (usually this is configuration options), add models in
+:file:`models.py`. You'll probably want to reference
+:class:`zadig.core.models.Entry` if you have options per entry.
 
-That is all you have to do for a basic applet. You can then use
-it in your template like this::
+.. admonition:: Incomplete
 
-    {% load myapplet %}
-    ...
-    {% myapplettag %}
-    ...
+   I've not yet gotten to write about entry option sets.
 
-If needed, the template tag can accept arguments.
-
-If you want your applet to store information in the database (usually
-this is configuration options), add models in ``models.py``. You'll
-probably want to reference ``zadig.core.models.Entry`` if you
-have options per entry.
-
-If you want your applet to have configuration options, add functions
-to ``myapplet/__init__.py``, according to the following::
-
-    from django import forms
-
-    class EntryOptionsForm(forms.Form):
-        MyOption = forms.BooleanField()
-        # And so on
-
-    def entry_options(request, form=None):
-        if not form:
-            # Return a Form object that contains the configuration options.
-            form = EntryOptionsForm()
-            # Populate form with initial values (usually from the database)
-            return form
-        else:
-            # Process configuration options that have been submitted.
-            entryoptions.my_option = form.cleaned_data['MyOption']
-            # ...
-            entryoptions.save()
-        
 If the applet is a portlet, you need to do two more things. First,
 make sure that the tag output conforms to the portlet specification:
 
@@ -70,89 +84,14 @@ make sure that the tag output conforms to the portlet specification:
       <dd class="lastItem">Last item</dd>
     </dl>
 
-Second, in ``myapplet/__init__.py``, add the following::
+Second, in the top level :file:`__init__.py` of your application, add
+the following::
 
-    portlets = [{ 'name': _(u"My portlet"),
-                  'tag': "myportlettag", },
-                # Obviously add more items to this list if your
-                # application defines more than one portlets.
-               ]
-
-When Zadig starts, it looks at the ``__init__.py`` file of each
-applet directory. If the file contains ``entry_options``, it registers
-it. Then, when the user edits a page, Zadig calls
-``entry_options`` with ``form=None``, it gets a form as a response, it
-remembers its class, and it displays it to the user. When the user
-submits it, Zadig creates a bound form of the remembered class
-with the request data and calls ``entry_options`` supplying the
-created form as the ``form`` argument.  In fact the entry options form
-is not treated as a whole form but as a part of a form that is mixed
-with the entry options of all other installed applets, resulting in
-one form for all applets together; but this makes no difference for
-the applet code.
-
-Zadig also registers the portlets it finds in ``__init__.py``.
-
-Creating new object types
-=========================
-
-To create a new object type, you need to subclass
-:class:`~zadig.core.models.Entry` and
-:class:`~zadig.core.models.VObject`, and create a form. Let's
-assume that the type you want to create is to be called a Snail. Name
-your :class:`~zadig.core.models.Entry` subclass *SnailEntry*, your
-:class:`~zadig.core.models.VObject` subclass *VSnail*, and your
-form *EditSnailForm*. The code should be as follows::
-
-    from zadig.core.models import Entry, VObject, user_entry_types
-
-
-    class VSnail(VObject):
-        content = models.TextField(blank=True) # Or whatever it is
-
-        def end_view(self):
-            return render_to_response('view_snail.html', { 'vobject': self })
-
-        def info_view(self):
-            return self.end_view()
-
-        class Meta:
-            db_table = 'myprefix_vsnail'
-
-
-    class EditSnailForm(forms.Form):
-        content = forms.CharField()
-
-        def render(self):
-            return self.as_table()
-
-
-    class SnailEntry(Entry):
-        template_name = 'edit_snail.html'
-        subform_class = EditSnailForm
-        vobject_class = VSnail
-        typename = _(u"Snail")
-
-        def create_edit_subform(self, new):
-            if new:
-                result = EditSnailForm()
-            else:
-                result = EditSnailForm(
-                        initial={'content': self.vobject.content})
-            return result
-
-        def process_edit_subform(self, vobject, form):
-            vobject.content=form.cleaned_data['content']
-
-        class Meta:
-            db_table = 'myprefix_snailentry'
-
-
-    user_entry_types.append(SnailEntry)
-
-.. admonition:: Incomplete
-
-   More to write here in order to explain the above example.
+    from zadig.core import portlets
+    portlets.append({ 'name': _(u"My portlet"), 'tag': "myportlettag", },
+                    # Add more items to this list if your
+                    # application defines more than one portlets.
+                   )
 
 .. _request-object:
 

@@ -246,7 +246,7 @@ class InternalRedirectionEntry(Entry):
     typename = _(u"Internal redirection")
 
     @classmethod
-    def can_create(cls, parent):
+    def can_be_contained(cls, parent):
         return False
 
     def edit_subform(self, data=None, files=None, new=False):
