@@ -11,10 +11,7 @@ from django.template import RequestContext
 import settings
 
 from zadig.core import utils
-import zadig.core
-
-
-entry_types = []
+from zadig.core import entry_types, entry_option_sets
 
 
 class permissions:
@@ -503,8 +500,6 @@ class Entry(models.Model):
     def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
-        application_options = [o for o in zadig.core.application_options
-                                                        if o['entry_options']]
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
                         'language': self.vobject.language if not new else '',
@@ -513,16 +508,16 @@ class Entry(models.Model):
                         })
             metatagsformset = self.__create_metatags_formset(new)
             subform = self.edit_subform(new=new)
-            optionsforms = [o['entry_options'](self)
-                                                for o in application_options]
+            optionsforms = [o.objects.get_or_create(entry=self)[0].
+                            get_form_from_data() for o in entry_option_sets]
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
                                                         current_entry=self)
             metatagsformset = MetatagsFormSet(self.request.POST)
             subform = self.edit_subform(self.request.POST, self.request.FILES,
                                                                     new=new)
-            optionsforms = [o['EntryOptionsForm'](self.request.POST)
-                                                for o in application_options]
+            optionsforms = [o.form(self.request.POST)
+                                                    for o in entry_option_sets]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
@@ -544,9 +539,11 @@ class Entry(models.Model):
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
-                for o,f in map(lambda x,y:(x,y), application_options,
+                for o,f in map(lambda x,y:(x,y), entry_option_sets,
                                                                  optionsforms):
-                    o['entry_options'](self, f)
+                    option_set = o.objects.get_or_create(entry=self)[0]
+                    option_set.set_data_from_form(f)
+                    option_set.save()
                 if mainform.cleaned_data['name'] != self.name:
                     self.rename(mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__info__/')

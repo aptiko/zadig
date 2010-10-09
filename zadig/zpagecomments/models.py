@@ -3,6 +3,7 @@ from django import forms
 from django.utils.translation import ugettext as _
 import settings
 
+from zadig.core import entry_option_sets
 from zadig.core.models import Entry
 from zadig.zstandard.models import PageEntry
 
@@ -32,12 +33,6 @@ class PageComment(models.Model):
 
     def __unicode__(self):
         return u'Comment id=%s' % (self.id,)
-
-
-class EntryOptions(models.Model):
-    entry = models.OneToOneField(Entry, primary_key=True,
-                                related_name="ZpagecommentsEntryOptions")
-    allow_comments = models.BooleanField()
 
 
 class CommentForm(forms.Form):
@@ -71,3 +66,29 @@ class CommentForm(forms.Form):
             raise forms.ValidationError(_(
                         u"Don't try to be too clever with the HTML."))
         return result
+
+
+class EntryOptionsForm(forms.Form):
+    allow_comments = forms.BooleanField(label=_(u"Allow comments"),
+                                                    required=False)
+
+
+class EntryOptionSet(models.Model):
+    entry = models.OneToOneField(Entry, primary_key=True,
+                                related_name="ZpagecommentsEntryOptions")
+    allow_comments = models.BooleanField()
+
+    form = EntryOptionsForm
+
+    def get_form_from_data(self):
+        if not isinstance(self.entry.descendant, PageEntry): return None
+        return EntryOptionsForm({'allow_comments': self.allow_comments, })
+
+    def set_data_from_form(self, form):
+        self.allow_comments = form.cleaned_data['allow_comments']
+
+    class Meta:
+        db_table = 'zpagecomments_entryoptions'
+
+
+entry_option_sets.append(EntryOptionSet)

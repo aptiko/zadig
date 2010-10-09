@@ -8,7 +8,8 @@ from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
 import settings
 
-from zadig.core.models import Entry, VObject, entry_types
+from zadig.core.models import Entry, VObject
+from zadig.core import entry_types, entry_option_sets
 from zadig.core import utils
 
 
@@ -262,13 +263,39 @@ entry_types.append(InternalRedirectionEntry)
 
 ### Other ###
 
+class EntryOptionsForm(forms.Form):
+    no_breadcrumbs = forms.BooleanField(label=_(u"Don't show in Breadcrumbs"),
+                                                    required=False)
+    no_navigation = forms.BooleanField(label=_(u"Don't show in Navigation"),
+                                                    required=False)
+    navigation_toplevel = forms.BooleanField(required=False,
+                        label=_(u"Show this page as top level in navigation"))
+    show_author = forms.BooleanField(required=False, label=_(u"Show author"))
 
-class EntryOptions(models.Model):
+
+class EntryOptionSet(models.Model):
     entry = models.OneToOneField(Entry, primary_key=True,
                                     related_name='ZstandardEntryOptions')
     no_navigation = models.BooleanField()
     no_breadcrumbs = models.BooleanField()
     navigation_toplevel = models.BooleanField()
     show_author = models.BooleanField()
+
+    form = EntryOptionsForm
+
+    def get_form_from_data(self):
+        return EntryOptionsForm({'no_breadcrumbs': self.no_breadcrumbs,
+            'no_navigation': self.no_navigation,
+            'navigation_toplevel': self.navigation_toplevel,
+            'show_author': self.show_author})
+
+    def set_data_from_form(self, form):
+        self.no_breadcrumbs = form.cleaned_data['no_breadcrumbs']
+        self.no_navigation = form.cleaned_data['no_navigation']
+        self.navigation_toplevel = form.cleaned_data['navigation_toplevel']
+        self.show_author = form.cleaned_data['show_author']
+        
     class Meta:
         db_table = 'zstandard_entryoptions'
+
+entry_option_sets.append(EntryOptionSet)

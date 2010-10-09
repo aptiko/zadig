@@ -22,7 +22,7 @@ class BreadcrumbsNode(template.Node):
         result = ''
         vobject = context.get('vobject', None)
         while vobject:
-            entryoptions = models.EntryOptions.objects.get_or_create(
+            entryoptions = models.EntryOptionSet.objects.get_or_create(
                                                         entry=vobject.rentry)[0]
             if not entryoptions or not entryoptions.no_breadcrumbs:
                 if result:
@@ -159,9 +159,9 @@ class NavigationNode(template.Node):
         for s in siblings:
             v = s.vobject
             try:
-                entryoptions = models.EntryOptions.objects.get(entry=s)
+                entryoptions = models.EntryOptionSet.objects.get(entry=s)
                 if entryoptions.no_navigation: continue
-            except models.EntryOptions.DoesNotExist:
+            except models.EntryOptionSet.DoesNotExist:
                 pass
             if not self.__must_show(s, entry, current_entry):
                 continue
@@ -187,7 +187,7 @@ class NavigationNode(template.Node):
         toplevel_entry = vobject.rentry
         while True:
             if not toplevel_entry.container: break
-            entryoptions = models.EntryOptions.objects.get_or_create(
+            entryoptions = models.EntryOptionSet.objects.get_or_create(
                                                     entry=toplevel_entry)[0]
             if entryoptions.navigation_toplevel: break
             toplevel_entry = toplevel_entry.rcontainer
