@@ -54,18 +54,42 @@ If you use the existing applications' object types implementation as
 an example, you should not have any problem understanding things
 better.
 
-.. admonition:: Incomplete
+General views
+=============
 
-   I've not yet gotten to write about general views.
+When the URL is of the form
+:samp:`/{path_to_entry}/__{viewname}__/{remainder}` and *viewname* is
+not known to the Zadig core code, then Zadig searches for such a view
+in three places:
+
+1. It checks whether the :class:`~zadig.core.models.VObject` pointed
+   by *path_to_entry* has a method called :samp:`{viewname}_view`.
+2. Failing that, it searches for such a method in the
+   :class:`~zadig.core.models.Entry` class.
+3. Failing that, if *viewname* contains a dot, i.e. it is of the form
+   *app.func*, it searches for a callable *func* in
+   :samp:`zadig.{app}.views`.
+
+If no appropriate callable is found, :exc:`Http404` is raised. If it
+is found, it is called passing the URL *remainder* as the ``parms``
+argument.
+
+An example of such a view is the "resized" view of an image. If you
+append ``/__resized__/400`` to the URL of an image, then you will see
+the image resized so that its largest dimension is 400 pixels. This is
+accomplished because the :class:`zadig.zstandard.VImage` class has a
+:meth:`~zadig.zstandard.VImage.resized_view` method. Another example
+is page comment submission: the "add comment" submit button results in
+posting the "add comment" form to a URL that ends in
+``/__zpagecomments.add_comment__/``, which is processed by
+:func:`zadig.zpagecomments.views.add_comment`.
 
 Creating applets
 ================
 
 To create an applet, create a custom template tag (read the Django
 documentation for that).  If you want your applet to store information
-in the database (usually this is configuration options), add models in
-:file:`models.py`. You'll probably want to reference
-:class:`zadig.core.models.Entry` if you have options per entry.
+in the database, add models in :file:`models.py`.
 
 .. admonition:: Incomplete
 
