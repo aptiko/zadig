@@ -222,9 +222,13 @@ class Entry(models.Model):
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
+    def can_contain(self, cls):
+        return True
+
     @classmethod
     def can_create(cls, parent):
-        return (permissions.EDIT in parent.permissions)
+        return (permissions.EDIT in parent.permissions) and \
+                                                parent.can_contain(cls)
         
     def save(self, *args, **kwargs):
         if self.multilingual_group:

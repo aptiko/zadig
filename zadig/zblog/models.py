@@ -68,6 +68,11 @@ class BlogPostEntry(PageEntry):
     vobject_class = VBlogPost
     typename = _(u"Blog post")
 
+    def can_contain(self, cls):
+        from zadig.zstandard.models import ImageEntry, FileEntry
+        return super(BlogPostEntry, self).can_contain(cls) and (
+            issubclass(cls, ImageEntry) or issubclass(cls, FileEntry))
+        
     @classmethod
     def can_create(cls, parent):
         return super(BlogPostEntry, cls).can_create(parent) \
