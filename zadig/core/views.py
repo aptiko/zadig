@@ -115,7 +115,9 @@ def login(request, path):
 def cut(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
     request.session['cut_entries'] = [entry.id]
-    return info_view(request, path)
+    request.message = _(u"Object has been cut. Will be moved when you "
+                        "paste it.")
+    return general_view(request, path, 'info', '')
 
 def paste(request, path):
     target_entry = models.Entry.objects.get_by_path(request, path)
