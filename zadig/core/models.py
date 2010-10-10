@@ -567,6 +567,10 @@ class Entry(models.Model):
         oldname = self.name
         self.name = newname
         self.save()
+        # I'm not particularly happy about importing something from
+        # zstandard; in theory we don't know about it in the core.
+        from zadig.zstandard.models import InternalRedirectionEntry, \
+                                                VInternalRedirection
         nentry = InternalRedirectionEntry(container=self.rcontainer)
         nentry.request = self.request
         nentry.__initialize()
