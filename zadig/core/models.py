@@ -601,6 +601,10 @@ class Entry(models.Model):
         self.seq = target_entry.all_subentries.count() + 1
         self.container = target_entry
         self.save()
+        # I'm not particularly happy about importing something from
+        # zstandard; in theory we don't know about it in the core.
+        from zadig.zstandard.models import InternalRedirectionEntry, \
+                                                VInternalRedirection
         nentry = InternalRedirectionEntry(container=oldcontainer)
         nentry.request = self.request
         nentry.__initialize()
