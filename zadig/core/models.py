@@ -472,12 +472,12 @@ class Entry(models.Model):
         mg = self.multilingual_group
         if not altlang:
             self.multilingual_group = None
-            if mg: _check_multilingual_group(mg.id)
+            if mg: _check_multilingual_group(self.request, mg.id)
             return
         try:
             e = Entry.objects.get_by_path(self.request, altlang)
         except Http404:
-            _check_multilingual_group(mg.id)
+            _check_multilingual_group(self.request, mg.id)
             return
         if not self.vobject.language:
             raise IntegrityError(_(
