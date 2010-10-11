@@ -508,8 +508,11 @@ class Entry(models.Model):
                         })
             metatagsformset = self.__create_metatags_formset(new)
             subform = self.edit_subform(new=new)
-            optionsforms = [o.objects.get_or_create(entry=self)[0].
-                            get_form_from_data() for o in entry_option_sets]
+            optionsforms = []
+            for o in entry_option_sets:
+                oset = o(entry=self) if new else \
+                                        o.objects.get_or_create(entry=self)[0]
+                optionsforms.append(oset.get_form_from_data())
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
                                                         current_entry=self)
