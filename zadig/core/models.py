@@ -515,7 +515,7 @@ class Entry(models.Model):
                 optionsforms.append(oset.get_form_from_data())
         else:
             mainform = EditEntryForm(self.request.POST, request=self.request,
-                                                        current_entry=self)
+                            entry=self.container if new else self, new=new)
             metatagsformset = MetatagsFormSet(self.request.POST)
             subform = self.edit_subform(self.request.POST, self.request.FILES,
                                                                     new=new)
@@ -839,9 +839,20 @@ class EditEntryForm(forms.Form):
         if 'request' in kwargs:
             self.request = kwargs['request']
             del(kwargs['request'])
-            self.current_entry = kwargs['current_entry']
-            del(kwargs['current_entry'])
+            self.entry = kwargs['entry']
+            del(kwargs['entry'])
+            self.new = kwargs['new']
+            del(kwargs['new'])
         super(EditEntryForm, self).__init__(*args, **kwargs)
+
+    def clean_name(self):
+        n = self.cleaned_data['name']
+        if (self.new and self.entry.all_subentries.filter(name=n).count()) or (
+                not self.new and self.entry.name!=n and
+                self.entry.container.all_subentries.filter(name=n).count()):
+            raise forms.ValidationError(_(u"An object with this name "
+                "already exists; choose another name."))
+        return n
 
     def clean(self):
         c = self.cleaned_data
@@ -856,7 +867,7 @@ class EditEntryForm(forms.Form):
                 raise forms.ValidationError(_(u"The object specified as "
                     "alternative language does not exist, or you do not have "
                     "permission to view it."))
-            if e.id==self.current_entry.id:
+            if not self.new and e.id==self.entry.id:
                 raise forms.ValidationError(_(u"Specify a different object "
                     "as alternative language, not this object."))
             if not e.vobject.language:
