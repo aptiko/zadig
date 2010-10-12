@@ -234,13 +234,9 @@ class PrimaryButtonsNode(template.Node):
             return '<ul class="primaryButtons">' \
                '<li class="selected"><a href="">%s</a></li></ul>' % _(u'new')
         if not vobject.rentry.touchable: return ''
-        href_prefix = ''
-        if re.search(r'__[a-zA-Z]+__/$', vobject.request.path):
-            href_prefix = '../'
         result = '<ul class="primaryButtons">'
         for viewname, viewstring in self.views:
-            href_suffix = '__' + viewname + '__/'
-            href = href_prefix + href_suffix
+            href = '__' + viewname + '__/'
             current_view = vobject.request.view_name
             if current_view=='view': current_view='info'
             result += '<li %s><a href="%s">%s</a></li>' % ('class="selected"'
