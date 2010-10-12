@@ -219,6 +219,10 @@ class Entry(models.Model):
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
+    @property
+    def absolute_uri(self):
+        return self.request.build_absolute_uri(self.spath)
+
     def can_contain(self, cls):
         return permissions.EDIT in self.permissions
 

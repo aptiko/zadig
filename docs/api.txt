@@ -100,6 +100,12 @@ The Entry model
    :class:`~zadig.core.models.Entry` objects also have the
    following properties and methods:
 
+   .. attribute:: zadig.core.models.Entry.absolute_uri
+
+      This read-only property returns the absolute URI of the end view
+      of the entry.  See also :attr:`~zadig.core.models.Entry.path`
+      and :attr:`~zadig.core.models.Entry.spath`.
+
    .. method:: zadig.core.models.Entry.add_details(vobject, form)
 
       The :meth:`~zadig.core.models.Entry.edit_view` method is
@@ -271,7 +277,8 @@ The Entry model
 
       This read-only property returns the URL path to the entry, not
       including a leading or trailing slash. See also
-      :attr:`~zadig.core.models.Entry.spath`.
+      :attr:`~zadig.core.models.Entry.spath` and
+      :attr:`~zadig.core.models.Entry.absolute_uri`.
 
    .. attribute:: zadig.core.models.Entry.permissions
 
@@ -352,7 +359,8 @@ The Entry model
       complicated than just prefixing and suffixing
       :attr:`~zadig.core.models.Entry.path` with a slash, because
       then the root entry would be two slashes instead of one.) See
-      also :attr:`~zadig.core.models.Entry.path`.
+      also :attr:`~zadig.core.models.Entry.path` and
+      :attr:`~zadig.core.models.Entry.absolute_uri`.
 
    .. attribute:: zadig.core.models.Entry.subentries
 

@@ -22,6 +22,9 @@
       <script src="{{ZADIG_MEDIA_URL}}utils.js"></script>
       <script src="{{ZADIG_MEDIA_URL}}zadig.js"></script>
     {% endblock %}
+    {% block base %}
+      <base href="{{vobject.rentry.absolute_uri}}" />
+    {% endblock %}
     {% block extrahead %}{% endblock %}
   {% endblock %}
 </head>
