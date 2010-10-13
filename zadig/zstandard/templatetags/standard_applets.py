@@ -195,7 +195,8 @@ class NavigationNode(template.Node):
         if result:
             toplevel_link = toplevel_entry.spath
             preferred_language = vobject.request.preferred_language
-            if toplevel_entry.vobject.language.id != preferred_language:
+            if (toplevel_entry.vobject.language and
+                    toplevel_entry.vobject.language.id != preferred_language):
                 for e in toplevel_entry.alt_lang_entries:
                     if e.vobject.language.id == preferred_language:
                         toplevel_link = e.spath
