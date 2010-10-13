@@ -88,6 +88,8 @@ class VFile(VObject):
         wrapper = FileWrapper(open(self.content.path))
         response = HttpResponse(wrapper, content_type=content_type)
         response['Content-length'] = self.content.size
+        response['Content-disposition'] = 'attachment; filename=%s' % (
+                                                            self.entry.name)
         return response
 
     def info_view(self, parms=None):
