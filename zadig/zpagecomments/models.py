@@ -52,12 +52,27 @@ class PageComment(models.Model):
                 _(u'This comment has been deleted by an administrator.'),)
         else:
             body = '<p class="comment">%s</p>' % (self.comment,)
-        return '''<div class="pageComment">
+        state_modification_form = ''
+        if permissions.EDIT in entry:
+            state_modification_form = CommentStateForm(initial = {
+                    comment_id = self.id, comment_state = self.state }).as_p()
+        return '''<div class="pageComment %s">
             <p class="authorLine">%s</p>
             <p class="date">%s</p>
             %s
-            </div>''' % (authorline, self.date.strftime('%Y-%m-%d %H:%M %Z'),
-                         body)
+            %s
+            </div>''' % (self.state, authorline,
+                         self.date.strftime('%Y-%m-%d %H:%M %Z'), body,
+                         state_modification_form)
+
+
+class CommentStateForm(forms.Form):
+    comment_state = forms.ChoiceField(required=True, choices=(
+        (STATE_DELETED, _(u'Deleted')),
+        (STATE_MODERATED, _(u'Moderated')),
+        (STATE_PUBLISHED, _(u'Published'))))
+    comment_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
+
 
 class CommentForm(forms.Form):
     from tinymce.widgets import TinyMCE
