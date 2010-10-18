@@ -1,6 +1,5 @@
 from django import template
 from django.utils.translation import ugettext as _
-from django.utils.html import escape
 
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm

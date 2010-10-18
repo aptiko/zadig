@@ -1,6 +1,7 @@
 from django.db import models
 from django import forms
 from django.utils.translation import ugettext as _
+from django.utils.html import escape
 import settings
 
 from zadig.core import entry_option_sets
@@ -53,9 +54,9 @@ class PageComment(models.Model):
         else:
             body = '<p class="comment">%s</p>' % (self.comment,)
         state_modification_form = ''
-        if permissions.EDIT in entry:
+        if permissions.EDIT in p:
             state_modification_form = CommentStateForm(initial = {
-                    comment_id = self.id, comment_state = self.state }).as_p()
+                   'comment_id': self.id, 'comment_state': self.state }).as_p()
         return '''<div class="pageComment %s">
             <p class="authorLine">%s</p>
             <p class="date">%s</p>

@@ -3,8 +3,7 @@ from django.utils.translation import ugettext as _
 
 from zadig.core.models import Entry
 from zadig.zstandard.models import PageEntry
-from zadig.zpagecomments.models import EntryOptions, PageComment, CommentForm, \
-                                        STATE_PUBLISHED
+from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
 
 def add_comment(vobject, parms=None):
     entry = vobject.rentry.descendant
