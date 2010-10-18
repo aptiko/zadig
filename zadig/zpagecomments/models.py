@@ -4,7 +4,7 @@ from django.utils.translation import ugettext as _
 import settings
 
 from zadig.core import entry_option_sets
-from zadig.core.models import Entry
+from zadig.core.models import Entry, permissions
 from zadig.zstandard.models import PageEntry
 
 STATE_MODERATED = u'MODERATED'
@@ -34,6 +34,30 @@ class PageComment(models.Model):
     def __unicode__(self):
         return u'Comment id=%s' % (self.id,)
 
+    def render(self, request):
+        entry = self.page
+        entry.request = request
+        p = entry.permissions
+        if permissions.VIEW not in p: return ''
+        if self.state not in (STATE_PUBLISHED, STATE_DELETED) and \
+                                                permissions.EDIT not in p:
+            return ''
+        authorname = escape(self.commenter_name)
+        if self.commenter_website and self.state==STATE_PUBLISHED:
+            authorname = '<a href="%s">%s</a>' % (self.commenter_website,
+                                                        authorname)
+        authorline = _(u'<span class="author">%s</span> says:') % (authorname,)
+        if self.state==STATE_DELETED:
+            body = '<p class="notice">%s</p>' % (
+                _(u'This comment has been deleted by an administrator.'),)
+        else:
+            body = '<p class="comment">%s</p>' % (self.comment,)
+        return '''<div class="pageComment">
+            <p class="authorLine">%s</p>
+            <p class="date">%s</p>
+            %s
+            </div>''' % (authorline, self.date.strftime('%Y-%m-%d %H:%M %Z'),
+                         body)
 
 class CommentForm(forms.Form):
     from tinymce.widgets import TinyMCE

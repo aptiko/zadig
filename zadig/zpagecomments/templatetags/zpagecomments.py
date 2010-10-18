@@ -3,8 +3,7 @@ from django.utils.translation import ugettext as _
 from django.utils.html import escape
 
 from zadig.zstandard.models import PageEntry
-from zadig.zpagecomments.models import PageComment, CommentForm, \
-                                                STATE_PUBLISHED,STATE_DELETED
+from zadig.zpagecomments.models import PageComment, CommentForm
 
 register = template.Library()
 
@@ -20,26 +19,10 @@ class PageCommentsNode(template.Node):
         entry = vobject.rentry.descendant
         if not isinstance(entry, PageEntry): return result
         if vobject.request.view_name not in ('view', 'info'): return result
-        comments = PageComment.objects.filter(page=entry,
-                state__in=(STATE_PUBLISHED, STATE_DELETED)).order_by('id')
+        comments = PageComment.objects.filter(page=entry).order_by('id')
         for c in comments:
-            authorname = escape(c.commenter_name)
-            if c.commenter_website:
-                authorname = '<a href="%s">%s</a>' % (c.commenter_website,
-                                                            authorname)
-            authorline = _(u'<span class="author">%s</span> says:') % (
-                                            authorname,)
-            if c.state==STATE_DELETED:
-                body = '<p class="notice">%s</p>' % (
-                    _(u'This comment has been deleted by an administrator.'),)
-            else:
-                body = '<p class="comment">%s</p>' % (c.comment,)
-            result += '''<div class="pageComment">
-                <p class="authorLine">%s</p>
-                <p class="date">%s</p>
-                %s
-                </div>''' % (authorline, c.date.strftime('%Y-%m-%d %H:%M %Z'),
-                                                                        body)
+            result += c.render(vobject.request)
+
         if 'pagecommentsform' in vobject.request.__dict__:
             form = vobject.request.pagecommentsform
         else:
