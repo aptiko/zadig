@@ -33,7 +33,7 @@ class PageComment(models.Model):
     state = CommentStateField()
 
     def __unicode__(self):
-        return u'Comment id=%s' % (self.id,)
+        return u'Comment id=%s on page id=%s' % (self.id, self.page.id)
 
     def __get_state_modification_form(self):
         return '''<label for="id_comment_state">%s</label>

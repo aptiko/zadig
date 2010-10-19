@@ -86,6 +86,7 @@ class LoginForm(forms.Form):
 
 def login(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
+    vobject.request.view_name = 'login'
     _set_languages(vobject)
     message = ''
     if request.user.is_authenticated():

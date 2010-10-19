@@ -26,7 +26,7 @@ class PageCommentsNode(template.Node):
             result += c.render(vobject.request)
         if result.find('</select>')>=0:
             result = '''<form method="POST"
-                            action="__zpagecomments.moderate_comments__">
+                            action="__zpagecomments.moderate_comments__/">
                         <input type="submit" value="%s" />
                         %s
                         <input type="submit" value="%s" />

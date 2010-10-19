@@ -1,9 +1,10 @@
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from zadig.core.models import Entry
+from zadig.core.models import Entry, permissions
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
+
 
 def add_comment(vobject, parms=None):
     entry = vobject.rentry.descendant
@@ -28,4 +29,25 @@ def add_comment(vobject, parms=None):
         vobject.request.pagecommentsform = form
         vobject.request.message = _(
                     u"There was an error in your comment; see below.")
+    return vobject.end_view()
+
+
+def moderate_comments(vobject, parms=None):
+    entry = vobject.rentry.descendant
+    if vobject.request.method != 'POST' or not isinstance(entry, PageEntry):
+        raise Http404
+    querydict = vobject.request.POST
+    for k in querydict:
+        import re
+        m = re.match(r'comment_(\d+)_state', k)
+        if not m: continue
+        comment = PageComment.objects.get(id=int(m.group(1)))
+        e = comment.page
+        e.request = vobject.request
+        if not permissions.EDIT in e.permissions:
+            # FIXME: Should add a user message here
+            continue
+        comment.state = querydict[k]
+        comment.save()
+    vobject.request.view_name = 'view'
     return vobject.end_view()
