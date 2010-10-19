@@ -29,6 +29,7 @@ def add_comment(vobject, parms=None):
         vobject.request.pagecommentsform = form
         vobject.request.message = _(
                     u"There was an error in your comment; see below.")
+    vobject.request.view_name = 'view'
     return vobject.end_view()
 
 
