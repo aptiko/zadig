@@ -61,25 +61,30 @@ class PageComment(models.Model):
                                                 permissions.EDIT not in p:
             return ''
         authorname = escape(self.commenter_name)
-        if self.commenter_website and self.state==STATE_PUBLISHED:
+        if self.state==STATE_DELETED and permissions.EDIT not in p:
+            msg = _(u"Comment submitted on %s by %s has been deleted by an "
+                "administrator.") % (self.date.strftime('%Y-%m-%d %H:%M %Z'),
+                authorname[:4] + ('...' if len(authorname)>4 else ''))
+            return '''<div class="pageComment DELETED">
+               <p class="notice">%s</p>
+               </div>''' % (msg,)
+        if self.commenter_website:
             authorname = '<a href="%s">%s</a>' % (self.commenter_website,
                                                         authorname)
-        authorline = _(u'<span class="author">%s</span> says:') % (authorname,)
-        if self.state==STATE_DELETED:
-            body = '<p class="notice">%s</p>' % (
-                _(u'This comment has been deleted by an administrator.'),)
-        else:
-            body = '<p class="comment">%s</p>' % (self.comment,)
+        authoremail = ('(%s)' % (self.commenter_email,)
+                              ) if permissions.EDIT in p else ''
+        authorline = _(u'<span class="author">%s</span> %s says:') % (
+                                            authorname, authoremail)
         state_modification_form = ''
         if permissions.EDIT in p:
             state_modification_form = self.__get_state_modification_form()
         return '''<div class="pageComment %s">
             <p class="authorLine">%s</p>
             <p class="date">%s</p>
-            %s
+            <p class="comment">%s</p>
             %s
             </div>''' % (self.state, authorline,
-                         self.date.strftime('%Y-%m-%d %H:%M %Z'), body,
+                         self.date.strftime('%Y-%m-%d %H:%M %Z'), self.comment,
                          state_modification_form)
 
 
