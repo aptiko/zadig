@@ -64,7 +64,8 @@ def new_entry(request, parent_path, entry_type):
     return entry.edit_view(new=True)
 
 def change_state(request, path, new_state_id):
-    vobject = models.VObject.objects.get_by_path(request, path)
+    vobject = models.VObject.objects.get_by_path(request, path).descendant
+    _set_languages(vobject)
     entry = vobject.rentry
     new_state_id = int(new_state_id)
     if new_state_id not in [x.target_state.id
@@ -72,7 +73,8 @@ def change_state(request, path, new_state_id):
         raise ValidationError(_(u"Invalid target state"))
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
-    return HttpResponseRedirect(entry.spath)
+    entry.request.view_name = 'info'
+    return vobject.info_view()
 
 def logout(request, path):
     django.contrib.auth.logout(request)
