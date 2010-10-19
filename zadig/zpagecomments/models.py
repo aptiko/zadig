@@ -35,6 +35,23 @@ class PageComment(models.Model):
     def __unicode__(self):
         return u'Comment id=%s' % (self.id,)
 
+    def __get_state_modification_form(self):
+        return '''<label for="id_comment_state">%s</label>
+            <select name="comment_%d_state" id="id_comment_state">
+            <option value="%s" %s>%s</option>
+            <option value="%s" %s>%s</option>
+            <option value="%s" %s>%s</option>
+            </select>''' % (_(u"State:"), self.id,
+            STATE_DELETED,
+            'selected="selected"' if self.state==STATE_DELETED else '',
+            _(u'Deleted'),
+            STATE_MODERATED, 
+            'selected="selected"' if self.state==STATE_MODERATED else '',
+            _(u'Moderated'),
+            STATE_PUBLISHED, 
+            'selected="selected"' if self.state==STATE_PUBLISHED else '',
+            _(u'Published'))
+
     def render(self, request):
         entry = self.page
         entry.request = request
@@ -55,8 +72,7 @@ class PageComment(models.Model):
             body = '<p class="comment">%s</p>' % (self.comment,)
         state_modification_form = ''
         if permissions.EDIT in p:
-            state_modification_form = CommentStateForm(initial = {
-                   'comment_id': self.id, 'comment_state': self.state }).as_p()
+            state_modification_form = self.__get_state_modification_form()
         return '''<div class="pageComment %s">
             <p class="authorLine">%s</p>
             <p class="date">%s</p>
@@ -65,14 +81,6 @@ class PageComment(models.Model):
             </div>''' % (self.state, authorline,
                          self.date.strftime('%Y-%m-%d %H:%M %Z'), body,
                          state_modification_form)
-
-
-class CommentStateForm(forms.Form):
-    comment_state = forms.ChoiceField(required=True, choices=(
-        (STATE_DELETED, _(u'Deleted')),
-        (STATE_MODERATED, _(u'Moderated')),
-        (STATE_PUBLISHED, _(u'Published'))))
-    comment_id = forms.IntegerField(required=True, widget=forms.HiddenInput)
 
 
 class CommentForm(forms.Form):
