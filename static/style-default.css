@@ -103,6 +103,8 @@ div.pageComment span.author { font-weight: bold; }
 div.pageComment span.author a { text-decoration: None; }
 div.pageComment p.date { color: #76797C; font-size: 90%; margin-bottom: 0.5em; }
 div.pageComment p.notice { color: #76797C; font-size: 90%; margin-bottom: 0.5em; }
+div.pageComment.DELETED { background: #EEEEEE; }
+div.pageComment.MODERATED { border: 2px solid red; }
 div.addComment { background: #EEF3F5; border: 1px solid #8CACBB; margin-bottom: 1em; padding: 0.25em 1em 0.5em; }
 div.addComment p.heading { border-bottom: 1px solid #76797C; font-size: 125%; margin: 0.75em 0 0.25em; }
 div.addComment p.notice { color: #76797C; font-size: 90%; margin-bottom: 0.5em; }
