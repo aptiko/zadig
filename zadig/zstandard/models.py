@@ -52,12 +52,10 @@ class VPage(VObject):
     content = models.TextField(blank=True)
 
     def end_view(self, parms=None):
-        if self.deletion_mark: return super(VPage, self).end_view(self, parms)
         return render_to_response('view_page.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
     def info_view(self, parms=None):
-        if self.deletion_mark: return super(VPage, self).info_view(self, parms)
         return self.end_view()
 
 
@@ -85,7 +83,6 @@ class VFile(VObject):
     content = models.FileField(upload_to="files")
 
     def end_view(self, parms=None):
-        if self.deletion_mark: return super(VFile, self).end_view(self, parms)
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -96,7 +93,6 @@ class VFile(VObject):
         return response
 
     def info_view(self, parms=None):
-        if self.deletion_mark: return super(VFile, self).info_view(self, parms)
         return render_to_response('view_file.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
@@ -130,7 +126,6 @@ class VImage(VObject):
     content = models.ImageField(upload_to="images")
 
     def end_view(self, parms=None):
-        if self.deletion_mark: return super(VImage, self).end_view(self, parms)
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -139,12 +134,10 @@ class VImage(VObject):
         return response
 
     def info_view(self, parms=None):
-        if self.deletion_mark: return super(VImage, self).info_view(self, parms)
         return render_to_response('view_image.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
     def resized_view(self, parms="400"):
-        if self.deletion_mark: return super(VImage, self).end_view(self, parms)
         import Image
         im = Image.open(self.content.path)
         target_size = int(parms.strip('/'))
@@ -187,13 +180,11 @@ class VLink(VObject):
     target = models.URLField()
 
     def end_view(self, parms=None):
-        if self.deletion_mark: return super(VLink, self).end_view(self, parms)
         # FIXME: This should not work like this, should directly link outside
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target)
 
     def info_view(self, parms=None):
-        if self.deletion_mark: return super(VLink, self).info_view(self, parms)
         return render_to_response('view_link.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 

@@ -785,18 +785,17 @@ class VObject(models.Model):
             result.request = self.request
         return result
 
-    def info_view(self):
-        if self.deletion_mark:
+    def view_deleted(self, parms):
+        assert(self.deletion_mark)
+        if self.request.view_name=='info':
             return render_to_response('view_deleted_entry.html',
-                { 'vobject': vobject, },
+                { 'vobject': self, },
                 context_instance = RequestContext(self.request))
-        raise NotImplementedError(
-            "Method end_view should implemented in the subclass")
-
-    def end_view(self):
-        if self.deletion_mark: return Http404
-        raise NotImplementedError(
-            "Method end_view should implemented in the subclass")
+        if self.request.view_name=='history':
+            return self.rentry.history_view()
+        if self.request.view_name=='undelete':
+            self.rentry.undelete()
+        raise Http404
 
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)

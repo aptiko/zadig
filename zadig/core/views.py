@@ -33,6 +33,8 @@ def general_view(request, path, view_name, parms):
     vobject = models.VObject.objects.get_by_path(request, path).descendant
     _set_languages(vobject)
     vobject.request.view_name = view_name
+    if vobject.deletion_mark:
+        return vobject.view_deleted(view_name, parms)
     method_name = view_name + '_view'
     if hasattr(vobject, method_name):
         return eval('vobject.%s_view(parms=r"%s")' % (view_name, parms))
@@ -143,7 +145,7 @@ def delete(request, path):
         raise PermissionDenied(_(u"Permission denied"))
     if not vobject.rentry.rcontainer:
         raise PermissionDenied(_(u"The root object cannot be deleted"))
-    vobject.mark_deleted = True
+    vobject.deletion_mark = True
     vobject.save()
     vobject.request.view_name = 'view'
     return vobject.info_view()
