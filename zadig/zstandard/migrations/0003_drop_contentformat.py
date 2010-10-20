@@ -8,21 +8,8 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Deleting model 'EntryOptions'
-        db.delete_table('zstandard_entryoptions')
-
         # Deleting model 'ContentFormat'
         db.delete_table('zstandard_contentformat')
-
-        # Adding model 'EntryOptionSet'
-        db.create_table('zstandard_entryoptions', (
-            ('entry', self.gf('django.db.models.fields.related.OneToOneField')(related_name='ZstandardEntryOptions', unique=True, primary_key=True, to=orm['core.Entry'])),
-            ('no_navigation', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('no_breadcrumbs', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('navigation_toplevel', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('show_author', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('zstandard', ['EntryOptionSet'])
 
         # Deleting field 'VPage.format'
         db.delete_column('zstandard_vpage', 'format_id')
@@ -36,25 +23,12 @@ class Migration(SchemaMigration):
 
     def backwards(self, orm):
         
-        # Adding model 'EntryOptions'
-        db.create_table('zstandard_entryoptions', (
-            ('no_breadcrumbs', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('no_navigation', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('navigation_toplevel', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('entry', self.gf('django.db.models.fields.related.OneToOneField')(related_name='ZstandardEntryOptions', unique=True, primary_key=True, to=orm['core.Entry'])),
-            ('show_author', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('zstandard', ['EntryOptions'])
-
         # Adding model 'ContentFormat'
         db.create_table('zstandard_contentformat', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('descr', self.gf('django.db.models.fields.CharField')(max_length=20)),
         ))
         db.send_create_signal('zstandard', ['ContentFormat'])
-
-        # Deleting model 'EntryOptionSet'
-        db.delete_table('zstandard_entryoptions')
 
         # Adding field 'VPage.format'
         db.add_column('zstandard_vpage', 'format', self.gf('django.db.models.fields.related.ForeignKey')(default=1, to=orm['zstandard.ContentFormat']), keep_default=False)
