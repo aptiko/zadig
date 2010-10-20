@@ -173,16 +173,15 @@ Deletions
 There are two ways to "delete" an object: one is to **mark it as
 deleted**. In this case, the entry history is retained, and the
 "deletion" is an event recorded in the entry history. Marking an entry
-as deleted is creating a new vobject. We consider a vobject as a
-deletion mark if it has empty content and empty metatags. Since the
-entry exists, another entry with the same name cannot be created.
+as deleted is creating a new vobject.  Since the entry exists, another
+entry with the same name cannot be created.
 
 The second way to delete is to **remove the entry**, in which case the
 entry, including the history, is permanently and irrevocably deleted.
 
 .. admonition:: Not implemented yet
 
-   Marking as deleted is not yet implemented in the user interface.
+   Removing the entry is not yet implemented in the user interface.
 
 .. index::
    single: view

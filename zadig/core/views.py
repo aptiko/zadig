@@ -24,6 +24,7 @@ def _set_languages(vobject):
 def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(request, path, version_number)\
                                                                 .descendant
+    if vobject.deletion_mark: raise Http404
     _set_languages(vobject)
     vobject.request.view_name = 'view'
     return vobject.end_view()
@@ -65,6 +66,7 @@ def new_entry(request, parent_path, entry_type):
 
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(request, path).descendant
+    if vobject.deletion_mark: raise Http404
     _set_languages(vobject)
     entry = vobject.rentry
     new_state_id = int(new_state_id)
@@ -88,6 +90,7 @@ class LoginForm(forms.Form):
 
 def login(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
+    if vobject.deletion_mark: raise Http404
     vobject.request.view_name = 'login'
     _set_languages(vobject)
     message = ''
@@ -117,6 +120,7 @@ def login(request, path):
 
 def cut(request, path):
     entry = models.Entry.objects.get_by_path(request, path)
+    if entry.vobject.deletion_mark: raise Http404
     request.session['cut_entries'] = [entry.id]
     request.message = _(u"Object has been cut. Will be moved when you "
                         "paste it.")
@@ -133,19 +137,13 @@ def paste(request, path):
 
 def delete(request, path):
     vobject = models.VObject.objects.get_by_path(request, path)
+    if vobject.deletion_mark: raise Http404
     _set_languages(vobject)
     if permissions.DELETE not in vobject.rentry.permissions:
         raise PermissionDenied(_(u"Permission denied"))
     if not vobject.rentry.rcontainer:
         raise PermissionDenied(_(u"The root object cannot be deleted"))
-    if request.method=='POST' and 'confirm' in request.POST and \
-                                            request.POST['confirm']:
-        container  = vobject.rentry.rcontainer
-        vobject.rentry.delete()
-        return general_view(request, container.path, 'contents', '')
-    elif request.method=='POST':
-        return info_view(request, path)
-    else:
-        return render_to_response('delete_entry.html', 
-                { 'vobject': vobject },
-                context_instance = RequestContext(request))
+    vobject.mark_deleted = True
+    vobject.save()
+    vobject.request.view_name = 'view'
+    return vobject.info_view()

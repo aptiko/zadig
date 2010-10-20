@@ -412,16 +412,23 @@ The VObject model
 
    .. attribute:: zadig.core.models.VObject.version_number
 
-      An integer
+      An integer.
 
    .. attribute:: zadig.core.models.VObject.date
 
       The date in which the vobject has been created.
 
+   .. attribute:: zadig.core.models.VObject.deletion_mark
+
+      If this boolean attribute is :const:`True`, then this vobject is
+      a deletion mark, which means that the entry was marked as
+      deleted when this vobject was created. The vobject's metatags
+      and content are irrelevant in this case.
+      
    .. attribute:: zadig.core.models.VObject.language
 
-      A foreign key to :class:`~zadig.core.models.Language` designating the language of
-      the vobject.
+      A foreign key to :class:`~zadig.core.models.Language` designating the
+      language of the vobject.
 
    .. attribute:: zadig.core.models.VObject.descendant
 

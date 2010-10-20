@@ -738,6 +738,7 @@ class VObject(models.Model):
     version_number = models.PositiveIntegerField()
     date = models.DateTimeField()
     language = models.ForeignKey(Language, blank=True, null=True)
+    deletion_mark = models.BooleanField(default=False)
     objects = VObjectManager()
 
     def __init__(self, *args, **kwargs):
@@ -783,6 +784,19 @@ class VObject(models.Model):
         if 'request' in self.__dict__:
             result.request = self.request
         return result
+
+    def info_view(self):
+        if self.deletion_mark:
+            return render_to_response('view_deleted_entry.html',
+                { 'vobject': vobject, },
+                context_instance = RequestContext(self.request))
+        raise NotImplementedError(
+            "Method end_view should implemented in the subclass")
+
+    def end_view(self):
+        if self.deletion_mark: return Http404
+        raise NotImplementedError(
+            "Method end_view should implemented in the subclass")
 
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
