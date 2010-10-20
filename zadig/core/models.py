@@ -697,12 +697,14 @@ class Entry(models.Model):
                 context_instance = RequestContext(self.request))
 
     def undelete(self):
-        assert(False) # Because it's not implemented yet
-        #ver = self.vobject.version_number
-        #assert(ver>1)
-        #old_vobject = self.get_vobject(ver-1).descendant
-        #new_vobject = old_vobject.__class__
-        
+        ver = self.vobject.version_number
+        assert(ver>1)
+        old_vobject = self.get_vobject(ver-1).descendant
+        assert(not old_vobject.deletion_mark)
+        nvobject = old_vobject.duplicate()
+        nvobject.request = self.request
+        nvobject.request.view_name = 'info'
+        return nvobject.descendant.info_view()
 
     def __unicode__(self):
         result = self.name
@@ -802,8 +804,46 @@ class VObject(models.Model):
         if self.request.view_name=='history':
             return self.rentry.history_view()
         if self.request.view_name=='undelete':
-            self.rentry.undelete()
+            return self.rentry.undelete()
         raise Http404
+
+    def duplicate(self):
+        """Originally downloaded from http://djangosnippets.org/snippets/1282/;
+        Copyright (C) 2009 by djangosnippets user johnboxall"""
+        from django.db.models.query import CollectedObjects
+        from django.db.models.fields.related import ForeignKey
+        collected_objs = CollectedObjects()
+        self.descendant._collect_sub_objects(collected_objs)
+        related_models = collected_objs.keys()
+        root_obj = None
+        # Traverse the related models in reverse deletion order.    
+        for model in reversed(related_models):
+            # Find all FKs on `model` that point to a `related_model`.
+            fks = []
+            for f in model._meta.fields:
+                if isinstance(f, ForeignKey) and f.rel.to in related_models:
+                    fks.append(f)
+            # Replace each `sub_obj` with a duplicate.
+            sub_obj = collected_objs[model]
+            for pk_val, obj in sub_obj.iteritems():
+                for fk in fks:
+                    fk_value = getattr(obj, "%s_id" % fk.name)
+                    # If this FK has been duplicated then point to the
+                    # duplicate.
+                    if fk_value in collected_objs[fk.rel.to]:
+                        dupe_obj = collected_objs[fk.rel.to][fk_value]
+                        setattr(obj, fk.name, dupe_obj)
+                # Duplicate the object and save it.
+                obj.id = None
+                obj.save()
+                if root_obj is None:
+                    root_obj = obj
+        from datetime import datetime
+        root_obj.date = datetime.now()
+        root_obj.version_number = self.entry.vobject_set.order_by(
+                                    '-version_number')[0].version_number + 1
+        root_obj.save()
+        return root_obj
 
     def __unicode__(self):
         return '%s v. %d' % (self.entry.__unicode__(), self.version_number)

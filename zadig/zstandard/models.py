@@ -16,13 +16,6 @@ from zadig.core import utils
 ### Page ###
 
 
-class ContentFormat(models.Model):
-    descr = models.CharField(max_length=20)
-
-    def __unicode__(self):
-        return self.descr
-
-
 class EditPageForm(forms.Form):
     from tinymce.widgets import TinyMCE
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
@@ -48,7 +41,6 @@ class EditPageForm(forms.Form):
 
 
 class VPage(VObject):
-    format = models.ForeignKey(ContentFormat)
     content = models.TextField(blank=True)
 
     def end_view(self, parms=None):
@@ -80,7 +72,7 @@ entry_types.append(PageEntry)
 
 
 class VFile(VObject):
-    content = models.FileField(upload_to="files")
+    content = models.FileField(upload_to="files", blank=True, null=True)
 
     def end_view(self, parms=None):
         from django.core.servers.basehttp import FileWrapper
@@ -123,7 +115,7 @@ entry_types.append(FileEntry)
 
 
 class VImage(VObject):
-    content = models.ImageField(upload_to="images")
+    content = models.ImageField(upload_to="images", blank=True, null=True)
 
     def end_view(self, parms=None):
         from django.core.servers.basehttp import FileWrapper
@@ -177,7 +169,7 @@ entry_types.append(ImageEntry)
 
 
 class VLink(VObject):
-    target = models.URLField()
+    target = models.URLField(blank=True)
 
     def end_view(self, parms=None):
         # FIXME: This should not work like this, should directly link outside
