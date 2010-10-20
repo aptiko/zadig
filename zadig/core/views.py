@@ -34,7 +34,7 @@ def general_view(request, path, view_name, parms):
     _set_languages(vobject)
     vobject.request.view_name = view_name
     if vobject.deletion_mark:
-        return vobject.view_deleted(view_name, parms)
+        return vobject.view_deleted(parms)
     method_name = view_name + '_view'
     if hasattr(vobject, method_name):
         return eval('vobject.%s_view(parms=r"%s")' % (view_name, parms))

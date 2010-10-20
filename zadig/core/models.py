@@ -696,6 +696,14 @@ class Entry(models.Model):
                 { 'vobject': vobject,'permissions_form': permissions_form },
                 context_instance = RequestContext(self.request))
 
+    def undelete(self):
+        assert(False) # Because it's not implemented yet
+        #ver = self.vobject.version_number
+        #assert(ver>1)
+        #old_vobject = self.get_vobject(ver-1).descendant
+        #new_vobject = old_vobject.__class__
+        
+
     def __unicode__(self):
         result = self.name
         container = self.rcontainer

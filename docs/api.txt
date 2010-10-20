@@ -387,6 +387,13 @@ The Entry model
       This is a class attribute, with a translatable, human readable
       name for the type, such as "Page" or "Image".
 
+   .. method:: zadig.core.models.Entry.undelete()
+
+      When called on an entry whose last vobject is a
+      :attr:`~zadig.core.models.VObject.deletion_mark,` it creates an
+      additional vobject identical in content to the vobject before
+      undeletion, thereby reverting to that last vobject.
+
    .. attribute:: zadig.core.models.Entry.vobject
 
       This is the same as
@@ -463,6 +470,14 @@ The VObject model
       Returns a :class:`django.http.HttpResponse` object with the end
       view of the vobject.
       
+   .. method:: zadig.core.models.VObject.view_deleted()
+
+      Used internally. When a vobject is deleted (i.e. has
+      :attr:`~zadig.core.models.VObject.deletion_mark` set), then this
+      method is called to return the view, rather than its other
+      methods. This method decides if it should return a response or
+      whether it should raise a :exc:`django.http.Http404`.
+
    :class:`~zadig.core.models.VObject` has a custom manager:
 
    .. attribute:: zadig.core.models.VObject.objects
