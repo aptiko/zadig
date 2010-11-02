@@ -808,10 +808,16 @@ class VObject(models.Model):
         raise Http404
 
     def duplicate(self):
-        """Originally downloaded from http://djangosnippets.org/snippets/1282/;
-        Copyright (C) 2009 by djangosnippets user johnboxall"""
+        """Originally downloaded from http://djangosnippets.org/snippets/1282/
+        and then modified.
+        Copyright (C) 2009 by djangosnippets user johnboxall
+        Copyright (C) 2010 National Technical University of Athens"""
         from django.db.models.query import CollectedObjects
         from django.db.models.fields.related import ForeignKey
+        from datetime import datetime
+        ndate = datetime.now()
+        nversion_number = self.entry.vobject_set.order_by(
+                                    '-version_number')[0].version_number + 1
         collected_objs = CollectedObjects()
         self.descendant._collect_sub_objects(collected_objs)
         related_models = collected_objs.keys()
@@ -835,17 +841,17 @@ class VObject(models.Model):
                         setattr(obj, fk.name, dupe_obj)
                 # Duplicate the object and save it.
                 obj.id = None
+                if isinstance(obj, VObject):
+                    obj.date = ndate
+                    obj.version_number = nversion_number
                 if root_obj is None:
-                    from datetime import datetime
-                    obj.date = datetime.now()
-                    obj.version_number = self.entry.vobject_set.order_by(
-                                    '-version_number')[0].version_number + 1
                     root_obj = obj
                 obj.save()
         return root_obj
 
     def __unicode__(self):
-        return '%s v. %d' % (self.entry.__unicode__(), self.version_number)
+        return '%s v. %d, id=%d' % (self.entry.__unicode__(),
+                self.version_number, self.id)
 
     class Meta:
         ordering = ('entry', 'version_number')
