@@ -835,14 +835,13 @@ class VObject(models.Model):
                         setattr(obj, fk.name, dupe_obj)
                 # Duplicate the object and save it.
                 obj.id = None
-                obj.save()
                 if root_obj is None:
-                    root_obj = obj
-        from datetime import datetime
-        root_obj.date = datetime.now()
-        root_obj.version_number = self.entry.vobject_set.order_by(
+                    from datetime import datetime
+                    obj.date = datetime.now()
+                    obj.version_number = self.entry.vobject_set.order_by(
                                     '-version_number')[0].version_number + 1
-        root_obj.save()
+                    root_obj = obj
+                obj.save()
         return root_obj
 
     def __unicode__(self):
