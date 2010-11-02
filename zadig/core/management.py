@@ -69,12 +69,6 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
                                 source_state=published, target_state=private))
         new_workflow.state_transitions.add(models.StateTransition .objects.get(
                                 source_state=nonexistent, target_state=private))
-    if models.ContentFormat in created_models:
-        stderr.write("Populating %s table\n" % (models.ContentFormat._meta.db_table,))
-        new_contentformat = models.ContentFormat(descr='html')
-        new_contentformat.save()
-        new_contentformat = models.ContentFormat(descr='rst')
-        new_contentformat.save()
     if models.Language in created_models:
         stderr.write("Populating %s table\n" % (models.Language._meta.db_table,))
         for lang_id, lang_descr in settings.ZADIG_LANGUAGES:
@@ -89,7 +83,6 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
         entry.save()
         page = models.VPage(entry=entry, version_number=1,
                 language_id=settings.ZADIG_LANGUAGES[0][0],
-                format=models.ContentFormat.objects.get(descr='html'),
                 content='This is the root page')
         page.save()
         nmetatags = models.VObjectMetatags(vobject=page,

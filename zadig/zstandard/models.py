@@ -61,7 +61,6 @@ class PageEntry(Entry):
         return EditPageForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.format=ContentFormat.objects.get(descr='html')
         vobject.content=utils.sanitize_html(form.cleaned_data['content'])
 
 
