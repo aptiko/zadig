@@ -278,7 +278,7 @@ class Entry(models.Model):
 
     @property
     def creation_date(self):
-        return self.get_vobject(1).date
+        return self.vobject_set.order_by('version_number')[0].date
 
     @property
     def last_modification_date(self):
