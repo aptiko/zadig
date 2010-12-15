@@ -2,6 +2,8 @@
 {% load i18n %}
 
 {% block mainContent %}
+  <h1 class="title">{{vobject.metatags.default.title}}</h1>
+  <p class="objectDescription">{{vobject.metatags.default.description}}</p>
   <div class="blogIndex">
     {% for p in vobject.rentry.descendant.posts %}
       <div class="blogPost">
