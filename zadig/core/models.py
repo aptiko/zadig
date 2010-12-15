@@ -500,7 +500,9 @@ class Entry(models.Model):
             e.multilingual_group = amultilingual_group
             e.save()
 
-    def edit_subform(self, new): return forms.Form
+    def edit_subform(self, data=None, files=None, new=False):
+        return forms.Form(data, files)
+
     def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
@@ -521,8 +523,8 @@ class Entry(models.Model):
             mainform = EditEntryForm(self.request.POST, request=self.request,
                             entry=self.container if new else self, new=new)
             metatagsformset = MetatagsFormSet(self.request.POST)
-            subform = self.edit_subform(self.request.POST, self.request.FILES,
-                                                                    new=new)
+            subform = self.edit_subform(data=self.request.POST,
+                                        files=self.request.FILES, new=new)
             optionsforms = [o.form(self.request.POST)
                                                     for o in entry_option_sets]
             all_forms_are_valid = all(
