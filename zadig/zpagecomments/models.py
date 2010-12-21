@@ -89,35 +89,21 @@ class PageComment(models.Model):
 
 
 class CommentForm(forms.Form):
-    from tinymce.widgets import TinyMCE
     commenter_name = forms.CharField(max_length=100, required=True,
                                 label=_(u'Name'))
     commenter_email = forms.EmailField(required=True, label=_(u'Email'))
     commenter_website = forms.URLField(required=False, label=_(u'Website'))
-    comment = forms.CharField(label='',
-        widget=TinyMCE(attrs={'cols':40, 'rows':10},
-        mce_attrs={
-            'content_css': settings.ZADIG_MEDIA_URL + '/style.css',
-            'convert_urls': True,
-            'entity_encoding': 'raw',
-            'theme': 'advanced',
-            'plugins': 'table,inlinepopups,autosave',
-            'theme_advanced_blockformats': settings.ZADIG_TINYMCE_BLOCKFORMATS,
-            'theme_advanced_styles': settings.ZADIG_TINYMCE_STYLES,
-            'theme_advanced_toolbar_location': 'top',
-            'theme_advanced_toolbar_align': 'left',
-            'theme_advanced_buttons1': 'bold,italic,sup,sub,|,numlist,bullist,outdent,indent,|,link,unlink,|,removeformat,code,formatselect,styleselect',
-            'theme_advanced_buttons2': '',
-            'theme_advanced_buttons3': '',
-            'popup_css': settings.ZADIG_MEDIA_URL + '/tinymce_popup.css',
-        }), required=True)
+    comment = forms.CharField(label='', required=True, widget=forms.Textarea)
 
     def clean_comment(self):
+        import re
         from zadig.core.utils import sanitize_html
-        result = sanitize_html( self.cleaned_data['comment'])
+        result = re.sub(r'\n\s*\n', r'\n<p>\n', self.cleaned_data['comment'])
+        result = sanitize_html(result)
         if not result:
             raise forms.ValidationError(_(
-                        u"Don't try to be too clever with the HTML."))
+                        u"The comment cannot be empty (and the HTML should "
+                        u"not be too clever)."))
         return result
 
 
