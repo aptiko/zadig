@@ -95,17 +95,6 @@ class CommentForm(forms.Form):
     commenter_website = forms.URLField(required=False, label=_(u'Website'))
     comment = forms.CharField(label='', required=True, widget=forms.Textarea)
 
-    def clean_comment(self):
-        import re
-        from zadig.core.utils import sanitize_html
-        result = re.sub(r'\n\s*\n', r'\n<p>\n', self.cleaned_data['comment'])
-        result = sanitize_html(result)
-        if not result:
-            raise forms.ValidationError(_(
-                        u"The comment cannot be empty (and the HTML should "
-                        u"not be too clever)."))
-        return result
-
 
 class EntryOptionsForm(forms.Form):
     allow_comments = forms.BooleanField(label=_(u"Allow comments"),

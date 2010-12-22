@@ -43,12 +43,20 @@ class PageCommentsNode(template.Node):
            <form method="POST" action="%s__zpagecomments.add_comment__/">
            <table>
            %s
-           <th></th><td><input type="submit" value="%s" /></td>
+           <tr><th></th><td><p class="notice">%s</p></td></tr>
+           <tr><th></th><td><input type="submit" value="%s" /></td></tr>
            </table>
            </form>
            </div>''' % (form.media, _(u"Add comment"),
                 _(u"Your email address will not be published"),
-                entry.spath, form.as_table(), _(u"Add comment"))
+                entry.spath, form.as_table(),
+                _(u'Separate paragraphs with blank line; URLs will be '
+                  u'automatically converted to links; use **bold**, '
+                  u'*italics*; indent paragraphs for block quoting; other '
+                  u'<a href="http://docutils.sourceforge.net/docs/user/rst/'
+                  u'quickstart.html">reStructuredText</a> markup is also '
+                  u'possible.'),
+                _(u"Add comment"))
         return result
 
 
