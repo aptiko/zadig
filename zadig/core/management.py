@@ -24,7 +24,7 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
     search = models.Permission.objects.get(descr="search")
     if models.Lentity in created_models:
         stderr.write("Populating %s table\n" % (models.Lentity._meta.db_table,))
-        for special in (1, 2):
+        for special in (ANONYMOUS_USER, LOGGED_ON_USER):
             new_lentity = models.Lentity(special=special)
             new_lentity.save()
         for user in User.objects.all():
@@ -40,8 +40,8 @@ def import_initial_data(app, created_models, verbosity, **kwargs):
     published = models.State.objects.get(descr='Published')
     if models.StatePermission in created_models:
         stderr.write("Populating %s table\n" % (models.StatePermission._meta.db_table,))
-        anonymous_user = models.Lentity.objects.get(special=1)
-        logged_on_user = models.Lentity.objects.get(special=2)
+        anonymous_user = models.Lentity.objects.get(special=ANONYMOUS_USER)
+        logged_on_user = models.Lentity.objects.get(special=LOGGED_ON_USER)
         for state, lentity, permission in (
                     (private, logged_on_user, view),
                     (private, logged_on_user, search),

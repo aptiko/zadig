@@ -17,14 +17,16 @@ def add_comment(vobject, parms=None):
     form = CommentForm(vobject.request.POST)
     if form.is_valid():
         from docutils.core import publish_parts
+        from zadig.core.utils import sanitize_html
         parts = publish_parts(source=form.cleaned_data['comment'],
-                                                    writer_name="html4css1")
+                              writer_name="html4css1",
+                              settings_overrides={'file_insertion_enabled': 0 })
         comment = PageComment(
             page=entry,
             commenter_name=form.cleaned_data['commenter_name'],
             commenter_email=form.cleaned_data['commenter_email'],
             commenter_website=form.cleaned_data['commenter_website'],
-            comment=parts['fragment'],
+            comment=sanitize_html(parts['fragment']),
             state=STATE_PUBLISHED)
         comment.save()
         vobject.request.message = _(u"Your comment has been added.")
