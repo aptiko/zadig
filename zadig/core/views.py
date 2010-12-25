@@ -142,7 +142,7 @@ def delete(request, path):
     vobject = models.VObject.objects.get_by_path(request, path).descendant
     if vobject.deletion_mark: raise Http404
     _set_languages(vobject)
-    if permissions.DELETE not in vobject.rentry.permissions:
+    if permissions.EDIT not in vobject.rentry.permissions:
         raise PermissionDenied(_(u"Permission denied"))
     if not vobject.rentry.rcontainer:
         raise PermissionDenied(_(u"The root object cannot be deleted"))
