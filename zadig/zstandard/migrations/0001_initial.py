@@ -8,17 +8,9 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding model 'ContentFormat'
-        db.create_table('zstandard_contentformat', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('descr', self.gf('django.db.models.fields.CharField')(max_length=20)),
-        ))
-        db.send_create_signal('zstandard', ['ContentFormat'])
-
         # Adding model 'VPage'
         db.create_table('zstandard_vpage', (
             ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('format', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['zstandard.ContentFormat'])),
             ('content', self.gf('django.db.models.fields.TextField')(blank=True)),
         ))
         db.send_create_signal('zstandard', ['VPage'])
@@ -32,7 +24,7 @@ class Migration(SchemaMigration):
         # Adding model 'VFile'
         db.create_table('zstandard_vfile', (
             ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.FileField')(max_length=100)),
+            ('content', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal('zstandard', ['VFile'])
 
@@ -45,7 +37,7 @@ class Migration(SchemaMigration):
         # Adding model 'VImage'
         db.create_table('zstandard_vimage', (
             ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.ImageField')(max_length=100)),
+            ('content', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True, blank=True)),
         ))
         db.send_create_signal('zstandard', ['VImage'])
 
@@ -58,7 +50,7 @@ class Migration(SchemaMigration):
         # Adding model 'VLink'
         db.create_table('zstandard_vlink', (
             ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('target', self.gf('django.db.models.fields.URLField')(max_length=200)),
+            ('target', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
         ))
         db.send_create_signal('zstandard', ['VLink'])
 
@@ -81,21 +73,19 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('zstandard', ['InternalRedirectionEntry'])
 
-        # Adding model 'EntryOptions'
+        # Adding model 'EntryOptionSet'
         db.create_table('zstandard_entryoptions', (
-            ('entry', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
+            ('entry', self.gf('django.db.models.fields.related.OneToOneField')(related_name='ZstandardEntryOptions', unique=True, primary_key=True, to=orm['core.Entry'])),
             ('no_navigation', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('no_breadcrumbs', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('navigation_toplevel', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('show_author', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
-        db.send_create_signal('zstandard', ['EntryOptions'])
+        db.send_create_signal('zstandard', ['EntryOptionSet'])
 
 
     def backwards(self, orm):
         
-        # Deleting model 'ContentFormat'
-        db.delete_table('zstandard_contentformat')
-
         # Deleting model 'VPage'
         db.delete_table('zstandard_vpage')
 
@@ -126,7 +116,7 @@ class Migration(SchemaMigration):
         # Deleting model 'InternalRedirectionEntry'
         db.delete_table('zstandard_internalredirectionentry')
 
-        # Deleting model 'EntryOptions'
+        # Deleting model 'EntryOptionSet'
         db.delete_table('zstandard_entryoptions')
 
 
@@ -135,10 +125,10 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'Group'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'blank': 'True'})
+            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
         },
         'auth.permission': {
-            'Meta': {'ordering': "('content_type__app_label', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
+            'Meta': {'ordering': "('content_type__app_label', 'content_type__model', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
             'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -149,7 +139,7 @@ class Migration(SchemaMigration):
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
             'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'blank': 'True'}),
+            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
@@ -157,7 +147,7 @@ class Migration(SchemaMigration):
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'blank': 'True'}),
+            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
             'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'contenttypes.contenttype': {
@@ -196,23 +186,20 @@ class Migration(SchemaMigration):
         'core.vobject': {
             'Meta': {'ordering': "('entry', 'version_number')", 'unique_together': "(('entry', 'version_number'),)", 'object_name': 'VObject', 'db_table': "'zadig_vobject'"},
             'date': ('django.db.models.fields.DateTimeField', [], {}),
+            'deletion_mark': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'entry': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'vobject_set'", 'to': "orm['core.Entry']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'language': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Language']", 'null': 'True', 'blank': 'True'}),
             'object_class': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'version_number': ('django.db.models.fields.PositiveIntegerField', [], {})
         },
-        'zstandard.contentformat': {
-            'Meta': {'object_name': 'ContentFormat'},
-            'descr': ('django.db.models.fields.CharField', [], {'max_length': '20'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        'zstandard.entryoptions': {
-            'Meta': {'object_name': 'EntryOptions'},
-            'entry': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'}),
+        'zstandard.entryoptionset': {
+            'Meta': {'object_name': 'EntryOptionSet', 'db_table': "'zstandard_entryoptions'"},
+            'entry': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'ZstandardEntryOptions'", 'unique': 'True', 'primary_key': 'True', 'to': "orm['core.Entry']"}),
             'navigation_toplevel': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'no_breadcrumbs': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'no_navigation': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
+            'no_navigation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'show_author': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         'zstandard.fileentry': {
             'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'FileEntry', '_ormbases': ['core.Entry']},
@@ -236,12 +223,12 @@ class Migration(SchemaMigration):
         },
         'zstandard.vfile': {
             'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VFile', '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.FileField', [], {'max_length': '100'}),
+            'content': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
         },
         'zstandard.vimage': {
             'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VImage', '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.ImageField', [], {'max_length': '100'}),
+            'content': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
         },
         'zstandard.vinternalredirection': {
@@ -251,13 +238,12 @@ class Migration(SchemaMigration):
         },
         'zstandard.vlink': {
             'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VLink', '_ormbases': ['core.VObject']},
-            'target': ('django.db.models.fields.URLField', [], {'max_length': '200'}),
+            'target': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
             'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
         },
         'zstandard.vpage': {
             'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VPage', '_ormbases': ['core.VObject']},
             'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'format': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zstandard.ContentFormat']"}),
             'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
         }
     }
