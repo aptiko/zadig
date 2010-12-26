@@ -1,0 +1,17 @@
+Occasionally we make a backwards incompatible change: we delete all migrations
+and restart them from scratch. Whenever we do this, the procedure to update an
+existing installation is as follows:
+
+* Update to the revision just before the restarting of migrations, and make
+  sure all migrations are performed.
+* Update to the revision after the restarting of migrations.
+* Delete all contents of the south_migrationhistory table (NOTE: you may need
+  to delete only rows that refer to certain applications)
+* Execute ./manage.py migrate --fake (again, you may need to only do this for
+  certain applications).
+
+In order to do such a backwards incompatible change, it is important to
+manually rewrite all data migrations and put them in 0002_data_initial.py. Such
+data migrations (usually started with ./manage.py datamigration and then
+manually filled-in) are usually in files named XXXX_data_*.py files, but it's
+better to review all migrations to make sure nothing else is in there.
