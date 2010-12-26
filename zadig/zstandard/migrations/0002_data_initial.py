@@ -9,7 +9,8 @@ class Migration(DataMigration):
     def forwards(self, orm):
         from zadig.zstandard.models import VPage, PageEntry
         from zadig.core.models import Workflow, VObjectMetatags
-,
+        import settings
+
         # Root page
         entry = PageEntry(container=None, name='', seq=1, owner_id=1,
             state=Workflow.objects.get(id=settings.WORKFLOW_ID)

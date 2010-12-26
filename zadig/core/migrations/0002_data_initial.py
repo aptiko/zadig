@@ -7,9 +7,11 @@ from django.db import models
 class Migration(DataMigration):
 
     def forwards(self, orm):
+        from django.contrib.auth.models import User
+        import settings
         from zadig.core.models import permissions, Permission, Lentity, State, \
-                        Language, ANONYMOUS_USER, LOGGED_ON_USER, Workflow, \
-                        StatePermission, StateTransition
+                        Language, ANONYMOUS_USER, LOGGED_ON_USER, OWNER, \
+                        Workflow, StatePermission, StateTransition
 
         # Permissions
         for id, descr in [(permissions.VIEW,   "view"),
