@@ -20,6 +20,10 @@ PERM_ADMIN=3
 PERM_DELETE=4
 PERM_SEARCH=5
 
+ANONYMOUS_USER=100
+LOGGED_ON_USER=200
+OWNER=300
+
 
 class Language(models.Model):
     id = models.CharField(max_length=5, primary_key=True)
@@ -44,10 +48,6 @@ class Permission(models.Model):
 
     class Meta:
         db_table = 'zadig_permission'
-
-ANONYMOUS_USER=1
-LOGGED_ON_USER=2
-OWNER=3
 
 class Lentity(models.Model):
     user = models.ForeignKey(User, null=True)
@@ -102,7 +102,6 @@ class StateTransition(models.Model):
         return "%s => %s" % (self.source_state, self.target_state)
 
     class Meta:
-        unique_together = ('source_state', 'target_state')
         db_table = 'zadig_statetransition'
 
 
