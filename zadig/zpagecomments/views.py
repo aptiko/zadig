@@ -1,7 +1,7 @@
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from zadig.core.models import Entry, permissions
+from zadig.core.models import Entry, PERM_EDIT
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
 
@@ -50,7 +50,7 @@ def moderate_comments(vobject, parms=None):
         comment = PageComment.objects.get(id=int(m.group(1)))
         e = comment.page
         e.request = vobject.request
-        if not permissions.EDIT in e.permissions:
+        if not PERM_EDIT in e.permissions:
             # FIXME: Should add a user message here
             continue
         comment.state = querydict[k]

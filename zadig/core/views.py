@@ -10,8 +10,7 @@ from django.template import RequestContext
 import django.contrib.auth
 
 from zadig.core import models
-from zadig.core.models import permissions, entry_types, VObjectMetatags, \
-                                                                        Language
+from zadig.core.models import PERM_EDIT, entry_types, VObjectMetatags, Language
 
 def _set_languages(vobject):
     """Set preferred and effective language."""
@@ -142,7 +141,7 @@ def delete(request, path):
     vobject = models.VObject.objects.get_by_path(request, path).descendant
     if vobject.deletion_mark: raise Http404
     _set_languages(vobject)
-    if permissions.EDIT not in vobject.rentry.permissions:
+    if PERM_EDIT not in vobject.rentry.permissions:
         raise PermissionDenied(_(u"Permission denied"))
     if not vobject.rentry.rcontainer:
         raise PermissionDenied(_(u"The root object cannot be deleted"))

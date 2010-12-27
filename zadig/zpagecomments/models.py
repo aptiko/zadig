@@ -5,7 +5,7 @@ from django.utils.html import escape
 import settings
 
 from zadig.core import entry_option_sets
-from zadig.core.models import Entry, permissions
+from zadig.core.models import Entry, PERM_VIEW, PERM_EDIT
 from zadig.zstandard.models import PageEntry
 
 STATE_MODERATED = u'MODERATED'
@@ -56,12 +56,12 @@ class PageComment(models.Model):
         entry = self.page
         entry.request = request
         p = entry.permissions
-        if permissions.VIEW not in p: return ''
+        if PERM_VIEW not in p: return ''
         if self.state not in (STATE_PUBLISHED, STATE_DELETED) and \
-                                                permissions.EDIT not in p:
+                                                            PERM_EDIT not in p:
             return ''
         authorname = escape(self.commenter_name)
-        if self.state==STATE_DELETED and permissions.EDIT not in p:
+        if self.state==STATE_DELETED and PERM_EDIT not in p:
             msg = _(u"Comment submitted on %s by %s has been deleted by an "
                 "administrator.") % (self.date.strftime('%Y-%m-%d %H:%M %Z'),
                 authorname[:4] + ('...' if len(authorname)>4 else ''))
@@ -72,11 +72,11 @@ class PageComment(models.Model):
             authorname = '<a href="%s">%s</a>' % (self.commenter_website,
                                                         authorname)
         authoremail = ('(%s)' % (self.commenter_email,)
-                              ) if permissions.EDIT in p else ''
+                              ) if PERM_EDIT in p else ''
         authorline = _(u'<span class="author">%s</span> %s says:') % (
                                             authorname, authoremail)
         state_modification_form = ''
-        if permissions.EDIT in p:
+        if PERM_EDIT in p:
             state_modification_form = self.__get_state_modification_form()
         return '''<div class="pageComment %s">
             <p class="authorLine">%s</p>

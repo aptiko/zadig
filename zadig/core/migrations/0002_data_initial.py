@@ -9,16 +9,17 @@ class Migration(DataMigration):
     def forwards(self, orm):
         from django.contrib.auth.models import User
         import settings
-        from zadig.core.models import permissions, Permission, Lentity, State, \
-                        Language, ANONYMOUS_USER, LOGGED_ON_USER, OWNER, \
+        from zadig.core.models import Permission, Lentity, State, Language, \
+                        ANONYMOUS_USER, LOGGED_ON_USER, OWNER, PERM_VIEW, \
+                        PERM_EDIT, PERM_ADMIN, PERM_DELETE, PERM_SEARCH, \
                         Workflow, StatePermission, StateTransition
 
         # Permissions
-        for id, descr in [(permissions.VIEW,   "view"),
-                          (permissions.EDIT,   "edit"),
-                          (permissions.ADMIN,  "admin"),
-                          (permissions.DELETE, "delete"),
-                          (permissions.SEARCH, "search")]:
+        for id, descr in [(PERM_VIEW,   "view"),
+                          (PERM_EDIT,   "edit"),
+                          (PERM_ADMIN,  "admin"),
+                          (PERM_DELETE, "delete"),
+                          (PERM_SEARCH, "search")]:
             new_permission = Permission(id=id, descr=descr)
             new_permission.save()
         view   = Permission.objects.get(descr="view")

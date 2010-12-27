@@ -14,12 +14,11 @@ from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
 
 
-class permissions:
-    VIEW=1
-    EDIT=2
-    ADMIN=3
-    DELETE=4
-    SEARCH=5
+PERM_VIEW=1
+PERM_EDIT=2
+PERM_ADMIN=3
+PERM_DELETE=4
+PERM_SEARCH=5
 
 
 class Language(models.Model):
@@ -170,7 +169,7 @@ class EntryManager(models.Manager):
         for name in utils.split_path(path):
             entry = get_object_or_404(self, name=name, container=entry)
             entry.request = request
-            if not permissions.VIEW in entry.permissions:
+            if not PERM_VIEW in entry.permissions:
                 raise Http404
         return entry
 
@@ -212,7 +211,7 @@ class Entry(models.Model):
     def __initialize(self):
         """Set all other attributes of a newly created Entry, when only
         container has been set."""
-        if not permissions.EDIT in self.rcontainer.permissions:
+        if not PERM_EDIT in self.rcontainer.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         self.seq = 1
         siblings = Entry.objects.filter(container=self.rcontainer)
@@ -228,7 +227,7 @@ class Entry(models.Model):
         return self.request.build_absolute_uri(self.spath)
 
     def can_contain(self, cls):
-        return permissions.EDIT in self.permissions
+        return PERM_EDIT in self.permissions
 
     @classmethod
     def can_be_contained(cls, parent):
@@ -261,8 +260,7 @@ class Entry(models.Model):
         attribute, it means that it is likely Django calling us, for example in
         order to cascade delete, which means we should do it even without
         permission (hopefully, that is)."""
-        if 'request' in self.__dict__ and \
-                                permissions.DELETE not in self.permissions:
+        if 'request' in self.__dict__ and PERM_DELETE not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         container = self.rcontainer
         if not container:
@@ -314,8 +312,8 @@ class Entry(models.Model):
     def permissions(self):
         if self.request.user.is_authenticated() and (self.owner.pk ==
                     self.request.user.pk or self.request.user.is_superuser):
-            return set((permissions.VIEW, permissions.EDIT, permissions.ADMIN,
-                permissions.DELETE, permissions.SEARCH))
+            return set((PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
+                                                                PERM_SEARCH))
         result = set()
         if self.request.user.is_authenticated():
             lentities = [Lentity.objects.get(user=self.request.user),
@@ -336,8 +334,8 @@ class Entry(models.Model):
 
     @property
     def touchable(self):
-        return self.permissions.intersection(
-                    set((permissions.EDIT, permissions.ADMIN))) != set()
+        return self.permissions.intersection(set((PERM_EDIT, PERM_ADMIN))
+                                                                    ) != set()
 
     @property
     def vobject(self):
@@ -350,7 +348,7 @@ class Entry(models.Model):
         else:
             vobject = self.vobject_set.get(version_number=version_number)
         if vobject.version_number != latest_vobject.version_number \
-                and permissions.EDIT not in self.permissions:
+                and PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         vobject.request = self.request
         return vobject.descendant
@@ -390,21 +388,21 @@ class Entry(models.Model):
     @property
     def subentries(self):
         parent_permissions = self.permissions
-        if permissions.VIEW not in parent_permissions:
+        if PERM_VIEW not in parent_permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = list(self.all_subentries.order_by('seq').all())
         for s in subentries:
             s.request = self.request
-        if permissions.EDIT in parent_permissions:
+        if PERM_EDIT in parent_permissions:
             return subentries
         result = []
         for s in subentries:
-            if permissions.SEARCH in s.permissions:
+            if PERM_SEARCH in s.permissions:
                 result.append(s)
         return result
 
     def reorder(self, source_seq, target_seq):
-        if permissions.EDIT not in self.permissions:
+        if PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
         for s in subentries: s.request = self.request
@@ -612,8 +610,8 @@ class Entry(models.Model):
         for nsibling in target_entry.all_subentries.all():
             if nsibling.name == self.name:
                 raise ValueError(_("Cannot move; an entry with the same name at the target location already exists"))
-        if (permissions.EDIT not in target_entry.permissions) \
-                or (permissions.DELETE not in self.permissions):
+        if (PERM_EDIT not in target_entry.permissions) \
+                                    or (PERM_DELETE not in self.permissions):
             raise PermissionDenied(_("Permission denied"))
         oldcontainer = self.rcontainer
         oldseq = self.seq
