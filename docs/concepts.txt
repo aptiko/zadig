@@ -282,7 +282,11 @@ Published
 A **workflow** is a collection of states and state-transition rules.
 A **state-transition rule** is a many-to-one relationship between
 states: it shows which are the possible states that follow a given
-state. Each instance has one workflow.
+state. Each state-transition rule can be followed by a specific user
+or group. Usually the owner has permissions to follow any
+state-transition rule; but this is not true in all workflows. For
+example, in some blogs, the blog editor, and not the post author, has
+permission to publish the post.
 
 In the default installation, two states are created, private and
 published, two state-transition rules (from private to published and
