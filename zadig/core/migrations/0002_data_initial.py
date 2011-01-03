@@ -10,7 +10,7 @@ class Migration(DataMigration):
         from django.contrib.auth.models import User
         import settings
         from zadig.core.models import Permission, Lentity, State, Language, \
-                        ANONYMOUS_USER, LOGGED_ON_USER, OWNER, PERM_VIEW, \
+                        EVERYONE, LOGGED_ON_USER, OWNER, PERM_VIEW, \
                         PERM_EDIT, PERM_ADMIN, PERM_DELETE, PERM_SEARCH, \
                         Workflow, StatePermission, StateTransition
 
@@ -29,7 +29,7 @@ class Migration(DataMigration):
         search = Permission.objects.get(descr="search")
 
         # Lentity
-        for special in (ANONYMOUS_USER, LOGGED_ON_USER, OWNER):
+        for special in (EVERYONE, LOGGED_ON_USER, OWNER):
             new_lentity = Lentity(special=special)
             new_lentity.save()
         for user in User.objects.all():
@@ -45,13 +45,13 @@ class Migration(DataMigration):
         published = State.objects.get(descr='Published')
 
         # StatePermission
-        anonymous_user = Lentity.objects.get(special=ANONYMOUS_USER)
+        everyone = Lentity.objects.get(special=EVERYONE)
         logged_on_user = Lentity.objects.get(special=LOGGED_ON_USER)
         for state, lentity, permission in (
                                 (private, logged_on_user, view),
                                 (private, logged_on_user, search),
-                                (published, anonymous_user, view),
-                                (published, anonymous_user, search),):
+                                (published, everyone, view),
+                                (published, everyone, search),):
             new_statepermission = StatePermission(state=state,
                     lentity=lentity, permission=permission)
             new_statepermission.save()

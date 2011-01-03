@@ -536,10 +536,11 @@ Other core models
    :attr:`special`, besides null, can have one of the following
    values:
    
-   .. data:: zadig.core.models.ANONYMOUS_USER
+   .. data:: zadig.core.models.EVERYONE
              zadig.core.models.LOGGED_ON_USER
 
-      These values denote the anonymous user and any logged on user.
+      These values denote any user (including the anonymous user), and
+      any logged on user.
 
    .. data:: zadig.core.models.OWNER
 

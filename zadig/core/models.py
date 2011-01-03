@@ -20,7 +20,7 @@ PERM_ADMIN=3
 PERM_DELETE=4
 PERM_SEARCH=5
 
-ANONYMOUS_USER=100
+EVERYONE=100
 LOGGED_ON_USER=200
 OWNER=300
 
@@ -65,7 +65,7 @@ class Lentity(models.Model):
     def save(self, force_insert=False, force_update=False):
         """Verify integrity before saving."""
         if (not self.user and not self.group and self.special in
-                                    (ANONYMOUS_USER, LOGGED_ON_USER, OWNER)) \
+                                    (EVERYONE, LOGGED_ON_USER, OWNER)) \
                     or (self.user and not self.group and not self.special) \
                     or (not self.user and self.group and not self.special):
             return super(Lentity, self).save(force_insert, force_update)
@@ -316,12 +316,12 @@ class Entry(models.Model):
         result = set()
         if self.request.user.is_authenticated():
             lentities = [Lentity.objects.get(user=self.request.user),
-                         Lentity.objects.get(special=ANONYMOUS_USER),
+                         Lentity.objects.get(special=EVERYONE),
                          Lentity.objects.get(special=LOGGED_ON_USER)]
             lentities.append(Lentity.objects.filter(
                                   group__in=self.request.user.groups.all()))
         else:
-            lentities = [Lentity.objects.get(special=ANONYMOUS_USER)]
+            lentities = [Lentity.objects.get(special=EVERYONE)]
         for lentity in lentities:
             for perm in EntryPermission.objects.filter(lentity=lentity,
                                                               entry=self):
