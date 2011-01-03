@@ -534,10 +534,11 @@ Other core models
    :class:`~zadig.core.models.Lentity` represents a user.  If :attr:`group`
    is not null, the :class:`~zadig.core.models.Lentity` represents a group.
    :attr:`special`, besides null, can have the value
-   :const:`ANONYMOUS_USER`, or :const:`LOGGED_ON_USER`, or
-   :const:`OWNER`; the latter is useful in cases where it is
-   generalized that the owner of an entry has some permission; for
-   example, in state-transition permissions.
+   :const:`~zadig.core.models.ANONYMOUS_USER`, or
+   :const:`~zadig.core.models.LOGGED_ON_USER`, or
+   :const:`~zadig.core.models.OWNER`; the latter is useful in cases
+   where it is generalized that the owner of an entry has some
+   permission; for example, in state-transition permissions.
 
 .. class:: zadig.core.models.State
 
