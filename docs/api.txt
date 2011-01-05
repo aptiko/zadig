@@ -564,6 +564,22 @@ Other core models
       :class:`~zadig.core.models.StatePermission` should generally not
       refer to such special users.
 
+   There is the following method:
+
+   .. method:: zadig.core.models.Lentity.encompasses(user, entry=None)
+
+      Return :const:`True` if the lentity represents *user* or a group
+      that contains *user*. *user* is a
+      :class:`django.contrib.auth.models.User` instance. *entry*
+      should also be supplied, in case the lentity is
+      :const:`~zadig.core.models.OWNER`,
+      :const:`~zadig.core.models.PERM_VIEW`,
+      :const:`~zadig.core.models.PERM_EDIT`,
+      :const:`~zadig.core.models.PERM_DELETE`,
+      :const:`~zadig.core.models.PERM_ADMIN`, or
+      :const:`~zadig.core.models.PERM_SEARCH`; in these cases, whether
+      *user* is a member of the lentity depends on the entry.
+
 .. class:: zadig.core.models.State
 
    A list of states. Contains only a :attr:`descr` attribute.
