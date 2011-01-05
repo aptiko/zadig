@@ -65,7 +65,8 @@ class Lentity(models.Model):
     def save(self, force_insert=False, force_update=False):
         """Verify integrity before saving."""
         if (not self.user and not self.group and self.special in
-                                    (EVERYONE, LOGGED_ON_USER, OWNER)) \
+                    (EVERYONE, LOGGED_ON_USER, OWNER, PERM_VIEW, PERM_EDIT,
+                    PERM_ADMIN, PERM_DELETE, PERM_SEARCH)) \
                     or (self.user and not self.group and not self.special) \
                     or (not self.user and self.group and not self.special):
             return super(Lentity, self).save(force_insert, force_update)
