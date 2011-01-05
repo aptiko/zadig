@@ -49,6 +49,7 @@ class Permission(models.Model):
     class Meta:
         db_table = 'zadig_permission'
 
+
 class Lentity(models.Model):
     user = models.ForeignKey(User, null=True)
     group = models.ForeignKey(Group, null=True)
@@ -57,6 +58,29 @@ class Lentity(models.Model):
     def __unicode__(self):
         return "user=%s, group=%s, special=%s" % (str(self.user),
             str(self.group), str(self.special))
+
+    def encompasses(self, user, entry=None):
+        # Case self.user is not null
+        if self.user:
+            return self.user==user
+
+        # Case self.group is not null
+        if self.group:
+            return self.group in user.groups
+
+        # Case self.special is not null
+        if self.special==EVERYONE:
+            return True
+        if self.special==LOGGED_ON_USER:
+            return user.is_authenticated()
+        if self.special==OWNER:
+            return entry and entry.owner==user
+        if self.special in (PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
+                                                                PERM_SEARCH):
+            return entry and self.special in entry.permissions
+
+        # Should never reach here
+        assert(False)
 
     class Meta:
         unique_together = ('user', 'group')
