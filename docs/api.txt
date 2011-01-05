@@ -289,6 +289,12 @@ The Entry model
       Return a :class:`django.http.HttpResponse` object with the
       permissions view of the entry.
 
+   .. method:: zadig.core.models.Entry.possible_target_states
+
+      A list of :class:`~zadig.core.models.State` objects, which are
+      the possible states to which the workflow allows the current
+      user to move the entry to.
+
    .. method:: zadig.core.models.Entry.process_edit_subform(vobject, subform)
 
       After the user submits the edit view, the subform returned by 

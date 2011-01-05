@@ -738,6 +738,16 @@ class Entry(models.Model):
         nvobject.request.view_name = 'info'
         return nvobject.descendant.info_view()
 
+    @property
+    def possible_target_states(self):
+        workflow = Workflow.objects.get(id=settings.WORKFLOW_ID)
+        result = []
+        for transition in self.state.source_rules.filter(
+                                        workflow_set__contains==workflow):
+            if transition.lentity.encompasses(self.request.user, entry=self):
+                result.add(transition.target_state)
+        return result
+        
     def __unicode__(self):
         result = self.name
         container = self.rcontainer
