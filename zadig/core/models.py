@@ -507,7 +507,8 @@ class Entry(models.Model):
     def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
-        if not self.touchable:
+        if (new and not self.rcontainer.touchable) or (
+                                            not new and not self.touchable):
             raise Http404
         if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
