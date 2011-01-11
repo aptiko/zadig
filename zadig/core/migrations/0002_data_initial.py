@@ -9,10 +9,8 @@ class Migration(DataMigration):
     def forwards(self, orm):
         from django.contrib.auth.models import User
         import settings
-        from zadig.core.models import Permission, Lentity, State, Language, \
-                        EVERYONE, LOGGED_ON_USER, OWNER, PERM_VIEW, \
-                        PERM_EDIT, PERM_ADMIN, PERM_DELETE, PERM_SEARCH, \
-                        Workflow, StatePermission, StateTransition
+        from zadig.core.models import EVERYONE, LOGGED_ON_USER, OWNER, \
+                    PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE, PERM_SEARCH
 
         # Permissions
         for id, descr in [(PERM_VIEW,   "view"),
@@ -20,64 +18,64 @@ class Migration(DataMigration):
                           (PERM_ADMIN,  "admin"),
                           (PERM_DELETE, "delete"),
                           (PERM_SEARCH, "search")]:
-            new_permission = Permission(id=id, descr=descr)
+            new_permission = orm.Permission(id=id, descr=descr)
             new_permission.save()
-        view   = Permission.objects.get(descr="view")
-        edit   = Permission.objects.get(descr="edit")
-        admin  = Permission.objects.get(descr="admin")
-        delete = Permission.objects.get(descr="delete")
-        search = Permission.objects.get(descr="search")
+        view   = orm.Permission.objects.get(descr="view")
+        edit   = orm.Permission.objects.get(descr="edit")
+        admin  = orm.Permission.objects.get(descr="admin")
+        delete = orm.Permission.objects.get(descr="delete")
+        search = orm.Permission.objects.get(descr="search")
 
         # Lentity
         for special in (EVERYONE, LOGGED_ON_USER, OWNER):
-            new_lentity = Lentity(special=special)
+            new_lentity = orm.Lentity(special=special)
             new_lentity.save()
         for user in User.objects.all():
-            new_user = Lentity(user=user)
+            new_user = orm.Lentity(user=user)
             new_user.save()
 
         # State
         for descr in ('Nonexistent', 'Private', 'Published'):
-            new_state = State(descr=descr)
+            new_state = orm.State(descr=descr)
             new_state.save()
-        nonexistent = State.objects.get(descr='Nonexistent')
-        private = State.objects.get(descr='Private')
-        published = State.objects.get(descr='Published')
+        nonexistent = orm.State.objects.get(descr='Nonexistent')
+        private = orm.State.objects.get(descr='Private')
+        published = orm.State.objects.get(descr='Published')
 
         # StatePermission
-        everyone = Lentity.objects.get(special=EVERYONE)
-        logged_on_user = Lentity.objects.get(special=LOGGED_ON_USER)
+        everyone = orm.Lentity.objects.get(special=EVERYONE)
+        logged_on_user = orm.Lentity.objects.get(special=LOGGED_ON_USER)
         for state, lentity, permission in (
                                 (private, logged_on_user, view),
                                 (private, logged_on_user, search),
                                 (published, everyone, view),
                                 (published, everyone, search),):
-            new_statepermission = StatePermission(state=state,
+            new_statepermission = orm.StatePermission(state=state,
                     lentity=lentity, permission=permission)
             new_statepermission.save()
 
         # StateTransition
         for source_state, target_state in ((nonexistent, private),
                     (private, published), (published, private)):
-            new_rule = StateTransition(source_state=source_state,
+            new_rule = orm.StateTransition(source_state=source_state,
                     target_state=target_state)
             new_rule.save()
 
         # Workflow
-        new_workflow = Workflow(name='Simple publication workflow')
+        new_workflow = orm.Workflow(name='Simple publication workflow')
         new_workflow.save()
         new_workflow.states.add(private)
         new_workflow.states.add(published)
-        new_workflow.state_transitions.add(StateTransition.objects.get(
+        new_workflow.state_transitions.add(orm.StateTransition.objects.get(
                                 source_state=private, target_state=published))
-        new_workflow.state_transitions.add(StateTransition .objects.get(
+        new_workflow.state_transitions.add(orm.StateTransition .objects.get(
                                 source_state=published, target_state=private))
-        new_workflow.state_transitions.add(StateTransition.objects.get(
+        new_workflow.state_transitions.add(orm.StateTransition.objects.get(
                                 source_state=nonexistent, target_state=private))
 
         # Language
         for lang_id, lang_descr in settings.ZADIG_LANGUAGES:
-            new_language = Language(id=lang_id, descr=lang_descr)
+            new_language = orm.Language(id=lang_id, descr=lang_descr)
             new_language.save()
 
     def backwards(self, orm):
