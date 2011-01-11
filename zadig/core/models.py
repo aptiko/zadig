@@ -59,7 +59,7 @@ class Lentity(models.Model):
         return "user=%s, group=%s, special=%s" % (str(self.user),
             str(self.group), str(self.special))
 
-    def encompasses(self, user, entry=None):
+    def includes(self, user, entry=None):
         # Case self.user is not null
         if self.user:
             return self.user==user
@@ -744,7 +744,7 @@ class Entry(models.Model):
         result = []
         for transition in self.state.source_rules.filter(
                                         workflow_set__contains==workflow):
-            if transition.lentity.encompasses(self.request.user, entry=self):
+            if transition.lentity.includes(self.request.user, entry=self):
                 result.add(transition.target_state)
         return result
         

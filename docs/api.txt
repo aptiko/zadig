@@ -572,7 +572,7 @@ Other core models
 
    There is the following method:
 
-   .. method:: zadig.core.models.Lentity.encompasses(user, entry=None)
+   .. method:: zadig.core.models.Lentity.includes(user, entry=None)
 
       Return :const:`True` if the lentity represents *user* or a group
       that contains *user*. *user* is a
