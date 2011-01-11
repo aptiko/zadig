@@ -289,7 +289,7 @@ The Entry model
       Return a :class:`django.http.HttpResponse` object with the
       permissions view of the entry.
 
-   .. method:: zadig.core.models.Entry.possible_target_states
+   .. attribute:: zadig.core.models.Entry.possible_target_states
 
       A list of :class:`~zadig.core.models.State` objects, which are
       the possible states to which the workflow allows the current
