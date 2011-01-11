@@ -72,7 +72,7 @@ class Lentity(models.Model):
         if self.special==EVERYONE:
             return True
         if self.special==LOGGED_ON_USER:
-            return user.is_authenticated()
+            return user.username == entry.request.user.username
         if self.special==OWNER:
             return entry and entry.owner==user
         if self.special in (PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,

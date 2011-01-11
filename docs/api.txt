@@ -578,13 +578,15 @@ Other core models
       that contains *user*. *user* is a
       :class:`django.contrib.auth.models.User` instance. *entry*
       should also be supplied, in case the lentity is
+      :const:`~zadig.core.models.LOGGED_ON_USER`,
       :const:`~zadig.core.models.OWNER`,
       :const:`~zadig.core.models.PERM_VIEW`,
       :const:`~zadig.core.models.PERM_EDIT`,
       :const:`~zadig.core.models.PERM_DELETE`,
       :const:`~zadig.core.models.PERM_ADMIN`, or
       :const:`~zadig.core.models.PERM_SEARCH`; in these cases, whether
-      *user* is a member of the lentity depends on the entry.
+      *user* is a member of the lentity depends on the entry, or the
+      :ref:`request object <request-object>` is needed.
 
 .. class:: zadig.core.models.State
 
