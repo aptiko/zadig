@@ -66,7 +66,7 @@ class Lentity(models.Model):
 
         # Case self.group is not null
         if self.group:
-            return self.group in user.groups
+            return self.group in user.groups.all()
 
         # Case self.special is not null
         if self.special==EVERYONE:
