@@ -420,11 +420,10 @@ class Entry(models.Model):
         subentries = list(self.all_subentries.order_by('seq').all())
         for s in subentries:
             s.request = self.request
-        if PERM_EDIT in parent_permissions:
-            return subentries
         result = []
         for s in subentries:
-            if PERM_SEARCH in s.permissions:
+            if not s.vobject.deletion_mark and (PERM_EDIT in
+                        parent_permissions or PERM_SEARCH in s.permissions):
                 result.append(s)
         return result
 
