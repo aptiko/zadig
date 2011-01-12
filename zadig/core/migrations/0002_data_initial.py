@@ -31,7 +31,7 @@ class Migration(DataMigration):
             new_lentity = orm.Lentity(special=special)
             new_lentity.save()
         for user in User.objects.all():
-            new_user = orm.Lentity(user=user)
+            new_user = orm.Lentity(user_id=user.id)
             new_user.save()
 
         # State
