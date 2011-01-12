@@ -56,8 +56,8 @@ class Lentity(models.Model):
     special = models.PositiveSmallIntegerField(null=True)
 
     def __unicode__(self):
-        return "user=%s, group=%s, special=%s" % (str(self.user),
-            str(self.group), str(self.special))
+        return "user=%s, group=%s, special=%d" % (str(self.user),
+                                                str(self.group), self.special)
 
     def includes(self, user, entry=None):
         # Case self.user is not null
@@ -122,10 +122,12 @@ class StatePermission(models.Model):
 class StateTransition(models.Model):
     source_state = models.ForeignKey(State, related_name='source_rules')
     target_state = models.ForeignKey(State, related_name='target_rules')
-    lentity = models.ForeignKey(Lentity, default=OWNER)
+    lentity = models.ForeignKey(Lentity,
+                                default=Lentity.objects.get(special=OWNER))
 
     def __unicode__(self):
-        return "%s => %s" % (self.source_state, self.target_state)
+        return "%s => %s (%s)" % (self.source_state, self.target_state,
+                                                                self.lentity)
 
     class Meta:
         db_table = 'zadig_statetransition'
@@ -742,10 +744,10 @@ class Entry(models.Model):
     def possible_target_states(self):
         workflow = Workflow.objects.get(id=settings.WORKFLOW_ID)
         result = []
-        for transition in self.state.source_rules.filter(
-                                        workflow_set__contains==workflow):
-            if transition.lentity.includes(self.request.user, entry=self):
-                result.add(transition.target_state)
+        for transition in self.state.source_rules.all():
+            if workflow in transition.workflow_set.all() and \
+                    transition.lentity.includes(self.request.user, entry=self):
+                result.append(transition.target_state)
         return result
         
     def __unicode__(self):

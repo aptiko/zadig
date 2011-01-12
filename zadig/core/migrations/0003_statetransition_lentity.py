@@ -12,7 +12,8 @@ class Migration(SchemaMigration):
         db.alter_column('zadig_vobject', 'deletion_mark', self.gf('django.db.models.fields.BooleanField')(blank=True))
 
         # Adding field 'StateTransition.lentity'
-        db.add_column('zadig_statetransition', 'lentity', self.gf('django.db.models.fields.related.ForeignKey')(default=300, to=orm['core.Lentity']), keep_default=False)
+        from zadig.core.models import OWNER
+        db.add_column('zadig_statetransition', 'lentity', self.gf('django.db.models.fields.related.ForeignKey')(default=orm.Lentity.objects.get(special=OWNER).id, to=orm['core.Lentity']), keep_default=False)
 
         # Removing unique constraint on 'StateTransition', fields ['target_state', 'source_state']
         db.delete_unique('zadig_statetransition', ['target_state_id', 'source_state_id'])

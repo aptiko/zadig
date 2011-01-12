@@ -3,12 +3,12 @@ import unittest
 from django.contrib.auth.models import User, Group
 from django.http import HttpRequest
 
-from zadig.core.models import Lentity, Entry, \
+from zadig.core.models import Lentity, Entry, State, \
                     EVERYONE, LOGGED_ON_USER, OWNER, \
                     PERM_VIEW, PERM_EDIT, PERM_DELETE, PERM_ADMIN, PERM_SEARCH
 
 
-class TestLentity(unittest.TestCase):
+class TestPermissions(unittest.TestCase):
 
     def setUp(self):
         self.user1 = User.objects.create_user('user1', 'user1@nowhere.com')
@@ -26,7 +26,15 @@ class TestLentity(unittest.TestCase):
         self.request.user = self.user1
         self.rootentry = Entry.objects.get_by_path(self.request, '/')
 
-    def test_includes(self):
+    def tearDown(self):
+        self.user1.delete()
+        self.user2.delete()
+        self.group1.delete()
+        self.lentity1.delete()
+        self.lentity2.delete()
+        self.lentityg1.delete()
+
+    def test_Lentity_includes(self):
         everyone = Lentity.objects.get(special=EVERYONE)
         logged_on_user = Lentity.objects.get(special=LOGGED_ON_USER)
         owner = Lentity.objects.get(special=OWNER)
@@ -50,3 +58,30 @@ class TestLentity(unittest.TestCase):
         self.assertFalse(perm_delete.includes(self.user1, self.rootentry))
         self.assertFalse(perm_admin.includes(self.user1, self.rootentry))
         self.assert_(perm_search.includes(self.user1, self.rootentry))
+
+    def test_Entry_possible_target_states(self):
+        published = State.objects.get(descr="Published")
+        private = State.objects.get(descr="Private")
+        saved_owner = self.rootentry.owner
+        saved_state = self.rootentry.state
+        try:
+            self.rootentry.state = published
+            self.rootentry.owner = self.user1
+            self.rootentry.save()
+            target_states = self.rootentry.possible_target_states
+            self.assertEqual(len(target_states), 1)
+            self.assertEqual(target_states[0].descr, u"Private")
+            self.rootentry.state = private
+            self.rootentry.save()
+            target_states = self.rootentry.possible_target_states
+            self.assertEqual(len(target_states), 1)
+            self.assertEqual(target_states[0].descr, u"Published")
+            self.rootentry.state = published
+            self.rootentry.owner = self.user2
+            self.rootentry.save()
+            target_states = self.rootentry.possible_target_states
+            self.assertEqual(len(target_states), 0)
+        finally:
+            self.rootentry.owner = saved_owner
+            self.rootentry.state = saved_state
+            self.rootentry.save()

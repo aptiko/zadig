@@ -7,11 +7,11 @@ from django.db import models
 class Migration(DataMigration):
     
     def forwards(self, orm):
-        from zadig.core.models import Lentity, PERM_VIEW, PERM_EDIT, \
-                                        PERM_ADMIN, PERM_DELETE, PERM_SEARCH
+        from zadig.core.models import PERM_VIEW, PERM_EDIT, PERM_ADMIN, \
+                                                    PERM_DELETE, PERM_SEARCH
         for special in (PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
                                                                 PERM_SEARCH):
-            new_lentity = Lentity(special=special)
+            new_lentity = orm.Lentity(special=special)
             new_lentity.save()
     
     def backwards(self, orm):
