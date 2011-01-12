@@ -8,14 +8,12 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         from zadig.zstandard.models import VPage, PageEntry
-        from zadig.core.models import Workflow, VObjectMetatags
+        from zadig.core.models import State, VObjectMetatags
         import settings
 
         # Root page
         entry = PageEntry(container=None, name='', seq=1, owner_id=1,
-            state=Workflow.objects.get(id=settings.WORKFLOW_ID)
-                .state_transitions.get(source_state__descr="Nonexistent")
-                .target_state)
+                            state=State.objects.get(descr="Published"))
         entry.save()
         page = VPage(entry=entry, version_number=1,
                 language_id=settings.ZADIG_LANGUAGES[0][0],
