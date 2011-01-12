@@ -123,7 +123,7 @@ class StateTransition(models.Model):
     source_state = models.ForeignKey(State, related_name='source_rules')
     target_state = models.ForeignKey(State, related_name='target_rules')
     lentity = models.ForeignKey(Lentity,
-                                default=Lentity.objects.get(special=OWNER))
+                            default=lambda:Lentity.objects.get(special=OWNER))
 
     def __unicode__(self):
         return "%s => %s (%s)" % (self.source_state, self.target_state,
