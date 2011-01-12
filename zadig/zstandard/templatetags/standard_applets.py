@@ -268,10 +268,9 @@ class SecondaryButtonsNode(template.Node):
         if not vobject.rentry.touchable: return ''
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
-              'items': [ { 'href': '%s__state__/%d/' %
-                                                    (spath, x.target_state.id,),
-                           'name': x.target_state.descr,
-                         } for x in vobject.entry.state.source_rules.all()
+              'items': [ { 'href': '%s__state__/%d/' % (spath, x.id,),
+                           'name': x.descr,
+                         } for x in vobject.entry.possible_target_states
                         ]
             },
             { 'name': _(u'Add new…'),

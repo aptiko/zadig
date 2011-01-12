@@ -72,9 +72,8 @@ def change_state(request, path, new_state_id):
     _set_languages(vobject)
     entry = vobject.rentry
     new_state_id = int(new_state_id)
-    if new_state_id not in [x.target_state.id
-                            for x in entry.state.source_rules.all()]:
-        raise ValidationError(_(u"Invalid target state"))
+    if new_state_id not in [x.id for x in entry.possible_target_states]:
+        raise Http404
     entry.state = models.State.objects.get(pk=new_state_id)
     entry.save()
     entry.request.view_name = 'info'
