@@ -14,7 +14,11 @@ from django.db import transaction
 from django.http import Http404
 
 from zadig.core.utils import sanitize_html, split_path, join_path
-from zadig.core import models
+from zadig.core.models import Entry, Language, State, VObjectMetatags
+from zadig.zstandard.models import PageEntry, VPage, ImageEntry, VImage, \
+            InternalRedirectionEntry, VInternalRedirection, FileEntry, VFile, \
+            LinkEntry, VLink
+                                   
 
 
 class UnknownPloneObjectType(Exception): pass
@@ -87,10 +91,10 @@ class PloneObject(object):
             if altlang==self.language.id or split_path(apath)==split_path(path):
                 continue
             try:
-                e = models.Entry.objects.get_by_path(request, apath).descendant
+                e = Entry.objects.get_by_path(request, apath).descendant
             except Http404:
                 continue
-            while isinstance(e, models.InternalRedirectionEntry):
+            while isinstance(e, InternalRedirectionEntry):
                 e = e.vobject.target
             if split_path(e.path)==split_path(path):
                 continue
@@ -160,12 +164,12 @@ class PloneObject(object):
         # its various views.
         nonav = self.editsoup.find('input', id='excludeFromNav')
         self.no_nav = nonav is not None and nonav.has_key('checked')
-        self.language = models.Language.objects.get(id=DEFAULT_LANGUAGE)
+        self.language = Language.objects.get(id=DEFAULT_LANGUAGE)
         selectlang = self.editsoup.find('select', attrs={'id': 'language'})
         if selectlang:
             l = selectlang.find('option', attrs={'selected': 'selected'})
             if l:
-                self.language = models.Language.objects.get(id=l['value'])
+                self.language = Language.objects.get(id=l['value'])
         self.__find_alternative_lang(path)
         self.__find_modification_time()
 
@@ -174,7 +178,7 @@ class PloneObject(object):
         # will have already been removed and an Http404 exception will be raised
         # and handled below.
         try: 
-            self.entry = models.Entry.objects.get_by_path(request, path
+            self.entry = Entry.objects.get_by_path(request, path
                                                                 ).descendant
         except Http404:
             self.entry = entry_type(request, path)
@@ -182,12 +186,12 @@ class PloneObject(object):
             raise Exception(('Error creating entry at %s: apparently it '
                 +'already existed and was type %s rather than %s') % (path,
                 self.entry.__class__.__name__, entry_type.__name__))
-        self.entry.state = models.State.objects.get(descr=self.state)
+        self.entry.state = State.objects.get(descr=self.state)
         self.entry.save()
 
         # Save options
-        from zadig.applets.standard.models import EntryOptions
-        options = EntryOptions(entry=self.entry, no_navigation=self.no_nav)
+        from zadig.zstandard.models import EntryOptionSet
+        options = EntryOptionSet(entry=self.entry, no_navigation=self.no_nav)
         options.save()
 
         # Determine the max existing version number
@@ -280,22 +284,21 @@ class PlonePage(PloneObject):
 
     @transaction.commit_on_success
     def migrate(self, request, path):
-        super(PlonePage, self).migrate(request, path, models.PageEntry)
+        super(PlonePage, self).migrate(request, path, PageEntry)
         self.fix_content(request, path)
-        nvobject = models.VPage(entry=self.entry,
+        nvobject = VPage(entry=self.entry,
             version_number=self.max_existing_version_number+1,
             language=self.language,
-            format = models.ContentFormat.objects.get(descr='html'),
             date = self.modification_time,
             content = sanitize_html(self.content))
         nvobject.request = request
         nvobject.save()
-        nmetatags = models.VObjectMetatags(vobject=nvobject,
+        nmetatags = VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
             short_title=unicode(self.short_title),
             description=unicode(self.description))
         nmetatags.save()
-        self.post_migrate(request, path, models.PageEntry)
+        self.post_migrate(request, path, PageEntry)
 
 
 class PloneImage(PloneObject):
@@ -312,20 +315,20 @@ class PloneImage(PloneObject):
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
         from mimetypes import guess_extension
-        super(PloneImage, self).migrate(request, path, models.ImageEntry)
+        super(PloneImage, self).migrate(request, path, ImageEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VImage(entry=self.entry, date=self.modification_time,
+        nvobject = VImage(entry=self.entry, date=self.modification_time,
                             version_number=self.max_existing_version_number+1)
         nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.request = request
         nvobject.save()
         f.close()
-        nmetatags = models.VObjectMetatags(vobject=nvobject,
+        nmetatags = VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
             description=unicode(self.description))
         nmetatags.save()
-        self.post_migrate(request, path, models.ImageEntry)
+        self.post_migrate(request, path, ImageEntry)
 
 
 class PloneFile(PloneObject):
@@ -341,20 +344,20 @@ class PloneFile(PloneObject):
     def migrate(self, request, path):
         from django.core.files.base import ContentFile
         from mimetypes import guess_extension
-        super(PloneFile, self).migrate(request, path, models.FileEntry)
+        super(PloneFile, self).migrate(request, path, FileEntry)
         f = ContentFile(self.content)
         extension = guess_extension(self.mimetype)
-        nvobject = models.VFile(entry=self.entry, date=self.modification_time,
+        nvobject = VFile(entry=self.entry, date=self.modification_time,
                             version_number=self.max_existing_version_number+1)
         nvobject.content.save('%s-0001%s'%(self.entry.name, extension), f)
         nvobject.request = request
         nvobject.save()
         f.close()
-        nmetatags = models.VObjectMetatags(vobject=nvobject,
+        nmetatags = VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
             description=unicode(self.description))
         nmetatags.save()
-        self.post_migrate(request, path, models.FileEntry)
+        self.post_migrate(request, path, FileEntry)
 
 
 class PloneLink(PloneObject):
@@ -366,17 +369,17 @@ class PloneLink(PloneObject):
 
     @transaction.commit_on_success
     def migrate(self, request, path):
-        super(PloneLink, self).migrate(request, path, models.LinkEntry)
-        nvobject = models.VLink(entry=self.entry, date=self.modification_time,
+        super(PloneLink, self).migrate(request, path, LinkEntry)
+        nvobject = VLink(entry=self.entry, date=self.modification_time,
             version_number=self.max_existing_version_number+1,
             language=self.language, target = self.target)
         nvobject.request = request
         nvobject.save()
-        nmetatags = models.VObjectMetatags(vobject=nvobject,
+        nmetatags = VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
             description=unicode(self.description))
         nmetatags.save()
-        self.post_migrate(request, path, models.LinkEntry)
+        self.post_migrate(request, path, LinkEntry)
 
 
 class PloneDefaultFolderView(PloneObject):
@@ -384,17 +387,17 @@ class PloneDefaultFolderView(PloneObject):
     @transaction.commit_on_success
     def migrate(self, request, path):
         super(PloneDefaultFolderView, self).migrate(request, path,
-                                            models.InternalRedirectionEntry)
-        nvobject = models.VInternalRedirection(entry=self.entry,
+                                            InternalRedirectionEntry)
+        nvobject = VInternalRedirection(entry=self.entry,
             version_number=self.max_existing_version_number+1,
             target=self.entry.container)
         nvobject.request = request
         nvobject.save()
-        nmetatags = models.VObjectMetatags(vobject=nvobject,
+        nmetatags = VObjectMetatags(vobject=nvobject,
             language=self.language, title=unicode(self.title),
             description=unicode(self.description))
         nmetatags.save()
-        self.post_migrate(request, path, models.InternalRedirectionEntry)
+        self.post_migrate(request, path, InternalRedirectionEntry)
 
     def post_migrate(self, request, path, entry_type=None):
         # We need to handle alternative language specially; it applies to our
@@ -405,7 +408,7 @@ class PloneDefaultFolderView(PloneObject):
             target.save()
             self.alternative_lang = None
         super(PloneDefaultFolderView, self).post_migrate(request, path,
-                                            models.InternalRedirectionEntry)
+                                            InternalRedirectionEntry)
 
 
 class PloneFolder(PlonePage):
@@ -517,7 +520,7 @@ try:
     plone_object = PloneObject(PLONE_URL)
     path = TARGET_PATH
     try:
-        entry = models.Entry.objects.get_by_path(request, path)
+        entry = Entry.objects.get_by_path(request, path)
         if ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
             entry.delete()
     except Http404:
