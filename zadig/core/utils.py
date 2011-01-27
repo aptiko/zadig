@@ -46,7 +46,7 @@ class sanitize_html(unicode):
     valid_tags = '''p i strong em b u a h1 h2 pre br img table thead tbody th
                     td tr ul ol li blockquote dl dd dt span sup sub dfn code
                     samp kbd var cite abbr acronym'''.split()
-    valid_attrs = 'href src width height class align'.split()
+    valid_attrs = 'href src width height class align rowspan colspan'.split()
     url_attrs = 'href src'.split()
     valid_schemes = 'http https ftp mailto'.split()
     def __new__(cls, html):
