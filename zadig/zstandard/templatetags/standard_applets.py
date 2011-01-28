@@ -232,7 +232,7 @@ class NewsNode(template.Node):
         multilingual_groups_seen = set()
         from zadig.core.models import PERM_SEARCH
         news_items = models.NewsItemEntry.objects.order_by(
-                                    '-vobject_set__vpage__vnewsitem__news_date')
+                    '-vobject_set__vpage__vnewsitem__news_date').distinct()
         news_items_to_show = []
         for e in news_items:
             e.request = vobject.request
@@ -287,8 +287,8 @@ class EventsNode(template.Node):
         from zadig.core.models import PERM_SEARCH
         from datetime import datetime
         events = models.EventEntry.objects.filter(
-                    vobject_set__vpage__vevent__event_start__gt=datetime.now()
-                    ).order_by('vobject_set__vpage__vevent__event_start')
+            vobject_set__vpage__vevent__event_start__gt=datetime.now()
+            ).order_by('vobject_set__vpage__vevent__event_start').distinct()
         events_to_show = []
         for e in events:
             e.request = vobject.request
