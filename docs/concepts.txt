@@ -332,14 +332,19 @@ specific manner:
 
     <dl class="portlet">
       <dt>Portlet title</dt>
-      <dd>First item</dd>
-      <dd>Second item</dd>
+      <dd class="odd">
+        First item title
+        <span class="details">Details</span>
+      </dd>
+      <dd class="even">Second item</dd>
       ...
-      <dd class="lastItem">Last item</dd>
     </dl>
 
 Because portlets conform to that specification, the CSS style sheet
-can define a common look for all portlets.
+can define a common look for all portlets. (Some portlets might
+contain only one item, and others might not contain items consisting
+of title and details; but all portlets are DL elements containing a DT
+and at least one DD.)
 
 The second thing that is special about portlets is that they are
 registered: Zadig knows what portlets are available; this makes
