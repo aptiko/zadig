@@ -17,7 +17,7 @@ from zadig.core.utils import sanitize_html, split_path, join_path
 from zadig.core.models import Entry, Language, State, VObjectMetatags
 from zadig.zstandard.models import PageEntry, VPage, ImageEntry, VImage, \
             InternalRedirectionEntry, VInternalRedirection, FileEntry, VFile, \
-            LinkEntry, VLink
+            LinkEntry, VLink, VNewsItem
                                    
 
 
@@ -76,6 +76,9 @@ class PloneObject(object):
         if 'template-file_view' in body_classes:
             logging.debug("(It's a file)")
             return super(PloneObject, cls).__new__(PloneFile)
+        if 'template-newsitem_view' in body_classes:
+            logging.debug("(It's a news item)")
+            return super(PloneObject, cls).__new__(PloneNewsItem)
         raise UnknownPloneObjectType("Unknown object type at "+url)
         raise UnknownPloneObjectType("Unknown object type at "+url)
 
@@ -494,6 +497,37 @@ class PloneFolder(PlonePage):
         # But also migrate the contents of the folder
         self.__migrate_folder_contents(path)
         self.post_migrate(request, path)
+
+
+class PloneNewsItem(PlonePage):
+
+    def __init__(self, url, soup=None, editsoup=None):
+        PlonePage.__init__(self, url, soup=soup, editsoup=editsoup)
+        self.news_date = self.editsoup.find(
+                id='edit_form_effectiveDate_0')['value'][:16].replace('/', '-')
+
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        # FIXME: Lots of code repeated from parent class, instead of
+        # calling the inherited function (instead we call inherited of
+        # inherited). Probably needs API improvement to fix.
+        super(PlonePage, self).migrate(request, path, PageEntry)
+        self.fix_content(request, path)
+        nvobject = VNewsItem(entry=self.entry,
+            version_number=self.max_existing_version_number+1,
+            language=self.language,
+            date = self.modification_time,
+            content = sanitize_html(self.content),
+            news_date = self.news_date)
+        nvobject.request = request
+        nvobject.save()
+        nmetatags = VObjectMetatags(vobject=nvobject,
+            language=self.language, title=unicode(self.title),
+            short_title=unicode(self.short_title),
+            description=unicode(self.description))
+        nmetatags.save()
+        self.post_migrate(request, path, PageEntry)
+        
 
 # Default configuration values
 LOG_LEVEL = 'warn'
