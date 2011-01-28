@@ -214,10 +214,10 @@ class EditNewsItemForm(EditPageForm):
                                          u"optionally followed by HH:mm")})
 
     def render(self):
-        return '<tr><th>%s:</th><td>%s %s</td></tr>\n' \
-               '<tr><td colspan="2">%s</td></tr>\n' % (self['news_date'].label,
-                        self['news_date'].errors, str(self['news_date']), 
-                        str(self['content']))
+        return u'<tr><th>%s:</th><td>%s %s</td></tr>\n' \
+               u'<tr><td colspan="2">%s</td></tr>\n' % (self['news_date'].label,
+                        self['news_date'].errors, unicode(self['news_date']), 
+                        unicode(self['content']))
             
 
 class VNewsItem(VPage):
@@ -257,13 +257,13 @@ class EditEventForm(EditPageForm):
                                          u"optionally followed by HH:mm")})
 
     def render(self):
-        return '<tr><th>%s:</th><td>%s %s %s %s %s</td></tr>\n' \
-               '<tr><td colspan="2">%s</td></tr>\n' % (
-                        _(u"Event duration"),
-                        self['event_start'].errors, str(self['event_start']),
-                        _(u"to"), 
-                        self['event_end'].errors, str(self['event_end']),
-                        str(self['content']))
+        return u'<tr><th>%s:</th><td>%s %s %s %s %s</td></tr>\n' \
+               u'<tr><td colspan="2">%s</td></tr>\n' % (
+                    _(u"Event duration"),
+                    self['event_start'].errors, unicode(self['event_start']),
+                    _(u"to"), 
+                    self['event_end'].errors, unicode(self['event_end']),
+                    unicode(self['content']))
             
 
 class VEvent(VPage):
