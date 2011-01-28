@@ -214,9 +214,10 @@ class EditNewsItemForm(EditPageForm):
                                          u"optionally followed by HH:mm")})
 
     def render(self):
-        return '<tr><th>%s:</th><td>%s</td></tr>\n' \
+        return '<tr><th>%s:</th><td>%s %s</td></tr>\n' \
                '<tr><td colspan="2">%s</td></tr>\n' % (self['news_date'].label,
-                        str(self['news_date']), str(self['content']))
+                        self['news_date'].errors, str(self['news_date']), 
+                        str(self['content']))
             
 
 class VNewsItem(VPage):
@@ -229,7 +230,7 @@ class NewsItemEntry(PageEntry):
 
     def edit_subform(self, data=None, files=None, new=False):
         initial = None if new else {'content': self.vobject.content,
-                                    'news_date': self.vobject.news_date} 
+                     'news_date': self.vobject.news_date.isoformat(' ')[:16]} 
         return EditNewsItemForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
