@@ -241,6 +241,55 @@ class NewsItemEntry(PageEntry):
 entry_types.append(NewsItemEntry)
 
 
+### Event ###
+
+
+class EditEventForm(EditPageForm):
+    event_start = forms.DateTimeField(
+            input_formats=("%Y-%m-%d %H:%M", "%Y-%m-%d"),
+            label=_(u"Start of event"),
+            error_messages={'invalid': _(u"The format must be YYYY-MM-DD, "
+                                         u"optionally followed by HH:mm")})
+    event_end = forms.DateTimeField(
+            input_formats=("%Y-%m-%d %H:%M", "%Y-%m-%d"),
+            label=_(u"End of event"),
+            error_messages={'invalid': _(u"The format must be YYYY-MM-DD, "
+                                         u"optionally followed by HH:mm")})
+
+    def render(self):
+        return '<tr><th>%s:</th><td>%s %s %s %s %s</td></tr>\n' \
+               '<tr><td colspan="2">%s</td></tr>\n' % (
+                        _(u"Event duration"),
+                        self['event_start'].errors, str(self['event_start']),
+                        _(u"to"), 
+                        self['event_end'].errors, str(self['event_end']),
+                        str(self['content']))
+            
+
+class VEvent(VPage):
+    event_start = models.DateTimeField(db_index=True)
+    event_end = models.DateTimeField(db_index=True)
+
+
+class EventEntry(PageEntry):
+    vobject_class = VEvent
+    typename = _(u"Event")
+
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'content': self.vobject.content,
+                 'event_start': self.vobject.event_start.isoformat(' ')[:16],
+                 'event_end': self.vobject.event_end.isoformat(' ')[:16] } 
+        return EditEventForm(data=data, files=files, initial=initial)
+
+    def process_edit_subform(self, vobject, form):
+        super(EventEntry, self).process_edit_subform(vobject, form)
+        vobject.event_start=form.cleaned_data['event_start']
+        vobject.event_end=form.cleaned_data['event_end']
+
+
+entry_types.append(EventEntry)
+
+
 ### InternalRedirection ###
 
 # FIXME: Should subclass link or something

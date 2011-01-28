@@ -275,6 +275,63 @@ def do_news(parser, token):
 register.tag('news', do_news)
 
 
+### Events ###
+
+
+class EventsNode(template.Node):
+
+    def render(self, context):
+        vobject = context.get('vobject', None)
+        # FIXME: Same problems and lots of code duplication as NewsNode above.
+        multilingual_groups_seen = set()
+        from zadig.core.models import PERM_SEARCH
+        from datetime import datetime
+        events = models.EventEntry.objects.filter(
+                    vobject_set__vpage__vevent__event_start__gt=datetime.now()
+                    ).order_by('vobject_set__vpage__vevent__event_start')
+        events_to_show = []
+        for e in events:
+            e.request = vobject.request
+            if PERM_SEARCH not in e.permissions:
+                continue
+            if e.multilingual_group and (e.multilingual_group.id in
+                                                multilingual_groups_seen):
+                continue
+            v = e.vobject.descendant
+            if (v.language) and (v.language.id!=v.request.effective_language
+                        ) and v.rentry.multilingual_group and (
+                        v.request.effective_language in [e.vobject.language.id
+                                        for e in v.rentry.alt_lang_entries]):
+                continue
+            if e.multilingual_group:
+                multilingual_groups_seen.add(e.multilingual_group.id)
+            events_to_show.append(v)
+            if len(events_to_show)==5:
+                break
+        if not events_to_show:
+            return ''
+        result = '<dl class="portlet EventsPortlet"><dt>%s</dt>' % (
+                                                                _(u"Events"),)
+        item_type = 'odd'
+        for v in events_to_show:
+            result = result + '<dd class="%s">' \
+                        '<a class="state%s" href="%s">%s</a>' \
+                        '<span class="details">%s</span></dd>' % (item_type,
+                        v.entry.state.descr.replace(' ', ''),
+                        v.entry.spath, v.metatags.default.get_short_title(),
+                        v.event_start.isoformat()[:10])
+            item_type = 'even' if item_type=='odd' else 'odd'
+        result += '</dd>'
+        return result
+
+
+def do_events(parser, token):
+    return EventsNode()
+
+
+register.tag('events', do_events)
+
+
 ### Primary buttons ###
 
 
