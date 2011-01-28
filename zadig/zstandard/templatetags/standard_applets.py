@@ -216,6 +216,63 @@ def do_navigation(parser, token):
 register.tag('navigation', do_navigation)
 
 
+### News ###
+
+
+class NewsNode(template.Node):
+
+    def render(self, context):
+        vobject = context.get('vobject', None)
+        # FIXME: We will here search for news items which have SEARCH
+        # permission; but this should better be done in the core (maybe by
+        # modifying the default Entry manager so that it returns a custom query
+        # set which returns a custom iterator()?). In fact all the
+        # functionality of the following 22 lines or so (part of which is
+        # similar to NavigationNode.__mustshow()) must move elsewhere.
+        multilingual_groups_seen = set()
+        from zadig.core.models import PERM_SEARCH
+        news_items = models.NewsItemEntry.objects.order_by(
+                                    '-vobject_set__vpage__vnewsitem__news_date')
+        news_items_to_show = []
+        for e in news_items:
+            e.request = vobject.request
+            if PERM_SEARCH not in e.permissions:
+                continue
+            if e.multilingual_group and (e.multilingual_group.id in
+                                                multilingual_groups_seen):
+                continue
+            v = e.vobject.descendant
+            if (v.language) and (v.language.id!=v.request.effective_language
+                        ) and v.rentry.multilingual_group and (
+                        v.request.effective_language in [e.vobject.language.id
+                                        for e in v.rentry.alt_lang_entries]):
+                continue
+            if e.multilingual_group:
+                multilingual_groups_seen.add(e.multilingual_group.id)
+            news_items_to_show.append(v)
+            if len(news_items_to_show)==5:
+                break
+        if not news_items_to_show:
+            return ''
+        result = '<dl class="portlet NewsPortlet"><dt>%s</dt>' % (_(u"News"),)
+        item_type = 'odd'
+        for v in news_items_to_show:
+            result = result + '<dd class="%s"><a href="%s">%s</a>' \
+                        '<span class="details">%s</span></dd>' % (item_type,
+                        v.entry.spath, v.metatags.default.get_short_title(),
+                        v.news_date.isoformat()[:10])
+            item_type = 'even' if 'odd' else 'odd'
+        result += '</dd>'
+        return result
+
+
+def do_news(parser, token):
+    return NewsNode()
+
+
+register.tag('news', do_news)
+
+
 ### Primary buttons ###
 
 

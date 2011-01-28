@@ -220,7 +220,7 @@ class EditNewsItemForm(EditPageForm):
             
 
 class VNewsItem(VPage):
-    news_date = models.DateTimeField()
+    news_date = models.DateTimeField(db_index=True)
 
 
 class NewsItemEntry(PageEntry):
@@ -231,6 +231,10 @@ class NewsItemEntry(PageEntry):
         initial = None if new else {'content': self.vobject.content,
                                     'news_date': self.vobject.news_date} 
         return EditNewsItemForm(data=data, files=files, initial=initial)
+
+    def process_edit_subform(self, vobject, form):
+        super(NewsItemEntry, self).process_edit_subform(vobject, form)
+        vobject.news_date=form.cleaned_data['news_date']
 
 
 entry_types.append(NewsItemEntry)
