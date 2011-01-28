@@ -17,7 +17,7 @@ from zadig.core.utils import sanitize_html, split_path, join_path
 from zadig.core.models import Entry, Language, State, VObjectMetatags
 from zadig.zstandard.models import PageEntry, VPage, ImageEntry, VImage, \
             InternalRedirectionEntry, VInternalRedirection, FileEntry, VFile, \
-            LinkEntry, VLink, VNewsItem
+            LinkEntry, VLink, NewsItemEntry, VNewsItem, EventEntry, VEvent
                                    
 
 
@@ -79,7 +79,9 @@ class PloneObject(object):
         if 'template-newsitem_view' in body_classes:
             logging.debug("(It's a news item)")
             return super(PloneObject, cls).__new__(PloneNewsItem)
-        raise UnknownPloneObjectType("Unknown object type at "+url)
+        if 'template-event_view' in body_classes:
+            logging.debug("(It's an event)")
+            return super(PloneObject, cls).__new__(PloneEvent)
         raise UnknownPloneObjectType("Unknown object type at "+url)
 
     def __find_alternative_lang(self, path):
@@ -511,7 +513,7 @@ class PloneNewsItem(PlonePage):
         # FIXME: Lots of code repeated from parent class, instead of
         # calling the inherited function (instead we call inherited of
         # inherited). Probably needs API improvement to fix.
-        super(PlonePage, self).migrate(request, path, PageEntry)
+        super(PlonePage, self).migrate(request, path, NewsItemEntry)
         self.fix_content(request, path)
         nvobject = VNewsItem(entry=self.entry,
             version_number=self.max_existing_version_number+1,
@@ -519,6 +521,39 @@ class PloneNewsItem(PlonePage):
             date = self.modification_time,
             content = sanitize_html(self.content),
             news_date = self.news_date)
+        nvobject.request = request
+        nvobject.save()
+        nmetatags = VObjectMetatags(vobject=nvobject,
+            language=self.language, title=unicode(self.title),
+            short_title=unicode(self.short_title),
+            description=unicode(self.description))
+        nmetatags.save()
+        self.post_migrate(request, path, PageEntry)
+        
+
+class PloneEvent(PlonePage):
+
+    def __init__(self, url, soup=None, editsoup=None):
+        PlonePage.__init__(self, url, soup=soup, editsoup=editsoup)
+        self.event_start = self.editsoup.find(
+                id='edit_form_startDate_0')['value'][:16].replace('/', '-')
+        self.event_end = self.editsoup.find(
+                id='edit_form_endDate_1')['value'][:16].replace('/', '-')
+
+    @transaction.commit_on_success
+    def migrate(self, request, path):
+        # FIXME: Lots of code repeated from parent class, instead of
+        # calling the inherited function (instead we call inherited of
+        # inherited). Probably needs API improvement to fix.
+        super(PlonePage, self).migrate(request, path, EventEntry)
+        self.fix_content(request, path)
+        nvobject = VEvent(entry=self.entry,
+            version_number=self.max_existing_version_number+1,
+            language=self.language,
+            date = self.modification_time,
+            content = sanitize_html(self.content),
+            event_start = self.event_start,
+            event_end = self.event_end)
         nvobject.request = request
         nvobject.save()
         nmetatags = VObjectMetatags(vobject=nvobject,
