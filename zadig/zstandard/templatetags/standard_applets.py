@@ -203,7 +203,7 @@ class NavigationNode(template.Node):
                         break
             result = '''<dl class="portlet navigationPortlet">
                 <dt><a href='%s'>%s</a></dt>
-                <dd class="lastItem">%s</dd></dl>''' % (toplevel_link,
+                <dd>%s</dd></dl>''' % (toplevel_link,
                 toplevel_entry.vobject.metatags.default.get_short_title(),
                 result)
         return result
