@@ -203,6 +203,39 @@ class LinkEntry(Entry):
 entry_types.append(LinkEntry)
 
 
+### News item ###
+
+
+class EditNewsItemForm(EditPageForm):
+    news_date = forms.DateTimeField(
+            input_formats=("%Y-%m-%d %H:%M", "%Y-%m-%d"),
+            label=_(u"Date of this news item"),
+            error_messages={'invalid': _(u"The format must be YYYY-MM-DD, "
+                                         u"optionally followed by HH:mm")})
+
+    def render(self):
+        return '<tr><th>%s:</th><td>%s</td></tr>\n' \
+               '<tr><td colspan="2">%s</td></tr>\n' % (self['news_date'].label,
+                        str(self['news_date']), str(self['content']))
+            
+
+class VNewsItem(VPage):
+    news_date = models.DateTimeField()
+
+
+class NewsItemEntry(PageEntry):
+    vobject_class = VNewsItem
+    typename = _(u"News item")
+
+    def edit_subform(self, data=None, files=None, new=False):
+        initial = None if new else {'content': self.vobject.content,
+                                    'news_date': self.vobject.news_date} 
+        return EditNewsItemForm(data=data, files=files, initial=initial)
+
+
+entry_types.append(NewsItemEntry)
+
+
 ### InternalRedirection ###
 
 # FIXME: Should subclass link or something

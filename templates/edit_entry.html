@@ -24,7 +24,7 @@
   <table>
     {{ metatagsformset.as_wide_table }}
   </table>
-  {{ subform.non_field_errors }} <table>{{subform.render}}</table>
+  {{ subform.non_field_errors }} <table>{{subform.render|safe}}</table>
   {% for f in optionsforms %}
     {{f.non_field_errors}}<table>{{f.as_table}}</table>
   {% endfor %}
