@@ -264,7 +264,7 @@ class NewsNode(template.Node):
                         v.entry.spath, v.metatags.default.get_short_title(),
                         v.news_date.isoformat()[:10])
             item_type = 'even' if item_type=='odd' else 'odd'
-        result += '</dd>'
+        result += '</dl>'
         return result
 
 
@@ -321,7 +321,7 @@ class EventsNode(template.Node):
                         v.entry.spath, v.metatags.default.get_short_title(),
                         v.event_start.isoformat()[:10])
             item_type = 'even' if item_type=='odd' else 'odd'
-        result += '</dd>'
+        result += '</dl>'
         return result
 
 
