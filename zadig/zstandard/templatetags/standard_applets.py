@@ -257,8 +257,10 @@ class NewsNode(template.Node):
         result = '<dl class="portlet NewsPortlet"><dt>%s</dt>' % (_(u"News"),)
         item_type = 'odd'
         for v in news_items_to_show:
-            result = result + '<dd class="%s"><a href="%s">%s</a>' \
+            result = result + '<dd class="%s">' \
+                        '<a class="state%s" href="%s">%s</a>' \
                         '<span class="details">%s</span></dd>' % (item_type,
+                        v.entry.state.descr.replace(' ', ''),
                         v.entry.spath, v.metatags.default.get_short_title(),
                         v.news_date.isoformat()[:10])
             item_type = 'even' if item_type=='odd' else 'odd'
