@@ -154,7 +154,7 @@ class NavigationNode(template.Node):
     def render_entry_contents(self, entry, current_entry, level):
         result = ''
         siblings = [x for x in entry.subentries
-                                if x.object_class in ('PageEntry','LinkEntry')]
+               if x.object_class in ('PageEntry','LinkEntry', 'NewsItemEntry')]
         no_sibling_shown_yet = True
         for s in siblings:
             v = s.vobject
