@@ -72,6 +72,8 @@ ul.errorlist { color: red; font-weight: bold; list-style-type: none; margin-left
 .portlet { margin: 1px 0 1em 0; border-bottom: solid #8cacbb 1px; width: 15em; }
 .portlet dt { background-color: #dee7ec; border: solid #8cacbb 1px; padding: 0 1em 0 1em; line-height: 1.6em; }
 .portlet dd { margin: 0 0 0 0; padding: 1em 1em 1em 1em; border-left: solid #8cacbb 1px; border-right: solid #8cacbb 1px; }
+.portlet dd.even { background-color: #eef3f5; }
+.portlet dd .details { display: block; text-align: right; }
 .portlet a { text-decoration: none; }
 
 .navigationPortlet li { display: block; list-style: none; padding: 0 0 0 1px; margin: 0 0 2px -1px; }

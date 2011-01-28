@@ -261,7 +261,7 @@ class NewsNode(template.Node):
                         '<span class="details">%s</span></dd>' % (item_type,
                         v.entry.spath, v.metatags.default.get_short_title(),
                         v.news_date.isoformat()[:10])
-            item_type = 'even' if 'odd' else 'odd'
+            item_type = 'even' if item_type=='odd' else 'odd'
         result += '</dd>'
         return result
 
