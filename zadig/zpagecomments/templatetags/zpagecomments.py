@@ -15,15 +15,16 @@ class PageCommentsNode(template.Node):
     def render(self, context):
         result = ''
         vobject = context.get('vobject', None)
-        entry = vobject.rentry.descendant
+        request = context['request']
+        entry = vobject.entry.descendant
         if not isinstance(entry, PageEntry): return result
         optionset, created = EntryOptionSet.objects.get_or_create(entry=entry)
         if created: optionset.save()
         if not optionset.allow_comments: return result
-        if vobject.request.view_name not in ('view', 'info'): return result
+        if request.view_name not in ('view', 'info'): return result
         comments = PageComment.objects.filter(page=entry).order_by('id')
         for c in comments:
-            result += c.render(vobject.request)
+            result += c.render(request)
         if result.find('</select>')>=0:
             result = '''<form method="POST"
                             action="__zpagecomments.moderate_comments__/">
@@ -32,8 +33,8 @@ class PageCommentsNode(template.Node):
                         <input type="submit" value="%s" />
                         </form>''' % (_(u"Submit all state changes"), result,
                                     _(u"Submit all state changes"))
-        if 'pagecommentsform' in vobject.request.__dict__:
-            form = vobject.request.pagecommentsform
+        if 'pagecommentsform' in request.__dict__:
+            form = request.pagecommentsform
         else:
             form = CommentForm()
         result += '''<div class="addComment">

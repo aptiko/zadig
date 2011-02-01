@@ -59,10 +59,6 @@ The Entry model
       a null :attr:`~zadig.core.models.Entry.container`, and it is
       the root entry.
 
-      You should generally not use this attribute; use the
-      :attr:`~zadig.core.models.Entry.rcontainer` property
-      instead.
-
       The *related_name* of this attribute is ``all_subentries``.
       Therefore, if you have an entry ``myentry``, then
       ``myentry.all_subentries`` is the list of entries contained in
@@ -304,12 +300,6 @@ The Entry model
       method does nothing; it is subclasses that must define how the
       processing is done.
 
-   .. attribute:: zadig.core.models.Entry.rcontainer
-
-      Use this instead of :attr:`~zadig.core.models.Entry.container``
-      and the resulting :class:`~zadig.core.models.Entry` object
-      will also have the :ref:`request object <request-object>` set.
-
    .. method:: zadig.core.models.Entry.rename(newname)
 
       Rename the entry to the specified new name; it also creates a
@@ -419,9 +409,7 @@ The VObject model
    
    .. attribute:: zadig.core.models.VObject.entry
 
-      Foreign key to ::class:`~zadig.core.models.Entry`. Note that
-      you should avoid using this attribute; instead, use
-      :attr:`~zadig.core.models.VObject.rentry`.
+      Foreign key to ::class:`~zadig.core.models.Entry`.
 
    .. attribute:: zadig.core.models.VObject.version_number
 
@@ -451,20 +439,6 @@ The VObject model
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
-
-   .. attribute:: zadig.core.models.VObject.rentry
-
-      Use this instead of :attr:`~zadig.core.models.VObject.entry`
-      and the resulting :class:`~zadig.core.models.Entry` object
-      will also have the :ref:`request object <request-object>` set.
-      
-   .. attribute:: zadig.core.models.VObject.metatags
-
-      The set of metatags of the vobject. This is like the related
-      name of :class:`~zadig.core.models.VObjectMetatags`, but it
-      also passes the request object; see
-      :class:`~zadig.core.models.VObjectMetatags` for more
-      information.
 
    .. method:: zadig.core.models.VObject.end_view()
 
@@ -624,7 +598,7 @@ Other core models
    respective models; :attr:`title`, :attr:`short_title` and
    :attr:`description` are strings. Also has method
    :meth:`get_short_title`, which returns the short title, or the
-   title if the short title is empty.
+   title if the short title is empty. The related name is *metatags*.
 
    The default manager has an additional property, :attr:`default`,
    which returns an appropriate set of metatags. Normally the manager
@@ -633,10 +607,7 @@ Other core models
    that (because the request object is unavailable, or because there
    are no metatags in the effective language), it returns the 
    metatags in the language of the vobject; and if such a set does
-   not exist, it returns a random set of metatags.  (The manager
-   normally has access to the request object because you normally
-   write ``v.metatags.default``, where ``v`` is a *vobject* object, in
-   which case ``v`` passes the request object to the manager.)
+   not exist, it returns a random set of metatags.
 
 .. class:: zadig.core.models.ContentFormat
 
@@ -700,17 +671,11 @@ The functions below are in module zadig.core.utils.
    ``request.path``, but does not include any directive like ``__edit__``
    and so on.
 
-.. function:: zadig.core.utils.get_preferred_language(request)
+.. function:: zadig.core.utils.including_lentities(user)
 
-   Return the id of the language selected by the user (found in the
-   session), or the default language if the user has not selected a
-   language.
-
-.. function:: zadig.core.utils.get_effective_language(request)
-
-   Return the id of the language selected by the user (found in the
-   session), or the default language if the user has not selected a
-   language.
+   Return a list of :class:`~zadig.core.models.Lentity` objects that
+   either are or contain *user*, which is a
+   :class:`django.contrib.auth.user` object.
 
 .. function:: zadig.core.utils.sanitize_html(html)
 

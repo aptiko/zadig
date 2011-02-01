@@ -119,42 +119,33 @@ the following::
 
 .. _request-object:
 
-The request object
-==================
+Thread locals and the request object
+====================================
 
-:class:`~zadig.core.models.Entry` and
-:class:`~zadig.core.models.VObject` objects need to be aware of
-the *request* object all the time. They use the *request* object
-for two purposes: (1) they use ``request.user`` to check whether
-the user has permissions to do various operations; (2) they store
-information for later usage in the *request* object; for example,
-they create an attribute at the *request* object that holds a list
-of multilingual groups that will be checked for integrity on
-commit.
+Low level Zadig code needs to be aware of the *request* object all the
+time. It uses the *request* object for two purposes: First, it uses
+``request.user`` to check whether the user has permissions to do
+various operations; for example, when you call the ``get_by_path()``
+method of the :attr:`default Entry manager
+<zadig.core.models.Entry.objects>`, it only returns an Entry if the
+user has permission to view it; and the default manager's query sets
+only include entries which the user has permission to search.
+Second, some additional information is stored for later usage in the
+*request* object, namely the preferred and effective languages.
 
-Usually you create :class:`~zadig.core.models.Entry` objects by
-calling the ``get_by_path()`` method of the :attr:`default manager
-<zadig.core.models.Entry.objects>`, or by using the default
-constructor, in which case you supply the *request* object; the entry
-returned will have a *request* attribute with the supplied object.
-Likewise, the usual way to get to a
-:class:`~zadig.core.models.VObject` object, is via the
-:attr:`~zadig.core.models.Entry.vobject` property or the
-:meth:`~zadig.core.models.Entry.get_vobject()` method of an
-:class:`~zadig.core.models.Entry` object; the returned object will
-have the *request* attribute assigned.  If you have a
-:class:`~zadig.core.models.VObject` and you need to get to its
-entry, use the :attr:`~zadig.core.models.VObject.rentry` property
-rather than the :attr:`~zadig.core.models.VObject.entry`
-attribute, which will also assign the *request* object to the returned
-entry.
+In order to avoid passing the request object all the time and treat
+this at a low level, transparently for the high level developer, which
+is important for security, the Zadig middleware creates a variable
+called *threadlocals*, which contains the request object and other
+information. To use it, do the following::
 
-If you need to create an entry or vobject in any way other than the
-normal ways provided by the API, then manually assign the request
-object, as in the following example::
+    from zadig.core.middleware import threadlocals
 
-  e = Entry.objects.get(id=my_id)
-  e.request = request
+``threadlocals.request`` is then the request object. You should,
+however, avoid to use that at a high level; consider it a Zadig
+internal. Use the request object as it is normally being used in
+Django; just be aware that the Zadig core objects have access to it
+even if you don't provide it.
 
 If you are not using the API in the context of a web server (for
 example if you are creating a command-line utility), and therefore
@@ -163,5 +154,6 @@ a *user* attribute::
 
   from django.http import HttpRequest
   from django.contrib.auth.models import User
-  request = HttpRequest()
-  request.user = User.objects.get(username=MY_USERNAME)
+  from zadig.core.middleware import threadlocals
+  threadlocals.request = HttpRequest()
+  threadlocals.request.user = User.objects.get(username=MY_USERNAME)

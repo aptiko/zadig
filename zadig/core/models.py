@@ -12,6 +12,7 @@ import settings
 
 from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
+from zadig.core.middleware import threadlocals
 
 
 PERM_VIEW=1
@@ -72,7 +73,7 @@ class Lentity(models.Model):
         if self.special==EVERYONE:
             return True
         if self.special==LOGGED_ON_USER:
-            return user.username == entry.request.user.username
+            return user.username == threadlocals.request.user.username
         if self.special==OWNER:
             return entry and entry.owner==user
         if self.special in (PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
@@ -180,22 +181,42 @@ class MultilingualGroup(models.Model):
         db_table = 'zadig_multilingualgroup'
 
 
-def _check_multilingual_group(request, mgid):
+def _check_multilingual_group(mgid):
     """Called whenever one needs to verify the integrity of specified
     multilingual group. What it actually does is postpone this check for
     commit time (the middleware makes the check)."""
-    if not 'multilingual_groups_to_check' in request.__dict__:
-        request.multilingual_groups_to_check = set()
-    request.multilingual_groups_to_check.add(mgid)
+    if not 'multilingual_groups_to_check' in threadlocals.__dict__:
+        threadlocals.multilingual_groups_to_check = set()
+    threadlocals.multilingual_groups_to_check.add(mgid)
 
 
 class EntryManager(models.Manager):
 
-    def get_by_path(self, request, path):
+    def get_query_set(self):
+        result = super(EntryManager, self).get_query_set()
+        user = threadlocals.request.user
+
+        # Superusers have access to all
+        if user.is_authenticated() and user.is_superuser:
+            return result
+
+        # Else create a list of lentities that are or contain the user
+        lentities = utils.including_lentities(user)
+
+        # And return a query set matching only entries for which at least one
+        # of these lentities has search permission.
+        from django.db.models import Q
+        result = result.filter(
+                (Q(entrypermission_set__lentity__in=lentities) &
+                 Q(entrypermission_set__permission_id = PERM_SEARCH)) |
+                (Q(state__statepermission_set__lentity__in=lentities) &
+                 Q(state__statepermission_set__permission_id = PERM_SEARCH)))
+        return result
+
+    def get_by_path(self, path):
         entry = None
         for name in utils.split_path(path):
             entry = get_object_or_404(self, name=name, container=entry)
-            entry.request = request
             if not PERM_VIEW in entry.permissions:
                 raise Http404
         return entry
@@ -216,21 +237,20 @@ class Entry(models.Model):
     edit_template_name = 'edit_entry.html'
 
     def __init__(self, *args, **kwargs):
-        # If called with only two arguments, then it is someone calling the
-        # Zadig API, and the two arguments are request and path.
+        # If called with only one argument, then it is someone calling the
+        # Zadig API, and the argument is path.
         # Otherwise, it is likely Django calling us in the default Django way.
-        if len(args)!=2 or kwargs:
+        if len(args)!=1 or kwargs:
             result = super(Entry, self).__init__(*args, **kwargs)
             self.request = None
         else:
-            (request, path) = args
+            path = args[0]
             names = path.split('/')
             parent_path = '/'.join(names[:-1])
-            parent_entry = Entry.objects.get_by_path(request, parent_path)
+            parent_entry = Entry.objects.get_by_path(parent_path)
             super(Entry, self).__init__()
             self.container = parent_entry
             self.name = names[-1]
-            self.request = request
             self.__initialize()
         if not self.object_class:
             self.object_class = self._meta.object_name
@@ -238,20 +258,20 @@ class Entry(models.Model):
     def __initialize(self):
         """Set all other attributes of a newly created Entry, when only
         container has been set."""
-        if not PERM_EDIT in self.rcontainer.permissions:
+        if not PERM_EDIT in self.container.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         self.seq = 1
-        siblings = Entry.objects.filter(container=self.rcontainer)
+        siblings = Entry.objects.filter(container=self.container)
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
-        self.owner = self.request.user
+        self.owner = threadlocals.request.user
         self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
     @property
     def absolute_uri(self):
-        return self.request.build_absolute_uri(self.spath)
+        return threadlocals.request.build_absolute_uri(self.spath)
 
     def can_contain(self, cls):
         return PERM_EDIT in self.permissions
@@ -262,39 +282,33 @@ class Entry(models.Model):
         
     def save(self, *args, **kwargs):
         if self.multilingual_group:
-            _check_multilingual_group(self.request, self.multilingual_group.id)
+            _check_multilingual_group(self.multilingual_group.id)
         # If this is an update, also check the multilingual group to which 
         # this entry originally belonged. FIXME: This solution is a bit ugly;
         # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
         if self.id:
             original_mg = Entry.objects.get(id=self.id).multilingual_group
-            if original_mg and self.request:
-                _check_multilingual_group(self.request, original_mg.id)
+            if original_mg:
+                _check_multilingual_group(original_mg.id)
         return super(Entry, self).save(args, kwargs)
 
     def __renumber_subentries(self):
         for i, s in enumerate(self.all_subentries.all()):
             if s.seq != i+1:
                 s.seq = i+1
-                s.request = self.request
                 s.save()
 
     def delete(self, *args, **kwargs):
         """Several things need to be done: check that the user has permission
         to delete, check that we are not deleting the root page, cleanup
-        multilingual group, cleanup sequence number. We check for permission
-        only if we have a request attribute. If we don't have a request
-        attribute, it means that it is likely Django calling us, for example in
-        order to cascade delete, which means we should do it even without
-        permission (hopefully, that is)."""
-        if 'request' in self.__dict__ and PERM_DELETE not in self.permissions:
+        multilingual group, cleanup sequence number."""
+        if PERM_DELETE not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        container = self.rcontainer
-        if not container:
+        if not self.container:
             raise PermissionDenied(_(u"The root object cannot be deleted"))
         mg = self.multilingual_group
         result = super(Entry, self).delete(*args, **kwargs)
-        if mg: _check_multilingual_group(self.request, mg.id)
+        if mg: _check_multilingual_group(mg.id)
         container.__renumber_subentries()
         return result
 
@@ -314,13 +328,6 @@ class Entry(models.Model):
         return self.vobject.date
 
     @property
-    def rcontainer(self):
-        result = self.container
-        if result:
-            result.request = self.request
-        return result
-
-    @property
     def descendant(self):
         if self._meta.object_name == self.object_class:
             return self
@@ -332,24 +339,17 @@ class Entry(models.Model):
         result = self
         for a in hierarchy:
             result = getattr(result, a.__name__.lower())
-        result.request = self.request
         return result
 
     @property
     def permissions(self):
-        if self.request.user.is_authenticated() and (self.owner.pk ==
-                    self.request.user.pk or self.request.user.is_superuser):
+        user = threadlocals.request.user
+        if user.is_authenticated() and (self.owner.pk == user.pk or
+                                                        user.is_superuser):
             return set((PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
                                                                 PERM_SEARCH))
         result = set()
-        if self.request.user.is_authenticated():
-            lentities = [Lentity.objects.get(user=self.request.user),
-                         Lentity.objects.get(special=EVERYONE),
-                         Lentity.objects.get(special=LOGGED_ON_USER)]
-            lentities.append(Lentity.objects.filter(
-                                  group__in=self.request.user.groups.all()))
-        else:
-            lentities = [Lentity.objects.get(special=EVERYONE)]
+        lentities = utils.including_lentities(user)
         for lentity in lentities:
             for perm in EntryPermission.objects.filter(lentity=lentity,
                                                               entry=self):
@@ -377,15 +377,14 @@ class Entry(models.Model):
         if vobject.version_number != latest_vobject.version_number \
                 and PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        vobject.request = self.request
         return vobject.descendant
 
     @property
     def path(self):
         result = self.name
         entry = self
-        while entry.rcontainer and entry.rcontainer.name:
-            entry = entry.rcontainer
+        while entry.container and entry.container.name:
+            entry = entry.container
             result = entry.name + '/' + result
         return result
 
@@ -403,13 +402,13 @@ class Entry(models.Model):
     @property
     def base_template(self):
         if self.btemplate: return self.btemplate
-        if self.container: return self.rcontainer.base_template
+        if self.container: return self.container.base_template
         return 'base.html'
 
     def contains(self, entry):
         while entry:
-            if entry.rcontainer == self: return True
-            entry = entry.rcontainer
+            if entry.container == self: return True
+            entry = entry.container
         return False
 
     @property
@@ -418,7 +417,6 @@ class Entry(models.Model):
         if PERM_VIEW not in parent_permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = list(self.all_subentries.order_by('seq').all())
-        for s in subentries:
             s.request = self.request
         result = []
         for s in subentries:
@@ -431,7 +429,6 @@ class Entry(models.Model):
         if PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         subentries = self.all_subentries.order_by('seq').all()
-        for s in subentries: s.request = self.request
         s = source_seq
         t = target_seq
         n = len(subentries)
@@ -475,7 +472,7 @@ class Entry(models.Model):
         method. """
         initial = []
         if new:
-            vobject = self.rcontainer.vobject.descendant
+            vobject = self.container.vobject.descendant
             lang = vobject.language or Language.get_default()
             initial.append({ 'language': lang.id })
         else:
@@ -504,12 +501,12 @@ class Entry(models.Model):
         mg = self.multilingual_group
         if not altlang:
             self.multilingual_group = None
-            if mg: _check_multilingual_group(self.request, mg.id)
+            if mg: _check_multilingual_group(mg.id)
             return
         try:
-            e = Entry.objects.get_by_path(self.request, altlang)
+            e = Entry.objects.get_by_path(altlang)
         except Http404:
-            _check_multilingual_group(self.request, mg.id)
+            _check_multilingual_group(mg.id)
             return
         if not self.vobject.language:
             raise IntegrityError(_(
@@ -534,10 +531,10 @@ class Entry(models.Model):
     def process_edit_subform(self, vobject, form): pass
 
     def edit_view(self, new=False, parms=None):
-        if (new and not self.rcontainer.touchable) or (
+        if (new and not self.container.touchable) or (
                                             not new and not self.touchable):
             raise Http404
-        if self.request.method != 'POST':
+        if threadlocals.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
                         'language': self.vobject.language if not new else '',
                         'altlang': self.alt_lang_entries[0].spath
@@ -551,12 +548,13 @@ class Entry(models.Model):
                                         o.objects.get_or_create(entry=self)[0]
                 optionsforms.append(oset.get_form_from_data())
         else:
-            mainform = EditEntryForm(self.request.POST, request=self.request,
+            mainform = EditEntryForm(threadlocals.request.POST,
+                            request=threadlocals.request,
                             entry=self.container if new else self, new=new)
-            metatagsformset = MetatagsFormSet(self.request.POST)
-            subform = self.edit_subform(data=self.request.POST,
-                                        files=self.request.FILES, new=new)
-            optionsforms = [o.form(self.request.POST)
+            metatagsformset = MetatagsFormSet(threadlocals.request.POST)
+            subform = self.edit_subform(data=threadlocals.request.POST,
+                                    files=threadlocals.request.FILES, new=new)
+            optionsforms = [o.form(threadlocals.request.POST)
                                                     for o in entry_option_sets]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
@@ -575,7 +573,6 @@ class Entry(models.Model):
                                             self.vobject.version_number + 1),
                     language=Language.objects.get(id=lang_id) if lang_id else
                                                                         None)
-                nvobject.request = self.request
                 self.process_edit_subform(nvobject, subform)
                 nvobject.save()
                 self.__process_metatags_formset(nvobject, metatagsformset)
@@ -588,17 +585,17 @@ class Entry(models.Model):
                     self.rename(mainform.cleaned_data['name'])
                 return HttpResponseRedirect(self.spath+'__info__/')
         if new:
-            vobject = self.rcontainer.vobject
+            vobject = self.container.vobject
         else:
             vobject = self.vobject
         return render_to_response(self.edit_template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms },
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(threadlocals.request))
 
     def rename(self, newname):
-        if not self.rcontainer:
+        if not self.container:
             raise ValueError(_("The root page cannot be renamed"))
         for sibling in self.container.all_subentries.all():
             if sibling.id == self.id: continue
@@ -611,8 +608,7 @@ class Entry(models.Model):
         # zstandard; in theory we don't know about it in the core.
         from zadig.zstandard.models import InternalRedirectionEntry, \
                                                 VInternalRedirection
-        nentry = InternalRedirectionEntry(container=self.rcontainer)
-        nentry.request = self.request
+        nentry = InternalRedirectionEntry(container=self.container)
         nentry.__initialize()
         nentry.name = oldname
         nentry.save()
@@ -628,11 +624,9 @@ class Entry(models.Model):
         nmetatags.save()
 
     def move(self, target_entry):
-        if 'request' not in target_entry.__dict__:
-            target_entry.request = self.request
-        if not self.rcontainer:
+        if not self.container:
             raise ValueError(_("The root page cannot be moved"))
-        if self.rcontainer.id == target_entry.id:
+        if self.container.id == target_entry.id:
             return
         for nsibling in target_entry.all_subentries.all():
             if nsibling.name == self.name:
@@ -640,7 +634,7 @@ class Entry(models.Model):
         if (PERM_EDIT not in target_entry.permissions) \
                                     or (PERM_DELETE not in self.permissions):
             raise PermissionDenied(_("Permission denied"))
-        oldcontainer = self.rcontainer
+        oldcontainer = self.container
         oldseq = self.seq
         self.seq = target_entry.all_subentries.count() + 1
         self.container = target_entry
@@ -650,7 +644,6 @@ class Entry(models.Model):
         from zadig.zstandard.models import InternalRedirectionEntry, \
                                                 VInternalRedirection
         nentry = InternalRedirectionEntry(container=oldcontainer)
-        nentry.request = self.request
         nentry.__initialize()
         nentry.seq = oldseq
         nentry.name = self.name
@@ -669,22 +662,25 @@ class Entry(models.Model):
     def contents_view(self, parms=None):
         subentries = self.subentries
         vobject = self.vobject
-        if self.request.method == 'POST' and 'move' in self.request.POST:
-            move_item_form = MoveItemForm(self.request.POST)
+        if threadlocals.request.method == 'POST' and \
+                                        'move' in threadlocals.request.POST:
+            move_item_form = MoveItemForm(threadlocals.request.POST)
             if move_item_form.is_valid():
                 s = move_item_form.cleaned_data['move_object']
                 t = move_item_form.cleaned_data['before_object']
                 self.reorder(s, t)
                 subentries = self.subentries
-        elif self.request.method == 'POST' and 'cut' in self.request.POST:
-            formset = ContentsFormSet(self.request.POST)
-            self.request.session['cut_entries'] = []
+        elif threadlocals.request.method == 'POST' and \
+                                        'cut' in threadlocals.request.POST:
+            formset = ContentsFormSet(threadlocals.request.POST)
+            threadlocals.request.session['cut_entries'] = []
             for i,f in enumerate(formset.cleaned_data):
                 if f['select_object']:
-                    self.request.session['cut_entries'].append(subentries[i].id)
+                    threadlocals.request.session['cut_entries'].append(
+                                                            subentries[i].id)
         items_formset = ContentsFormSet(initial=[
             { 'entry_id': x.id,
-              'select_object': x.id in self.request.session.get(
+              'select_object': x.id in threadlocals.request.session.get(
                                                             'cut_entries', [])
             } for x in subentries ])
         move_item_form = MoveItemForm(initial=
@@ -695,17 +691,17 @@ class Entry(models.Model):
                   'subentries_with_formset': map(lambda x,y: (x,y), subentries,
                                                         items_formset.forms),
                   'move_item_form': move_item_form},
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(threadlocals.request))
 
     def history_view(self, parms=None):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject },
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(threadlocals.request))
 
     def __change_owner(self, new_owner, recursive):
 
-        if self.request.user != self.owner and \
-                                        not self.request.user.is_superuser:
+        if threadlocals.request.user != self.owner and \
+                                   not threadlocals.request.user.is_superuser:
             raise PermissionDenied(_(u"Permission denied"))
         if new_owner != self.owner:
             self.owner = new_owner
@@ -716,10 +712,10 @@ class Entry(models.Model):
 
     def permissions_view(self, parms=None):
         vobject = self.vobject
-        if self.request.method != 'POST':
+        if threadlocals.request.method != 'POST':
             permissions_form = EntryPermissionsForm({ 'owner': self.owner })
         else:
-            permissions_form = EntryPermissionsForm(self.request.POST)
+            permissions_form = EntryPermissionsForm(threadlocals.request.POST)
             if permissions_form.is_valid():
                 new_owner = User.objects.get(username=
                                 permissions_form.cleaned_data['owner'])
@@ -727,7 +723,7 @@ class Entry(models.Model):
                 self.__change_owner(new_owner, recursive)
         return render_to_response('entry_permissions.html',
                 { 'vobject': vobject,'permissions_form': permissions_form },
-                context_instance = RequestContext(self.request))
+                context_instance = RequestContext(threadlocals.request))
 
     def undelete(self):
         ver = self.vobject.version_number
@@ -735,8 +731,7 @@ class Entry(models.Model):
         old_vobject = self.get_vobject(ver-1).descendant
         assert(not old_vobject.deletion_mark)
         nvobject = old_vobject.duplicate()
-        nvobject.request = self.request
-        nvobject.request.view_name = 'info'
+        threadlocals.request.view_name = 'info'
         return nvobject.descendant.info_view()
 
     @property
@@ -745,16 +740,17 @@ class Entry(models.Model):
         result = []
         for transition in self.state.source_rules.all():
             if workflow in transition.workflow_set.all() and \
-                    transition.lentity.includes(self.request.user, entry=self):
+                    transition.lentity.includes(threadlocals.request.user,
+                                                                   entry=self):
                 result.append(transition.target_state)
         return result
         
     def __unicode__(self):
         result = self.name
-        container = self.rcontainer
+        container = self.container
         while container:
             result = container.name + '/' + result
-            container = container.rcontainer
+            container = container.container
         return result
 
     class Meta:
@@ -780,8 +776,8 @@ class EntryPermission(models.Model):
 
 class VObjectManager(models.Manager):
 
-    def get_by_path(self, request, path, version_number=None):
-        entry = Entry.objects.get_by_path(request, path)
+    def get_by_path(self, path, version_number=None):
+        entry = Entry.objects.get_by_path(path)
         return entry.get_vobject(version_number)
 
 
@@ -796,15 +792,13 @@ class VObject(models.Model):
 
     def __init__(self, *args, **kwargs):
         result = super(VObject, self).__init__(*args, **kwargs)
-        self.request = None
         if not self.object_class:
             self.object_class = self._meta.object_name
 
     def save(self, *args, **kwargs):
         from datetime import datetime
         if self.entry.multilingual_group:
-            _check_multilingual_group(self.request,
-                                            self.entry.multilingual_group.id)
+            _check_multilingual_group(self.entry.multilingual_group.id)
         if not self.date:
             self.date = datetime.now()
         return super(VObject, self).save(args, kwargs)
@@ -822,32 +816,18 @@ class VObject(models.Model):
         result = self
         for a in hierarchy:
             result = getattr(result, a.__name__.lower())
-        result.request = self.request
-        return result
-
-    @property
-    def rentry(self):
-        entry = self.entry
-        entry.request = self.request
-        return entry
-
-    @property
-    def metatags(self):
-        result = self.metatags_set
-        if 'request' in self.__dict__:
-            result.request = self.request
         return result
 
     def view_deleted(self, parms):
         assert(self.deletion_mark)
-        if self.request.view_name=='info':
+        if threadlocals.request.view_name=='info':
             return render_to_response('view_deleted_entry.html',
                 { 'vobject': self, },
-                context_instance = RequestContext(self.request))
-        if self.request.view_name=='history':
-            return self.rentry.history_view()
-        if self.request.view_name=='undelete':
-            return self.rentry.undelete()
+                context_instance = RequestContext(threadlocals.request))
+        if threadlocals.request.view_name=='history':
+            return self.entry.history_view()
+        if threadlocals.request.view_name=='undelete':
+            return self.entry.undelete()
         raise Http404
 
     def duplicate(self):
@@ -909,8 +889,8 @@ class MetatagManager(models.Manager):
     def default(self):
         first_metatags = self.all()[0]
         language = None
-        if 'request' in self.__dict__ and self.request:
-            language = self.request.effective_language
+        if threadlocals.request:
+            language = threadlocals.request.effective_language
             a = self.filter(language=language)
             if a: return a[0]
         language = first_metatags.vobject.language
@@ -920,7 +900,7 @@ class MetatagManager(models.Manager):
 
 
 class VObjectMetatags(models.Model):
-    vobject = models.ForeignKey(VObject, related_name='metatags_set')
+    vobject = models.ForeignKey(VObject, related_name='metatags')
     language = models.ForeignKey(Language)
     title = models.CharField(max_length=250)
     short_title = models.CharField(max_length=250, blank=True)
@@ -947,11 +927,9 @@ class EditEntryForm(forms.Form):
     altlang = forms.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
-        """We keep a pointer to 'request' and 'entry' if the caller supplies
+        """We keep a pointer to 'entry' if the caller supplies
         it, in order to use it when we clean."""
-        if 'request' in kwargs:
-            self.request = kwargs['request']
-            del(kwargs['request'])
+        if 'entry' in kwargs:
             self.entry = kwargs['entry']
             del(kwargs['entry'])
             self.new = kwargs['new']
@@ -975,7 +953,7 @@ class EditEntryForm(forms.Form):
                 raise forms.ValidationError(_(u"Specify a language, or "
                     "don't specify an alternative language"))
             try:
-                e = Entry.objects.get_by_path(self.request, c['altlang'])
+                e = Entry.objects.get_by_path(c['altlang'])
             except Http404:
                 raise forms.ValidationError(_(u"The object specified as "
                     "alternative language does not exist, or you do not have "

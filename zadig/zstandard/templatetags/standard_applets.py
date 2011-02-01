@@ -23,7 +23,7 @@ class BreadcrumbsNode(template.Node):
         vobject = context.get('vobject', None)
         while vobject:
             entryoptions = models.EntryOptionSet.objects.get_or_create(
-                                                        entry=vobject.rentry)[0]
+                                                        entry=vobject.entry)[0]
             if not entryoptions or not entryoptions.no_breadcrumbs:
                 if result:
                     result = u'''<a href="%s">%s</a>
@@ -32,7 +32,7 @@ class BreadcrumbsNode(template.Node):
                         vobject.metatags.default.get_short_title(), result)
                 else:
                     result = vobject.metatags.default.get_short_title()
-            container = vobject.rentry.rcontainer
+            container = vobject.entry.container
             vobject = container.vobject if container else None
         return result
 
@@ -54,21 +54,22 @@ class LanguageToolsNode(template.Node):
 
     def render(self, context):
         vobject = context.get('vobject', None)
+        request = context.get('request', None)
         if not vobject: return ''
-        entry = vobject.rentry
+        entry = vobject.entry
         alt_lang_entries = entry.alt_lang_entries if entry else []
         result = u'<div onMouseOver="showShowables(this)" '+\
                                         'onMouseOut="hideShowables(this)">'
         result += u'<ul>' 
-        preferred_lang_id = vobject.request.preferred_language
-        effective_lang_id = vobject.request.effective_language
+        preferred_lang_id = request.preferred_language
+        effective_lang_id = request.effective_language
         preferred_lang_name = coremodels.Language.objects.get(
                                                     id=preferred_lang_id).descr
         effective_lang_name = coremodels.Language.objects.get(
                                                     id=effective_lang_id).descr
         object_available_in_preferred_lang = False
         for (lang, langdescr) in settings.ZADIG_LANGUAGES:
-            target = vobject.request.path
+            target = request.path
             for e in alt_lang_entries:
                 if e.vobject.language.id==lang:
                     target = e.spath
@@ -78,7 +79,7 @@ class LanguageToolsNode(template.Node):
                       '</a></li>' % (
                       'effective' if effective_lang_id==lang else "",
                       'preferred' if preferred_lang_id==lang else "",
-                      'available' if target!=vobject.request.path else "",
+                      'available' if target!=request.path else "",
                       target, lang, 
                       coremodels.Language.objects.get(id=lang).descr)
         result += u'</ul><p class="showable">'
@@ -114,7 +115,7 @@ class LoginNode(template.Node):
         pass
 
     def render(self, context):
-        request = context['vobject'].request
+        request = context['request']
         if not request.user.is_authenticated():
             return _(u'<a href="%s__login__/">Login</a>' %
                 get_current_path(request),)
@@ -142,12 +143,12 @@ class NavigationNode(template.Node):
             return True
         v = sibling.vobject
         if not v.language: return True
-        if v.language.id==v.request.effective_language: return True
-        if not v.rentry.multilingual_group: return True
-        if v.request.effective_language in [e.vobject.language.id
-                                        for e in v.rentry.alt_lang_entries]:
+        if v.language.id==self.request.effective_language: return True
+        if not v.entry.multilingual_group: return True
+        if self.request.effective_language in [e.vobject.language.id
+                                        for e in v.entry.alt_lang_entries]:
             return False
-        if v.rentry.multilingual_group.id in self.multilingual_groups_seen:
+        if v.entry.multilingual_group.id in self.multilingual_groups_seen:
             return False
         return True
 
@@ -183,18 +184,19 @@ class NavigationNode(template.Node):
 
     def render(self, context):
         vobject = context.get('vobject', None)
+        self.request = context['request']
         # Find the innermost containing object that has navigation_toplevel.
-        toplevel_entry = vobject.rentry
+        toplevel_entry = vobject.entry
         while True:
             if not toplevel_entry.container: break
             entryoptions = models.EntryOptionSet.objects.get_or_create(
                                                     entry=toplevel_entry)[0]
             if entryoptions.navigation_toplevel: break
-            toplevel_entry = toplevel_entry.rcontainer
-        result = self.render_entry_contents(toplevel_entry, vobject.rentry, 1)
+            toplevel_entry = toplevel_entry.container
+        result = self.render_entry_contents(toplevel_entry, vobject.entry, 1)
         if result:
             toplevel_link = toplevel_entry.spath
-            preferred_language = vobject.request.preferred_language
+            preferred_language = self.request.preferred_language
             if (toplevel_entry.vobject.language and
                     toplevel_entry.vobject.language.id != preferred_language):
                 for e in toplevel_entry.alt_lang_entries:
@@ -235,17 +237,16 @@ class NewsNode(template.Node):
                     '-vobject_set__vpage__vnewsitem__news_date').distinct()
         news_items_to_show = []
         for e in news_items:
-            e.request = vobject.request
             if PERM_SEARCH not in e.permissions:
                 continue
             if e.multilingual_group and (e.multilingual_group.id in
                                                 multilingual_groups_seen):
                 continue
             v = e.vobject.descendant
-            if (v.language) and (v.language.id!=v.request.effective_language
-                        ) and v.rentry.multilingual_group and (
-                        v.request.effective_language in [e.vobject.language.id
-                                        for e in v.rentry.alt_lang_entries]):
+            if (v.language) and (v.language.id!=request.effective_language
+                        ) and v.entry.multilingual_group and (
+                        request.effective_language in [e.vobject.language.id
+                                        for e in v.entry.alt_lang_entries]):
                 continue
             if e.multilingual_group:
                 multilingual_groups_seen.add(e.multilingual_group.id)
@@ -282,6 +283,7 @@ class EventsNode(template.Node):
 
     def render(self, context):
         vobject = context.get('vobject', None)
+        request = context['request']
         # FIXME: Same problems and lots of code duplication as NewsNode above.
         multilingual_groups_seen = set()
         from zadig.core.models import PERM_SEARCH
@@ -291,17 +293,16 @@ class EventsNode(template.Node):
             ).order_by('vobject_set__vpage__vevent__event_start').distinct()
         events_to_show = []
         for e in events:
-            e.request = vobject.request
             if PERM_SEARCH not in e.permissions:
                 continue
             if e.multilingual_group and (e.multilingual_group.id in
                                                 multilingual_groups_seen):
                 continue
             v = e.vobject.descendant
-            if (v.language) and (v.language.id!=v.request.effective_language
-                        ) and v.rentry.multilingual_group and (
-                        v.request.effective_language in [e.vobject.language.id
-                                        for e in v.rentry.alt_lang_entries]):
+            if (v.language) and (v.language.id!=request.effective_language
+                        ) and v.entry.multilingual_group and (
+                        request.effective_language in [e.vobject.language.id
+                                        for e in v.entry.alt_lang_entries]):
                 continue
             if e.multilingual_group:
                 multilingual_groups_seen.add(e.multilingual_group.id)
@@ -347,14 +348,15 @@ class PrimaryButtonsNode(template.Node):
     def render(self, context):
         import re
         vobject = context['vobject']
+        request = context['request']
         if not vobject:
             return '<ul class="primaryButtons">' \
                '<li class="selected"><a href="">%s</a></li></ul>' % _(u'new')
-        if not vobject.rentry.touchable: return ''
+        if not vobject.entry.touchable: return ''
         result = '<ul class="primaryButtons">'
         for viewname, viewstring in self.views:
             href = '__' + viewname + '__/'
-            current_view = vobject.request.view_name
+            current_view = request.view_name
             if current_view=='view': current_view='info'
             result += '<li %s><a href="%s">%s</a></li>' % ('class="selected"'
                         if viewname==current_view else '', href, viewstring)
@@ -381,7 +383,7 @@ class SecondaryButtonsNode(template.Node):
         vobject = context['vobject']
         if not vobject: return ''
         spath = vobject.entry.spath
-        if not vobject.rentry.touchable: return ''
+        if not vobject.entry.touchable: return ''
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
               'items': [ { 'href': '%s__state__/%d/' % (spath, x.id,),
@@ -392,7 +394,7 @@ class SecondaryButtonsNode(template.Node):
             { 'name': _(u'Add new…'),
               'items': [{ 'href': '%s__new__/%s/' % (spath, cls.__name__[:-5]),
                   'name': cls.typename } for cls in coremodels.entry_types
-                          if cls.can_be_contained(vobject.rentry.descendant)]
+                          if cls.can_be_contained(vobject.entry.descendant)]
             },
             { 'name': _(u'Actions'),
               'items': [ { 'href': '%s__cut__/' % (spath,) ,

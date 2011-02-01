@@ -5,11 +5,13 @@ import re
 from django.utils.translation import ugettext as _
 import settings
 
+
 def split_path(path):
     if path=='' or path=='/': return ['',]
     if path.startswith('/'): path = path[1:]
     if path.endswith('/'): path = path[:-1]
     return ['',] + path.split('/')
+
 
 def join_path(*path_items):
     if len(path_items)==1:
@@ -22,6 +24,7 @@ def join_path(*path_items):
             if result: result += '/'
             result += p
     return result
+
 
 def get_current_path(request):
     path = request.path
@@ -36,6 +39,20 @@ def get_current_path(request):
     result = '/' + '/'.join(path_items)
     if result != '/': result += '/'
     return result
+
+
+def including_lentities(user)
+    from zadig.core.models import Lentity, EVERYONE, LOGGED_ON_USER
+    if not user.is_authenticated():
+        lentities = [Lentity.objects.get(special=EVERYONE)]
+    else:
+        lentities = [Lentity.objects.get(user=user),
+                     Lentity.objects.get(special=EVERYONE),
+                     Lentity.objects.get(special=LOGGED_ON_USER)]
+        lentities.append(Lentity.objects.filter(
+                                            group__in=user.groups.all()))
+    return lentities
+
 
 class sanitize_html(unicode):
     # FIXME: Still vulnerable to some attacks. Go to
