@@ -673,7 +673,7 @@ The functions below are in module zadig.core.utils.
 
 .. function:: zadig.core.utils.including_lentities(user)
 
-   Return a list of :class:`~zadig.core.models.Lentity` objects that
+   Return a queryset of :class:`~zadig.core.models.Lentity` objects that
    either are or contain *user*, which is a
    :class:`django.contrib.auth.user` object.
 

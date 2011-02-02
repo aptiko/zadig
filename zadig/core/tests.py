@@ -6,6 +6,7 @@ from django.http import HttpRequest
 from zadig.core.models import Lentity, Entry, State, \
                     EVERYONE, LOGGED_ON_USER, OWNER, \
                     PERM_VIEW, PERM_EDIT, PERM_DELETE, PERM_ADMIN, PERM_SEARCH
+from zadig.core.middleware import threadlocals
 
 
 class TestPermissions(unittest.TestCase):
@@ -22,9 +23,9 @@ class TestPermissions(unittest.TestCase):
         self.lentity2.save()
         self.lentityg1 = Lentity(group=self.group1)
         self.lentityg1.save()
-        self.request = HttpRequest()
-        self.request.user = self.user1
-        self.rootentry = Entry.objects.get_by_path(self.request, '/')
+        threadlocals.request = HttpRequest()
+        threadlocals.request.user = self.user1
+        self.rootentry = Entry.objects.get_by_path('/')
 
     def tearDown(self):
         self.user1.delete()

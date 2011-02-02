@@ -207,10 +207,10 @@ class EntryManager(models.Manager):
         # of these lentities has search permission.
         from django.db.models import Q
         result = result.filter(
-                (Q(entrypermission_set__lentity__in=lentities) &
-                 Q(entrypermission_set__permission_id = PERM_SEARCH)) |
-                (Q(state__statepermission_set__lentity__in=lentities) &
-                 Q(state__statepermission_set__permission_id = PERM_SEARCH)))
+                (Q(entrypermission__lentity__in=lentities) &
+                 Q(entrypermission__permission__id=PERM_SEARCH)) |
+                (Q(state__statepermission__lentity__in=lentities) &
+                 Q(state__statepermission__permission__id=PERM_SEARCH)))
         return result
 
     def get_by_path(self, path):

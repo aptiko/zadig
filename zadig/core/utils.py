@@ -41,17 +41,14 @@ def get_current_path(request):
     return result
 
 
-def including_lentities(user)
+def including_lentities(user):
     from zadig.core.models import Lentity, EVERYONE, LOGGED_ON_USER
     if not user.is_authenticated():
-        lentities = [Lentity.objects.get(special=EVERYONE)]
+        return Lentity.objects.filter(special=EVERYONE)
     else:
-        lentities = [Lentity.objects.get(user=user),
-                     Lentity.objects.get(special=EVERYONE),
-                     Lentity.objects.get(special=LOGGED_ON_USER)]
-        lentities.append(Lentity.objects.filter(
-                                            group__in=user.groups.all()))
-    return lentities
+        from django.db.models import Q
+        return Lentity.objects.filter(Q(user=user) | Q(special=EVERYONE) |
+                Q(special=LOGGED_ON_USER) | Q(group__in=user.groups.all()))
 
 
 class sanitize_html(unicode):
