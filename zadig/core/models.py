@@ -414,10 +414,7 @@ class Entry(models.Model):
     @property
     def subentries(self):
         parent_permissions = self.permissions
-        if PERM_VIEW not in parent_permissions:
-            raise PermissionDenied(_(u"Permission denied"))
         subentries = list(self.all_subentries.order_by('seq').all())
-            s.request = self.request
         result = []
         for s in subentries:
             if not s.vobject.deletion_mark and (PERM_EDIT in
