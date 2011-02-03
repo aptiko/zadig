@@ -5,14 +5,13 @@ from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, Http404
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, AnonymousUser
 from django import forms
 from django.template import RequestContext
 import settings
 
 from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
-from zadig.core.middleware import threadlocals
 
 
 PERM_VIEW=1
@@ -73,7 +72,8 @@ class Lentity(models.Model):
         if self.special==EVERYONE:
             return True
         if self.special==LOGGED_ON_USER:
-            return user.username == threadlocals.request.user.username
+            request = utils.get_request()
+            return request and user.username == request.user.username
         if self.special==OWNER:
             return entry and entry.owner==user
         if self.special in (PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
@@ -185,16 +185,18 @@ def _check_multilingual_group(mgid):
     """Called whenever one needs to verify the integrity of specified
     multilingual group. What it actually does is postpone this check for
     commit time (the middleware makes the check)."""
-    if not 'multilingual_groups_to_check' in threadlocals.__dict__:
-        threadlocals.multilingual_groups_to_check = set()
-    threadlocals.multilingual_groups_to_check.add(mgid)
+    request = utils.get_request()
+    if not 'multilingual_groups_to_check' in request.__dict__:
+        request.multilingual_groups_to_check = set()
+    request.multilingual_groups_to_check.add(mgid)
 
 
 class EntryManager(models.Manager):
 
     def get_query_set(self):
         result = super(EntryManager, self).get_query_set()
-        user = threadlocals.request.user
+        request = utils.get_request()
+        user = request.user if request else AnonymousUser()
 
         # Superusers have access to all
         if user.is_authenticated() and user.is_superuser:
@@ -264,14 +266,14 @@ class Entry(models.Model):
         siblings = Entry.objects.filter(container=self.container)
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
-        self.owner = threadlocals.request.user
+        self.owner = utils.get_request().user
         self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
     @property
     def absolute_uri(self):
-        return threadlocals.request.build_absolute_uri(self.spath)
+        return utils.get_request().build_absolute_uri(self.spath)
 
     def can_contain(self, cls):
         return PERM_EDIT in self.permissions
@@ -343,7 +345,8 @@ class Entry(models.Model):
 
     @property
     def permissions(self):
-        user = threadlocals.request.user
+        request = utils.get_request()
+        user = request.user if request else AnonymousUser()
         if user.is_authenticated() and (self.owner.pk == user.pk or
                                                         user.is_superuser):
             return set((PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
@@ -531,7 +534,8 @@ class Entry(models.Model):
         if (new and not self.container.touchable) or (
                                             not new and not self.touchable):
             raise Http404
-        if threadlocals.request.method != 'POST':
+        request = utils.get_request()
+        if request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
                         'language': self.vobject.language if not new else '',
                         'altlang': self.alt_lang_entries[0].spath
@@ -545,14 +549,12 @@ class Entry(models.Model):
                                         o.objects.get_or_create(entry=self)[0]
                 optionsforms.append(oset.get_form_from_data())
         else:
-            mainform = EditEntryForm(threadlocals.request.POST,
-                            request=threadlocals.request,
+            mainform = EditEntryForm(request.POST, request=request,
                             entry=self.container if new else self, new=new)
-            metatagsformset = MetatagsFormSet(threadlocals.request.POST)
-            subform = self.edit_subform(data=threadlocals.request.POST,
-                                    files=threadlocals.request.FILES, new=new)
-            optionsforms = [o.form(threadlocals.request.POST)
-                                                    for o in entry_option_sets]
+            metatagsformset = MetatagsFormSet(request.POST)
+            subform = self.edit_subform(data=request.POST,
+                                    files=request.FILES, new=new)
+            optionsforms = [o.form(request.POST) for o in entry_option_sets]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
@@ -589,7 +591,7 @@ class Entry(models.Model):
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms },
-                context_instance = RequestContext(threadlocals.request))
+                context_instance = RequestContext(request))
 
     def rename(self, newname):
         if not self.container:
@@ -659,26 +661,23 @@ class Entry(models.Model):
     def contents_view(self, parms=None):
         subentries = self.subentries
         vobject = self.vobject
-        if threadlocals.request.method == 'POST' and \
-                                        'move' in threadlocals.request.POST:
-            move_item_form = MoveItemForm(threadlocals.request.POST)
+        request = utils.get_request()
+        if request.method == 'POST' and 'move' in request.POST:
+            move_item_form = MoveItemForm(request.POST)
             if move_item_form.is_valid():
                 s = move_item_form.cleaned_data['move_object']
                 t = move_item_form.cleaned_data['before_object']
                 self.reorder(s, t)
                 subentries = self.subentries
-        elif threadlocals.request.method == 'POST' and \
-                                        'cut' in threadlocals.request.POST:
-            formset = ContentsFormSet(threadlocals.request.POST)
-            threadlocals.request.session['cut_entries'] = []
+        elif request.method == 'POST' and 'cut' in request.POST:
+            formset = ContentsFormSet(request.POST)
+            request.session['cut_entries'] = []
             for i,f in enumerate(formset.cleaned_data):
                 if f['select_object']:
-                    threadlocals.request.session['cut_entries'].append(
-                                                            subentries[i].id)
+                    request.session['cut_entries'].append(subentries[i].id)
         items_formset = ContentsFormSet(initial=[
             { 'entry_id': x.id,
-              'select_object': x.id in threadlocals.request.session.get(
-                                                            'cut_entries', [])
+              'select_object': x.id in request.session.get('cut_entries', [])
             } for x in subentries ])
         move_item_form = MoveItemForm(initial=
                 {'num_of_objects': len(subentries)})
@@ -688,17 +687,16 @@ class Entry(models.Model):
                   'subentries_with_formset': map(lambda x,y: (x,y), subentries,
                                                         items_formset.forms),
                   'move_item_form': move_item_form},
-                context_instance = RequestContext(threadlocals.request))
+                context_instance = RequestContext(request))
 
     def history_view(self, parms=None):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject },
-                context_instance = RequestContext(threadlocals.request))
+                context_instance = RequestContext(utils.get_request()))
 
     def __change_owner(self, new_owner, recursive):
-
-        if threadlocals.request.user != self.owner and \
-                                   not threadlocals.request.user.is_superuser:
+        request = utils.get_request()
+        if request.user != self.owner and not request.user.is_superuser:
             raise PermissionDenied(_(u"Permission denied"))
         if new_owner != self.owner:
             self.owner = new_owner
@@ -709,10 +707,11 @@ class Entry(models.Model):
 
     def permissions_view(self, parms=None):
         vobject = self.vobject
-        if threadlocals.request.method != 'POST':
+        request = utils.get_request()
+        if request.method != 'POST':
             permissions_form = EntryPermissionsForm({ 'owner': self.owner })
         else:
-            permissions_form = EntryPermissionsForm(threadlocals.request.POST)
+            permissions_form = EntryPermissionsForm(request.POST)
             if permissions_form.is_valid():
                 new_owner = User.objects.get(username=
                                 permissions_form.cleaned_data['owner'])
@@ -720,7 +719,7 @@ class Entry(models.Model):
                 self.__change_owner(new_owner, recursive)
         return render_to_response('entry_permissions.html',
                 { 'vobject': vobject,'permissions_form': permissions_form },
-                context_instance = RequestContext(threadlocals.request))
+                context_instance = RequestContext(request))
 
     def undelete(self):
         ver = self.vobject.version_number
@@ -728,7 +727,7 @@ class Entry(models.Model):
         old_vobject = self.get_vobject(ver-1).descendant
         assert(not old_vobject.deletion_mark)
         nvobject = old_vobject.duplicate()
-        threadlocals.request.view_name = 'info'
+        utils.get_request().view_name = 'info'
         return nvobject.descendant.info_view()
 
     @property
@@ -737,7 +736,7 @@ class Entry(models.Model):
         result = []
         for transition in self.state.source_rules.all():
             if workflow in transition.workflow_set.all() and \
-                    transition.lentity.includes(threadlocals.request.user,
+                    transition.lentity.includes(utils.get_request().user,
                                                                    entry=self):
                 result.append(transition.target_state)
         return result
@@ -817,13 +816,14 @@ class VObject(models.Model):
 
     def view_deleted(self, parms):
         assert(self.deletion_mark)
-        if threadlocals.request.view_name=='info':
+        request = utils.get_request()
+        if request.view_name=='info':
             return render_to_response('view_deleted_entry.html',
                 { 'vobject': self, },
-                context_instance = RequestContext(threadlocals.request))
-        if threadlocals.request.view_name=='history':
+                context_instance = RequestContext(request))
+        if request.view_name=='history':
             return self.entry.history_view()
-        if threadlocals.request.view_name=='undelete':
+        if request.view_name=='undelete':
             return self.entry.undelete()
         raise Http404
 
@@ -886,8 +886,9 @@ class MetatagManager(models.Manager):
     def default(self):
         first_metatags = self.all()[0]
         language = None
-        if threadlocals.request:
-            language = threadlocals.request.effective_language
+        request = utils.get_request()
+        if request:
+            language = request.effective_language
             a = self.filter(language=language)
             if a: return a[0]
         language = first_metatags.vobject.language

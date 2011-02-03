@@ -11,12 +11,10 @@ import django.contrib.auth
 
 from zadig.core import models
 from zadig.core.models import PERM_EDIT, entry_types, VObjectMetatags, Language
-from zadig.core.middleware import threadlocals
 
-def _set_languages(vobject):
+def _set_languages(request, vobject):
     """Set preferred and effective language."""
     import settings
-    request = threadlocals.request
     request.preferred_language = request.session['language'] \
         if 'language' in request.session else settings.ZADIG_LANGUAGES[0][0]
     request.effective_language = vobject.language.id if vobject.language \
@@ -26,13 +24,13 @@ def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(path, version_number)\
                                                                 .descendant
     if vobject.deletion_mark: raise Http404
-    _set_languages(vobject)
+    _set_languages(request, vobject)
     request.view_name = 'view'
     return vobject.end_view()
 
 def general_view(request, path, view_name, parms):
     vobject = models.VObject.objects.get_by_path(path).descendant
-    _set_languages(vobject)
+    _set_languages(request, vobject)
     request.view_name = view_name
     if vobject.deletion_mark:
         return vobject.view_deleted(parms)
@@ -58,7 +56,7 @@ def general_view(request, path, view_name, parms):
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(parent_path)
-    _set_languages(parent_vobject)
+    _set_languages(request, parent_vobject)
     parent_entry = parent_vobject.entry.descendant
     class_name = '%sEntry' % (entry_type,)
     new_entry_class = [u for u in entry_types if u.__name__==class_name][0]
@@ -69,7 +67,7 @@ def new_entry(request, parent_path, entry_type):
 def change_state(request, path, new_state_id):
     vobject = models.VObject.objects.get_by_path(path).descendant
     if vobject.deletion_mark: raise Http404
-    _set_languages(vobject)
+    _set_languages(request, vobject)
     entry = vobject.entry
     new_state_id = int(new_state_id)
     if new_state_id not in [x.id for x in entry.possible_target_states]:
@@ -93,7 +91,7 @@ def login(request, path):
     vobject = models.VObject.objects.get_by_path(path)
     if vobject.deletion_mark: raise Http404
     request.view_name = 'login'
-    _set_languages(vobject)
+    _set_languages(request, vobject)
     message = ''
     if request.user.is_authenticated():
         request.message = _(
@@ -138,7 +136,7 @@ def paste(request, path):
 def delete(request, path):
     vobject = models.VObject.objects.get_by_path(path).descendant
     if vobject.deletion_mark: raise Http404
-    _set_languages(vobject)
+    _set_languages(request, vobject)
     if PERM_EDIT not in vobject.entry.permissions:
         raise PermissionDenied(_(u"Permission denied"))
     if not vobject.entry.container:

@@ -106,3 +106,15 @@ class sanitize_html(unicode):
         (scheme, sep, rest) = unquote(url).partition(':')
         return (not sep) or (scheme.find('/')>=0) or (scheme in
                                                       cls.valid_schemes)
+
+
+import threading
+
+_threadlocal = threading.local()
+_threadlocal.request = None
+
+def get_request():
+    return _threadlocal.request
+
+def set_request(request):
+    _threadlocal.request = request

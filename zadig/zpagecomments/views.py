@@ -4,18 +4,18 @@ from django.utils.translation import ugettext as _
 from zadig.core.models import Entry, PERM_EDIT
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
-from zadig.core.middleware import threadlocals
+from zadig.core.utils import get_request
 
 
-def add_comment(vobject, parms=None):
+def add_comment(request, vobject, parms=None):
     entry = vobject.entry.descendant
-    if threadlocals.request.method != 'POST' or not isinstance(entry, PageEntry):
+    if request.method != 'POST' or not isinstance(entry, PageEntry):
         raise Http404
     try:
         if not entry.ZpagecommentsEntryOptions.allow_comments: raise Http404
     except EntryOptions.DoesNotExist:
         raise Http404
-    form = CommentForm(threadlocals.request.POST)
+    form = CommentForm(request.POST)
     if form.is_valid():
         from docutils.core import publish_parts
         from zadig.core.utils import sanitize_html
@@ -30,20 +30,20 @@ def add_comment(vobject, parms=None):
             comment=sanitize_html(parts['fragment']),
             state=STATE_PUBLISHED)
         comment.save()
-        threadlocals.request.message = _(u"Your comment has been added.")
+        request.message = _(u"Your comment has been added.")
     else:
-        threadlocals.request.pagecommentsform = form
-        threadlocals.request.message = _(
+        request.pagecommentsform = form
+        request.message = _(
                     u"There was an error in your comment; see below.")
-    threadlocals.request.view_name = 'view'
+    request.view_name = 'view'
     return vobject.end_view()
 
 
-def moderate_comments(vobject, parms=None):
+def moderate_comments(request, vobject, parms=None):
     entry = vobject.entry.descendant
-    if threadlocals.request.method != 'POST' or not isinstance(entry, PageEntry):
+    if request.method != 'POST' or not isinstance(entry, PageEntry):
         raise Http404
-    querydict = threadlocals.request.POST
+    querydict = request.POST
     for k in querydict:
         import re
         m = re.match(r'comment_(\d+)_state', k)
@@ -55,5 +55,5 @@ def moderate_comments(vobject, parms=None):
             continue
         comment.state = querydict[k]
         comment.save()
-    threadlocals.request.view_name = 'view'
+    request.view_name = 'view'
     return vobject.end_view()

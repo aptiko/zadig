@@ -119,7 +119,7 @@ the following::
 
 .. _request-object:
 
-Thread locals and the request object
+The request object
 ====================================
 
 Low level Zadig code needs to be aware of the *request* object all the
@@ -128,20 +128,17 @@ time. It uses the *request* object for two purposes: First, it uses
 various operations; for example, when you call the ``get_by_path()``
 method of the :attr:`default Entry manager
 <zadig.core.models.Entry.objects>`, it only returns an Entry if the
-user has permission to view it; and the default manager's query sets
+user has permission to view it; and the default manager's querysets
 only include entries which the user has permission to search.
 Second, some additional information is stored for later usage in the
-*request* object, namely the preferred and effective languages.
+*request* object, such as the preferred and effective languages.
 
 In order to avoid passing the request object all the time and treat
 this at a low level, transparently for the high level developer, which
-is important for security, the Zadig middleware creates a variable
-called *threadlocals*, which contains the request object and other
-information. To use it, do the following::
-
-    from zadig.core.middleware import threadlocals
-
-``threadlocals.request`` is then the request object. You should,
+is important for security, the low level code gets the request object
+by calling :func:`zadig.core.utils.get_object()` (the Zadig middleware
+saves it at the start of execution by calling
+:func:`zadig.core.utils.set_object()`).  You should,
 however, avoid to use that at a high level; consider it a Zadig
 internal. Use the request object as it is normally being used in
 Django; just be aware that the Zadig core objects have access to it
@@ -149,11 +146,14 @@ even if you don't provide it.
 
 If you are not using the API in the context of a web server (for
 example if you are creating a command-line utility), and therefore
-you don't have a request object, create one and make certain it has
-a *user* attribute::
+you don't have a request object, low level code will sometimes
+fail and sometimes automatically consider that it is running with the
+permissions of the anonymous user. If this is insufficient, do
+something like the following:
 
   from django.http import HttpRequest
   from django.contrib.auth.models import User
-  from zadig.core.middleware import threadlocals
-  threadlocals.request = HttpRequest()
-  threadlocals.request.user = User.objects.get(username=MY_USERNAME)
+  from zadig.core.utils import set_request
+  request = HttpRequest()
+  request.user = User.objects.get(username=MY_USERNAME)
+  set_request(request)

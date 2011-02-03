@@ -2,18 +2,22 @@ import unittest
 
 from django.contrib.auth.models import User, Group
 from django.http import HttpRequest
+from django.test.client import Client
 
 from zadig.core.models import Lentity, Entry, State, \
                     EVERYONE, LOGGED_ON_USER, OWNER, \
                     PERM_VIEW, PERM_EDIT, PERM_DELETE, PERM_ADMIN, PERM_SEARCH
-from zadig.core.middleware import threadlocals
 
 
 class TestPermissions(unittest.TestCase):
 
     def setUp(self):
-        self.user1 = User.objects.create_user('user1', 'user1@nowhere.com')
-        self.user2 = User.objects.create_user('user2', 'user2@nowhere.com')
+        # Create two users (user1, user2) and one group (group1) containing
+        # user1
+        self.user1 = User.objects.create_user('user1', 'user1@nowhere.com',
+                                                            password='secret1')
+        self.user2 = User.objects.create_user('user2', 'user2@nowhere.com',
+                                                            password='secret2')
         self.group1 = Group(name='group1')
         self.group1.save()
         self.user1.groups.add(self.group1)
@@ -23,11 +27,26 @@ class TestPermissions(unittest.TestCase):
         self.lentity2.save()
         self.lentityg1 = Lentity(group=self.group1)
         self.lentityg1.save()
-        threadlocals.request = HttpRequest()
-        threadlocals.request.user = self.user1
+
+        # Nick for root entry
         self.rootentry = Entry.objects.get_by_path('/')
 
+        # Let's put in some subentries
+        self.client = Client()
+        self.client.login(username='user1', password='secret1')
+        for i in range(1, 6):
+            istr = ['One', 'Two', 'Three', 'Four', 'Five'][i-1]
+            self.client.post('/__new__/Page/', {'name': istr.lower(),
+                        'form-0-language': 'English', 'form-0-title': istr,
+                        'content': 'This is page %s.' % (istr,)})
+        # Let's publish 2 and 4
+        self.client.post('/two/__state__/3/')
+        self.client.post('/four/__state__/3/')
+        self.client.logout()
+
+            
     def tearDown(self):
+        for e in self.rootentry.subentries: e.delete()
         self.user1.delete()
         self.user2.delete()
         self.group1.delete()

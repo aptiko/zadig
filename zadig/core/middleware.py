@@ -1,7 +1,4 @@
 import settings
-import threading
-
-threadlocals = threading.local()
 
 class GeneralMiddleware(object):
 
@@ -10,13 +7,14 @@ class GeneralMiddleware(object):
             lang = request.GET['set_language']
             if lang in (x[0] for x in settings.ZADIG_LANGUAGES):
                 request.session['language'] = lang
-        threadlocals.multilingual_groups_to_check = set()
-        threadlocals.request = request
+        request.multilingual_groups_to_check = set()
+        from zadig.core.utils import set_request
+        set_request(request)
         return None
 
     def process_response(self, request, response):
         from zadig.core.models import MultilingualGroup
-        if hasattr(threadlocals.__dict__, 'multilingual_groups_to_check'):
-            for mgid in threadlocals.multilingual_groups_to_check:
+        if hasattr(request.__dict__, 'multilingual_groups_to_check'):
+            for mgid in request.multilingual_groups_to_check:
                 MultilingualGroup.objects.get(id=mgid).check()
         return response

@@ -674,6 +674,12 @@ The functions below are in module zadig.core.utils.
    either are or contain *user*, which is a
    :class:`django.contrib.auth.user` object.
 
+.. function:: zadig.core.utils.set_request(request)
+              zadig.core.utils.get_request()
+
+   For information about these functions, see the :ref:`request object
+   <request-object>`.
+
 .. function:: zadig.core.utils.sanitize_html(html)
 
    Sanitize the HTML provided and return a sanitized version. This is
