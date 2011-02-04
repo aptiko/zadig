@@ -42,7 +42,8 @@ The Entry model
          when retrieving Entries, because it will take care of
          permissions at a low level.
 
-   :class:`~zadig.core.models.Entry` objects have the following attributes:
+   :class:`~zadig.core.models.Entry` objects have the following
+   database attributes:
 
    .. attribute:: zadig.core.models.Entry.btemplate
 
@@ -93,7 +94,7 @@ The Entry model
       the state of the entry.
 
    :class:`~zadig.core.models.Entry` objects also have the
-   following properties and methods:
+   following attributes, properties and methods:
 
    .. attribute:: zadig.core.models.Entry.absolute_uri
 
@@ -320,6 +321,10 @@ The Entry model
       *target_seq* are both the same number. Also raises an exception
       if the user does not have permission to do this.
 
+   .. attribute:: zadig.core.models.Entry.request
+
+      A copy of the :ref:`request object <request-object>`.
+
    .. method:: zadig.core.models.Entry.set_altlang(altpath)
 
       Set :attr:`~zadig.core.models.Entry.multilingual_group` so
@@ -438,6 +443,10 @@ The VObject model
       same object but in its descendant class, and you don't know
       which subclass it is, use this property, which gives you the 
       same object but in the proper subclass.
+
+   .. attribute:: zadig.core.models.VObject.request
+
+      A copy of the :ref:`request object <request-object>`.
 
    .. method:: zadig.core.models.VObject.end_view()
 

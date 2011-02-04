@@ -244,7 +244,6 @@ class Entry(models.Model):
         # Otherwise, it is likely Django calling us in the default Django way.
         if len(args)!=1 or kwargs:
             result = super(Entry, self).__init__(*args, **kwargs)
-            self.request = None
         else:
             path = args[0]
             names = path.split('/')
@@ -256,6 +255,7 @@ class Entry(models.Model):
             self.__initialize()
         if not self.object_class:
             self.object_class = self._meta.object_name
+        self.request = utils.get_request()
 
     def __initialize(self):
         """Set all other attributes of a newly created Entry, when only
@@ -790,6 +790,7 @@ class VObject(models.Model):
         result = super(VObject, self).__init__(*args, **kwargs)
         if not self.object_class:
             self.object_class = self._meta.object_name
+        self.request = utils.get_request()
 
     def save(self, *args, **kwargs):
         from datetime import datetime

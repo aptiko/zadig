@@ -4,7 +4,6 @@ from django.utils.translation import ugettext as _
 from zadig.core.models import Entry, PERM_EDIT
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
-from zadig.core.utils import get_request
 
 
 def add_comment(request, vobject, parms=None):

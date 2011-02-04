@@ -120,7 +120,7 @@ the following::
 .. _request-object:
 
 The request object
-====================================
+==================
 
 Low level Zadig code needs to be aware of the *request* object all the
 time. It uses the *request* object for two purposes: First, it uses
@@ -142,7 +142,10 @@ saves it at the start of execution by calling
 however, avoid to use that at a high level; consider it a Zadig
 internal. Use the request object as it is normally being used in
 Django; just be aware that the Zadig core objects have access to it
-even if you don't provide it.
+even if you don't provide it. In addition, 
+:class:`~zadig.core.models.Entry` and :class:`~zadig.core.models.VObject`
+instances have a *request* attribute which you can use, particularly
+when you are subclassing them.
 
 If you are not using the API in the context of a web server (for
 example if you are creating a command-line utility), and therefore
