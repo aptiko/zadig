@@ -1,5 +1,7 @@
 import settings
 
+from zadig.core.utils import set_request
+
 class GeneralMiddleware(object):
 
     def process_request(self, request):
@@ -8,7 +10,6 @@ class GeneralMiddleware(object):
             if lang in (x[0] for x in settings.ZADIG_LANGUAGES):
                 request.session['language'] = lang
         request.multilingual_groups_to_check = set()
-        from zadig.core.utils import set_request
         set_request(request)
         return None
 
@@ -17,4 +18,5 @@ class GeneralMiddleware(object):
         if hasattr(request.__dict__, 'multilingual_groups_to_check'):
             for mgid in request.multilingual_groups_to_check:
                 MultilingualGroup.objects.get(id=mgid).check()
+        set_request(None)
         return response

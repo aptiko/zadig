@@ -157,3 +157,8 @@ something like the following:
   request = HttpRequest()
   request.user = User.objects.get(username=MY_USERNAME)
   set_request(request)
+
+  # Do what you need at this point
+  
+  set_request(None) # This is for cleanup and it is important in case you
+                    # attempt to set it to a not None value again further below.
