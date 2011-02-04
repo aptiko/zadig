@@ -1,6 +1,6 @@
 import unittest
 
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User, Group, AnonymousUser
 from django.test.client import Client
 
 from zadig.core.models import Lentity, Entry, State, \
@@ -13,6 +13,10 @@ class TestPermissions(unittest.TestCase):
     def setUp(self):
         # Create two users (user1, user2) and one group (group1) containing
         # user1
+        self.adminuser = User.objects.create_user('admin', 'admin@nowhere.com',
+                                                            password='secret0')
+        self.adminuser.is_superuser = True
+        self.adminuser.save()
         self.user1 = User.objects.create_user('user1', 'user1@nowhere.com',
                                                             password='secret1')
         self.user2 = User.objects.create_user('user2', 'user2@nowhere.com',
@@ -20,6 +24,8 @@ class TestPermissions(unittest.TestCase):
         self.group1 = Group(name='group1')
         self.group1.save()
         self.user1.groups.add(self.group1)
+        self.lentity0 = Lentity(user=self.adminuser)
+        self.lentity0.save()
         self.lentity1 = Lentity(user=self.user1)
         self.lentity1.save()
         self.lentity2 = Lentity(user=self.user2)
@@ -32,35 +38,42 @@ class TestPermissions(unittest.TestCase):
 
         # Let's put in some subentries
         self.client = Client()
-        self.client.login(username='user1', password='secret1')
+        self.client.login(username='admin', password='secret0')
         for i in range(1, 6):
             istr = ['One', 'Two', 'Three', 'Four', 'Five'][i-1]
             self.client.post('/__new__/Page/', {'name': istr.lower(),
-                        'form-0-language': 'English', 'form-0-title': istr,
+                        'form-TOTAL_FORMS': 1, 'form-INITIAL_FORMS': 1,
+                        'form-0-language': 'en', 'form-0-title': istr,
                         'content': 'This is page %s.' % (istr,)})
         # Let's publish 2 and 4
-        self.client.post('/two/__state__/3/')
-        self.client.post('/four/__state__/3/')
+        published = State.objects.get(descr="Published")
+        self.client.post('/two/__state__/%d/' % (published.id,))
+        self.client.post('/four/__state__/%d/' % (published.id,))
         self.client.logout()
 
         from django.http import HttpRequest
         from zadig.core.utils import set_request
-        request = HttpRequest()
-        request.user = User.objects.get(username='user1')
-        set_request(request)
+        self.request = HttpRequest()
+        self.request.user = self.adminuser
+        set_request(self.request)
 
     def tearDown(self):
+        self.request.user = self.adminuser
         for e in self.rootentry.subentries: e.delete()
-        self.user1.delete()
-        self.user2.delete()
-        self.group1.delete()
+        self.lentity0.delete()
         self.lentity1.delete()
         self.lentity2.delete()
         self.lentityg1.delete()
+        self.group1.delete()
+        self.user2.delete()
+        self.user1.delete()
+        self.adminuser.delete()
         from zadig.core.utils import set_request
         set_request(None)
+        self.request = None
 
     def test_Lentity_includes(self):
+        self.request.user = self.user1
         everyone = Lentity.objects.get(special=EVERYONE)
         logged_on_user = Lentity.objects.get(special=LOGGED_ON_USER)
         owner = Lentity.objects.get(special=OWNER)
@@ -76,7 +89,8 @@ class TestPermissions(unittest.TestCase):
         self.assert_(everyone.includes(self.user1))
         self.assert_(everyone.includes(self.user2))
         self.assert_(logged_on_user.includes(self.user1, self.rootentry))
-        self.assertFalse(logged_on_user.includes(self.user2, self.rootentry))
+        self.assertFalse(logged_on_user.includes(self.user2,
+                                                    self.rootentry))
         self.assertFalse(owner.includes(self.user1))
         self.assert_(owner.includes(self.rootentry.owner, self.rootentry))
         self.assert_(perm_view.includes(self.user1, self.rootentry))
@@ -91,6 +105,7 @@ class TestPermissions(unittest.TestCase):
         saved_owner = self.rootentry.owner
         saved_state = self.rootentry.state
         try:
+            self.request.user = self.user1
             self.rootentry.state = published
             self.rootentry.owner = self.user1
             self.rootentry.save()
@@ -111,3 +126,10 @@ class TestPermissions(unittest.TestCase):
             self.rootentry.owner = saved_owner
             self.rootentry.state = saved_state
             self.rootentry.save()
+
+    def test_Entry_manager_filtering(self):
+        self.request.user = self.user1
+        self.assertEqual(Entry.objects.count(), 6) # Five plus root entry
+        self.request.user = AnonymousUser()
+        self.assertEqual(Entry.objects.count(), 3) # Only three are published
+        

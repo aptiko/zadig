@@ -311,7 +311,7 @@ class Entry(models.Model):
         mg = self.multilingual_group
         result = super(Entry, self).delete(*args, **kwargs)
         if mg: _check_multilingual_group(mg.id)
-        container.__renumber_subentries()
+        self.container.__renumber_subentries()
         return result
 
     @property
@@ -534,8 +534,7 @@ class Entry(models.Model):
         if (new and not self.container.touchable) or (
                                             not new and not self.touchable):
             raise Http404
-        request = utils.get_request()
-        if request.method != 'POST':
+        if self.request.method != 'POST':
             mainform = EditEntryForm(initial={ 'name': self.name,
                         'language': self.vobject.language if not new else '',
                         'altlang': self.alt_lang_entries[0].spath
@@ -549,12 +548,13 @@ class Entry(models.Model):
                                         o.objects.get_or_create(entry=self)[0]
                 optionsforms.append(oset.get_form_from_data())
         else:
-            mainform = EditEntryForm(request.POST, request=request,
+            mainform = EditEntryForm(self.request.POST,
                             entry=self.container if new else self, new=new)
-            metatagsformset = MetatagsFormSet(request.POST)
-            subform = self.edit_subform(data=request.POST,
-                                    files=request.FILES, new=new)
-            optionsforms = [o.form(request.POST) for o in entry_option_sets]
+            metatagsformset = MetatagsFormSet(self.request.POST)
+            subform = self.edit_subform(data=self.request.POST,
+                                    files=self.request.FILES, new=new)
+            optionsforms = [o.form(self.request.POST)
+                                                for o in entry_option_sets]
             all_forms_are_valid = all(
                 [mainform.is_valid(),
                  metatagsformset.is_valid(),
@@ -591,7 +591,7 @@ class Entry(models.Model):
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
                 'subform': subform, 'optionsforms': optionsforms },
-                context_instance = RequestContext(request))
+                context_instance = RequestContext(self.request))
 
     def rename(self, newname):
         if not self.container:

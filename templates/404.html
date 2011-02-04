@@ -8,4 +8,5 @@
 {% block mainContent %}
    <h1>{% trans "Not found" %}</h1>
    <p>{% trans "Either the requested object does not exist, or you do not have permissions to access it." %}</p>
+   <p>{% trans "The requested object is" %} "{{ request.path }}".</p>
 {% endblock %}
