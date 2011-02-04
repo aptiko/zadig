@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block htmltitle %}
+   {% trans "404 - Not found" %}
+{% endblock %}
+
+{% block mainContent %}
+   <h1>{% trans "Not found" %}</h1>
+   <p>{% trans "Either the requested object does not exist, or you do not have permissions to access it." %}</p>
+{% endblock %}
