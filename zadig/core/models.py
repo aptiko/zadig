@@ -393,9 +393,9 @@ class Entry(models.Model):
 
     @property
     def spath(self):
-        result = '/' + self.path + '/'
-        if result == '//':
-            result = '/'
+        result = u'/' + self.path + u'/'
+        if result == u'//':
+            result = u'/'
         return result
 
     @property
