@@ -183,7 +183,8 @@ class NavigationNode(template.Node):
         return result
 
     def render(self, context):
-        vobject = context.get('vobject', None)
+        if 'vobject' not in context: return ''
+        vobject = context['vobject']
         self.request = context['request']
         # Find the innermost containing object that has navigation_toplevel.
         toplevel_entry = vobject.entry
@@ -346,7 +347,7 @@ class PrimaryButtonsNode(template.Node):
         pass
 
     def render(self, context):
-        import re
+        if 'vobject' not in context: return ''
         vobject = context['vobject']
         request = context['request']
         if not vobject:
@@ -380,6 +381,7 @@ class SecondaryButtonsNode(template.Node):
         pass
 
     def render(self, context):
+        if 'vobject' not in context: return ''
         vobject = context['vobject']
         if not vobject: return ''
         spath = vobject.entry.spath

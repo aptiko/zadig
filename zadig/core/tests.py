@@ -1,7 +1,6 @@
 import unittest
 
 from django.contrib.auth.models import User, Group
-from django.http import HttpRequest
 from django.test.client import Client
 
 from zadig.core.models import Lentity, Entry, State, \
@@ -44,7 +43,12 @@ class TestPermissions(unittest.TestCase):
         self.client.post('/four/__state__/3/')
         self.client.logout()
 
-            
+        from django.http import HttpRequest
+        from zadig.core.utils import set_request
+        request = HttpRequest()
+        request.user = User.objects.get(username='user1')
+        set_request(request)
+
     def tearDown(self):
         for e in self.rootentry.subentries: e.delete()
         self.user1.delete()
@@ -53,6 +57,8 @@ class TestPermissions(unittest.TestCase):
         self.lentity1.delete()
         self.lentity2.delete()
         self.lentityg1.delete()
+        from zadig.core.utils import set_request
+        set_request(None)
 
     def test_Lentity_includes(self):
         everyone = Lentity.objects.get(special=EVERYONE)
