@@ -93,6 +93,21 @@ The Entry model
       A foreign key to :class:`~zadig.core.models.State`, indicating
       the state of the entry.
 
+   .. attribute:: zadig.core.models.Entry.vobject
+
+      A foreign key pointing to the current vobject, that is to the
+      vobject that has the maximum
+      :attr:`~zadig.core.models.VObject.version_number`) for the
+      entry.
+
+      This field is redundant, but has to be there to enable some
+      queries to run properly; see these two_ posts_ for more
+      information. You should never attempt to set it; Zadig
+      automatically updates it upon saving a new vobject.
+      
+      .. _two: http://stackoverflow.com/questions/2074514/django-query-that-get-most-recent-objects-from-different-categories
+      .. _posts: http://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
+
    :class:`~zadig.core.models.Entry` objects also have the
    following attributes, properties and methods:
 
@@ -394,12 +409,6 @@ The Entry model
       additional vobject identical in content to the vobject before
       undeletion, thereby reverting to that last vobject.
 
-   .. attribute:: zadig.core.models.Entry.vobject
-
-      This is the same as
-      :meth:`~zadig.core.models.Entry.get_vobject()` without an
-      argument.
-
 The VObject model
 =================
 
@@ -413,7 +422,7 @@ The VObject model
    
    .. attribute:: zadig.core.models.VObject.entry
 
-      Foreign key to ::class:`~zadig.core.models.Entry`.
+      Foreign key to :class:`~zadig.core.models.Entry`.
 
    .. attribute:: zadig.core.models.VObject.version_number
 

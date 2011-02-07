@@ -1,6 +1,7 @@
 from django.core import urlresolvers
 from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
+from django.db.models import Q, F
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response, get_object_or_404
@@ -234,7 +235,10 @@ class Entry(models.Model):
     multilingual_group = models.ForeignKey(MultilingualGroup, blank=True,
                                                                 null=True)
     btemplate = models.CharField(max_length=100, blank=True)
+    vobject = models.OneToOneField('VObject', null=True,
+                                                    related_name="irrelevant")
     objects = EntryManager()
+    all_objects = models.Manager()
 
     edit_template_name = 'edit_entry.html'
 
@@ -367,18 +371,11 @@ class Entry(models.Model):
         return self.permissions.intersection(set((PERM_EDIT, PERM_ADMIN))
                                                                     ) != set()
 
-    @property
-    def vobject(self):
-        return self.get_vobject()
-
     def get_vobject(self, version_number=None):
-        latest_vobject = self.vobject_set.order_by('-version_number')[0]
         if version_number is None:
-            vobject = latest_vobject
-        else:
-            vobject = self.vobject_set.get(version_number=version_number)
-        if vobject.version_number != latest_vobject.version_number \
-                and PERM_EDIT not in self.permissions:
+            return self.vobject.descendant
+        vobject = self.vobject_set.get(version_number=version_number)
+        if PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         return vobject.descendant
 
@@ -785,6 +782,7 @@ class VObject(models.Model):
     language = models.ForeignKey(Language, blank=True, null=True)
     deletion_mark = models.BooleanField(default=False)
     objects = VObjectManager()
+    all_objects = models.Manager()
 
     def __init__(self, *args, **kwargs):
         result = super(VObject, self).__init__(*args, **kwargs)
@@ -798,7 +796,21 @@ class VObject(models.Model):
             _check_multilingual_group(self.entry.multilingual_group.id)
         if not self.date:
             self.date = datetime.now()
-        return super(VObject, self).save(args, kwargs)
+        new = self.pk is None
+        if new:
+            old_vobjects = VObject.objects.filter(entry=self.entry).order_by(
+                                                        '-version_number')
+            last_vobject = old_vobjects[0] if old_vobjects.count() else None
+            if (last_vobject and (last_vobject != self.entry.vobject or
+                    self.version_number != last_vobject.version_number + 1)
+                    ) or (not last_vobject and self.version_number != 1):
+                raise IntegrityError(_(
+                            u"Wrong 'version_number' or 'entry.vobject'"))
+        result = super(VObject, self).save(args, kwargs)
+        if new:
+            self.entry.vobject = self
+            self.entry.save()
+        return result
 
     @property
     def descendant(self):
