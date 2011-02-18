@@ -415,7 +415,8 @@ The default Entry manager
    1. The manager automatically filters objects and does not return
       those for which the user does not have search permission (see 
       :ref:`request object <request-object>` to understand how this is
-      done.)
+      done), or objects which are deleted (see
+      :attr:`~zadig.core.models.VObject.deletion_mark`).
 
    2. The manager is inherited by subclasses, contrary to normal
       django practice.
