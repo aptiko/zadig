@@ -223,7 +223,6 @@ class NewsNode(template.Node):
 
     def render(self, context):
         request = context['request']
-        
         news_items = models.NewsItemEntry.objects.exclude_language_duplicates(
                 request.effective_language).order_by(
                                     '-vobject__vpage__vnewsitem__news_date')
@@ -257,46 +256,26 @@ register.tag('news', do_news)
 class EventsNode(template.Node):
 
     def render(self, context):
-        vobject = context.get('vobject', None)
-        request = context['request']
-        # FIXME: Same problems and lots of code duplication as NewsNode above.
-        multilingual_groups_seen = set()
-        from zadig.core.models import PERM_SEARCH
         from datetime import datetime
-        events = models.EventEntry.objects.filter(
+        request = context['request']
+        events = models.EventEntry.objects.exclude_language_duplicates(
+            request.effective_language).filter(
             vobject_set__vpage__vevent__event_start__gt=datetime.now()
-            ).order_by('vobject_set__vpage__vevent__event_start').distinct()
-        events_to_show = []
-        for e in events:
-            if PERM_SEARCH not in e.permissions:
-                continue
-            if e.multilingual_group and (e.multilingual_group.id in
-                                                multilingual_groups_seen):
-                continue
-            v = e.vobject.descendant
-            if (v.language) and (v.language.id!=request.effective_language
-                        ) and v.entry.multilingual_group and (
-                        request.effective_language in [e.vobject.language.id
-                                        for e in v.entry.alt_lang_entries]):
-                continue
-            if e.multilingual_group:
-                multilingual_groups_seen.add(e.multilingual_group.id)
-            events_to_show.append(v)
-            if len(events_to_show)==5:
-                break
-        if not events_to_show:
+            ).order_by('vobject_set__vpage__vevent__event_start')
+        if not events.count():
             return ''
         result = '<dl class="portlet EventsPortlet"><dt>%s</dt>' % (
                                                                 _(u"Events"),)
         item_type = 'odd'
-        for v in events_to_show:
+        for i, e in enumerate(events):
             result = result + '<dd class="%s">' \
                         '<a class="state%s" href="%s">%s</a>' \
                         '<span class="details">%s</span></dd>' % (item_type,
-                        v.entry.state.descr.replace(' ', ''),
-                        v.entry.spath, v.metatags.default.get_short_title(),
-                        v.event_start.isoformat()[:10])
+                        e.state.descr.replace(' ', ''),
+                        e.spath, e.vobject.metatags.default.get_short_title(),
+                        e.vobject.descendant.event_start.isoformat()[:10])
             item_type = 'even' if item_type=='odd' else 'odd'
+            if i==4: break
         result += '</dl>'
         return result
 
