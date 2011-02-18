@@ -140,11 +140,11 @@ class TestPermissions(unittest.TestCase):
         
     def test_Entry_subentries_filtering(self):
         self.request.user = self.user1
-        self.assertEqual(len(self.rootentry.subentries), 5)
+        self.assertEqual(self.rootentry.subentries.count(), 5)
         self.assertEqual(set([e.spath for e in self.rootentry.subentries]),
                                 set((u'/one/', u'/two/', u'/three/',
                                 u'/four/', u'/five/')))
         self.request.user = AnonymousUser()
-        self.assertEqual(len(self.rootentry.subentries), 2)
+        self.assertEqual(self.rootentry.subentries.count(), 2)
         self.assertEqual(set([e.spath for e in self.rootentry.subentries]),
                                             set((u'/two/', u'/four/')))

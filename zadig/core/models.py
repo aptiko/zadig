@@ -195,7 +195,8 @@ def _check_multilingual_group(mgid):
 class EntryManager(models.Manager):
 
     def get_query_set(self):
-        result = super(EntryManager, self).get_query_set()
+        result = super(EntryManager, self).get_query_set().exclude(
+                vobject__deletion_mark=True)
         request = utils.get_request()
         user = request.user if request else AnonymousUser()
 
@@ -434,14 +435,7 @@ class Entry(models.Model):
 
     @property
     def subentries(self):
-        parent_permissions = self.permissions
-        subentries = list(self.all_subentries.order_by('seq').all())
-        result = []
-        for s in subentries:
-            if not s.vobject.deletion_mark and (PERM_EDIT in
-                        parent_permissions or PERM_SEARCH in s.permissions):
-                result.append(s)
-        return result
+        return Entry.objects.filter(container=self).order_by('seq')
 
     def reorder(self, source_seq, target_seq):
         if PERM_EDIT not in self.permissions:
@@ -698,7 +692,7 @@ class Entry(models.Model):
               'select_object': x.id in request.session.get('cut_entries', [])
             } for x in subentries ])
         move_item_form = MoveItemForm(initial=
-                {'num_of_objects': len(subentries)})
+                {'num_of_objects': subentries.count()})
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject, 'subentries': subentries,
                   'formset': items_formset,
@@ -720,7 +714,7 @@ class Entry(models.Model):
             self.owner = new_owner
             self.save()
         if recursive:
-            for e in self.subentries:
+            for e in self.all_subentries:
                 e.__change_owner(new_owner, recursive)
 
     def permissions_view(self, parms=None):

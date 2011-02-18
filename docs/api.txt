@@ -45,7 +45,7 @@ The Entry model
 
       The *related_name* of this attribute is ``all_subentries``.
       Therefore, if you have an entry ``myentry``, then
-      ``myentry.all_subentries`` is the list of entries contained in
+      ``myentry.all_subentries`` is the entries contained in
       ``myentry``. You should not, however, use ``all_subentries``, unless
       you have a good reason to do so; instead, use 
       :meth:`~zadig.core.models.Entry.subentries`, which checks
@@ -372,8 +372,9 @@ The Entry model
 
    .. attribute:: zadig.core.models.Entry.subentries
 
-      A list of :class:`~zadig.core.models.Entry` objects, which are the
-      subentries which the user has permission to search, in order.
+      A query set of :class:`~zadig.core.models.Entry` objects, which
+      are the subentries which the user has permission to search, in
+      order.
 
    .. attribute:: zadig.core.models.Entry.template_name
 
