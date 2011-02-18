@@ -224,7 +224,28 @@ class EntryManager(models.Manager):
                 raise Http404
         return entry
 
+    def exclude_language_duplicates(self, effective_language):
+        items_to_exclude = Entry.objects.filter(
+            ~Q(vobject__language__id=effective_language) & 
+            (Q(multilingual_group__entry__vobject__language__id=
+                                                effective_language) |
+            Q(multilingual_group__entry__vobject__language__id__lt=
+                                                F('vobject__language__id'))))
+        return self.exclude(id__in=items_to_exclude)
+
+
+from django.db.models.base import ModelBase
+
+class EntryMetaclass(ModelBase):
+    def __new__(cls, name, bases, attrs):
+        """When creating an Entry subclass, make sure to inherit the
+        default manager, contrary to Django's practice."""
+        if not "objects" in attrs: attrs['objects'] = EntryManager()
+        return super(EntryMetaclass, cls).__new__(cls, name, bases, attrs)
+
+
 class Entry(models.Model):
+    __metaclass__ = EntryMetaclass
     object_class = models.CharField(max_length=100)
     container = models.ForeignKey('self', related_name="all_subentries",
                                   blank=True, null=True)

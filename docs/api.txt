@@ -25,23 +25,6 @@ The Entry model
    exception is raised. If other entries with the same parent entry
    exist, the entry is added as the last sibling.
    
-   The default manager for :class:`~zadig.core.models.Entry` has an
-   additional method:
-
-   .. attribute:: zadig.core.models.Entry.objects
-
-      .. method:: get_by_path(path)
-
-         Return the entry at the specified path; raise
-         ``django.http.Http404`` if such an entry does not exist or
-         the user does not have permissions to view it (you normally
-         don't need to handle that exception: it will result in a 404
-         page).
-
-         Generally you should much prefer to use the above method
-         when retrieving Entries, because it will take care of
-         permissions at a low level.
-
    :class:`~zadig.core.models.Entry` objects have the following
    database attributes:
 
@@ -107,6 +90,16 @@ The Entry model
       
       .. _two: http://stackoverflow.com/questions/2074514/django-query-that-get-most-recent-objects-from-different-categories
       .. _posts: http://stackoverflow.com/questions/2111384/sql-join-selecting-the-last-records-in-a-one-to-many-relationship
+
+   :class:`~zadig.core.models.Entry` has the following class
+   attributes:
+
+   .. attribute:: zadig.core.models.Entry.all_objects
+
+      This manager returns all objects. This is a copy of the default
+      django manager. In general, you should avoid using this; you
+      should instead use :attr:`~zadig.core.models.Entry.objects`,
+      which is an :class:`~zadig.core.models.EntryManager`.
 
    :class:`~zadig.core.models.Entry` objects also have the
    following attributes, properties and methods:
@@ -408,6 +401,56 @@ The Entry model
       :attr:`~zadig.core.models.VObject.deletion_mark,` it creates an
       additional vobject identical in content to the vobject before
       undeletion, thereby reverting to that last vobject.
+
+The default Entry manager
+=========================
+
+.. class:: zadig.core.models.EntryManager
+
+   Three things are important about the default
+   :class:`~zadig.core.models.Entry` manager (accessible via
+   :attr:`Entry.objects`):
+
+   1. The manager automatically filters objects and does not return
+      those for which the user does not have search permission (see 
+      :ref:`request object <request-object>` to understand how this is
+      done.)
+
+   2. The manager is inherited by subclasses, contrary to normal
+      django practice.
+
+   3. The manager has a few additional methods, described below.
+
+   See also :class:`zadig.core.models.Entry.all_objects`.
+
+   .. method:: zadig.core.models.EntryManager.get_by_path(path)
+
+      Return the entry at the specified path; raise
+      ``django.http.Http404`` if such an entry does not exist or
+      the user does not have permissions to view it (you normally
+      don't need to handle that exception: it will result in a 404
+      page).
+
+      Generally you should much prefer to use the above method
+      when retrieving Entries, because it will take care of
+      permissions at a low level.
+
+   .. method:: zadig.core.models.EntryManager.exclude_language_duplicates(effective_language_id)
+
+      Return a query set that does not contain items that are
+      represented in the default query set in a more appropriate
+      language. For example::
+
+         Entry.objects.exclude_language_duplicates(
+                                         request.effective_language)
+
+      The resulting query set will not contain entries which are in
+      the same multilingual group. If two entries are one the
+      equivalent of the other in another language, only one of them
+      will be included. If one of them is in the effective language,
+      then it will be included, and the other will be excluded; if
+      both are in a language which is not the effective language, then
+      one of them will be included at random.
 
 The VObject model
 =================

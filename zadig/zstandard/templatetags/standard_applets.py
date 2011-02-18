@@ -3,7 +3,7 @@ from django import template
 from django.utils.translation import ugettext as _
 import settings
 
-from zadig.core import models as coremodels
+from zadig.core.models import Entry, Language, entry_types
 from zadig.core.utils import get_current_path
 from zadig.zstandard import models
 
@@ -63,10 +63,8 @@ class LanguageToolsNode(template.Node):
         result += u'<ul>' 
         preferred_lang_id = request.preferred_language
         effective_lang_id = request.effective_language
-        preferred_lang_name = coremodels.Language.objects.get(
-                                                    id=preferred_lang_id).descr
-        effective_lang_name = coremodels.Language.objects.get(
-                                                    id=effective_lang_id).descr
+        preferred_lang_name = Language.objects.get(id=preferred_lang_id).descr
+        effective_lang_name = Language.objects.get(id=effective_lang_id).descr
         object_available_in_preferred_lang = False
         for (lang, langdescr) in settings.ZADIG_LANGUAGES:
             target = request.path
@@ -80,8 +78,7 @@ class LanguageToolsNode(template.Node):
                       'effective' if effective_lang_id==lang else "",
                       'preferred' if preferred_lang_id==lang else "",
                       'available' if target!=request.path else "",
-                      target, lang, 
-                      coremodels.Language.objects.get(id=lang).descr)
+                      target, lang, Language.objects.get(id=lang).descr)
         result += u'</ul><p class="showable">'
         result += _(u'Your preferred language is set to %s (click on another '
                     'language to change it).') % (preferred_lang_name,)
@@ -225,47 +222,24 @@ register.tag('navigation', do_navigation)
 class NewsNode(template.Node):
 
     def render(self, context):
-        vobject = context.get('vobject', None)
-        # FIXME: We will here search for news items which have SEARCH
-        # permission; but this should better be done in the core (maybe by
-        # modifying the default Entry manager so that it returns a custom query
-        # set which returns a custom iterator()?). In fact all the
-        # functionality of the following 22 lines or so (part of which is
-        # similar to NavigationNode.__mustshow()) must move elsewhere.
-        multilingual_groups_seen = set()
-        from zadig.core.models import PERM_SEARCH
-        news_items = models.NewsItemEntry.objects.order_by(
-                    '-vobject_set__vpage__vnewsitem__news_date').distinct()
-        news_items_to_show = []
-        for e in news_items:
-            if PERM_SEARCH not in e.permissions:
-                continue
-            if e.multilingual_group and (e.multilingual_group.id in
-                                                multilingual_groups_seen):
-                continue
-            v = e.vobject.descendant
-            if (v.language) and (v.language.id!=request.effective_language
-                        ) and v.entry.multilingual_group and (
-                        request.effective_language in [e.vobject.language.id
-                                        for e in v.entry.alt_lang_entries]):
-                continue
-            if e.multilingual_group:
-                multilingual_groups_seen.add(e.multilingual_group.id)
-            news_items_to_show.append(v)
-            if len(news_items_to_show)==5:
-                break
-        if not news_items_to_show:
+        request = context['request']
+        
+        news_items = models.NewsItemEntry.objects.exclude_language_duplicates(
+                request.effective_language).order_by(
+                                    '-vobject__vpage__vnewsitem__news_date')
+        if not news_items.count():
             return ''
         result = '<dl class="portlet NewsPortlet"><dt>%s</dt>' % (_(u"News"),)
         item_type = 'odd'
-        for v in news_items_to_show:
+        for i, e in enumerate(news_items):
             result = result + '<dd class="%s">' \
                         '<a class="state%s" href="%s">%s</a>' \
                         '<span class="details">%s</span></dd>' % (item_type,
-                        v.entry.state.descr.replace(' ', ''),
-                        v.entry.spath, v.metatags.default.get_short_title(),
-                        v.news_date.isoformat()[:10])
+                        e.state.descr.replace(' ', ''),
+                        e.spath, e.vobject.metatags.default.get_short_title(),
+                        e.vobject.descendant.news_date.isoformat()[:10])
             item_type = 'even' if item_type=='odd' else 'odd'
+            if i==4: break
         result += '</dl>'
         return result
 
@@ -395,7 +369,7 @@ class SecondaryButtonsNode(template.Node):
             },
             { 'name': _(u'Add new…'),
               'items': [{ 'href': '%s__new__/%s/' % (spath, cls.__name__[:-5]),
-                  'name': cls.typename } for cls in coremodels.entry_types
+                  'name': cls.typename } for cls in entry_types
                           if cls.can_be_contained(vobject.entry.descendant)]
             },
             { 'name': _(u'Actions'),
