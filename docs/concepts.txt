@@ -1,7 +1,7 @@
 .. _concepts:
 
 ==============
-Zadig concepts
+Zadig Concepts
 ==============
 
 .. index::

@@ -14,10 +14,11 @@ carefully if you are going to administer a Zadig installation or do
 any development; but you probably want to read the
 :ref:`administrators_guide` first in order to install Zadig.
 
-Contents:
+Contents
+========
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    administrators_guide
    concepts
