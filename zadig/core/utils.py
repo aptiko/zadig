@@ -117,9 +117,8 @@ def get_request():
     return _threadlocal.request
 
 def set_request(request):
-    if not request or not _threadlocal.request:
-        _threadlocal.request = request
-        return
-    raise RuntimeError("Internal error: An attempt was made to set the request "
-        "object to a not None value, but its value was already not None. " 
-        "Quitting just in case we've messed up.")
+    if request and 'request' in _threadlocal.__dict__ and _threadlocal.request:
+        raise RuntimeError("Internal error: An attempt was made to set the "
+        "request object to a not None value, but its value was already not "
+        "None. Quitting just in case we've messed up.")
+    _threadlocal.request = request
