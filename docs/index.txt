@@ -1,11 +1,10 @@
 Zadig documentation
 ===================
 
-Zadig is a system for collaborative management of a web site (the term
-"content management system" is widely used for that, but `some
-disagree`_, and I'm one of them).
+Zadig is a system for collaborative management of a web site (also called
+"content management system", but the latter is a misnomer_).
 
-.. _some disagree: http://www.gnu.org/philosophy/words-to-avoid.html#Content
+.. _misnomer: http://www.gnu.org/philosophy/words-to-avoid.html#Content
 
 There is no user documentation here; we have documentation for
 administrators and developers only.  The most important piece of
