@@ -31,7 +31,7 @@ class BlogEntry(Entry):
 
     @property
     def posts(self):
-        result = self.subentries
+        result = [x.descendant for x in self.subentries]
         for x in result:
             if x.object_class != u'BlogPostEntry':
                 result.remove(x)
