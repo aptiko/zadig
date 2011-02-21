@@ -134,8 +134,7 @@ Since the server process does not have permissions to write where the
 Python files are, I run the following whenever I need to precompile
 the Python files::
 
-    find /usr/local/Zadig /etc/zadig -name '*.py' |   \
-        xargs python -c 'import py_compile; py_compile.main()'
+    python -m compileall /usr/local/Zadig /etc/zadig
 
 Apache's virtual host configuration also contains::
 
@@ -184,7 +183,7 @@ the following files:
 
       ZADIG_PROGRAM_DIR = '/usr/local/Zadig'
       # --Snip--
-      TEMPLATE_DIRS = TEMPLATE_DIRS + ('/etc/zadig/sitename/templates',)
+      TEMPLATE_DIRS = ('/etc/zadig/sitename/templates',) + TEMPLATE_DIRS
       MEDIA_ROOT = '/var/local/Zadig/storage-sitename/'
 
 .. describe:: zadig-ssl.wsgi and settings-ssl.py
