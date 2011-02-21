@@ -57,11 +57,12 @@ class PageEntry(Entry):
     typename = _(u"Page")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'content': self.vobject.content} 
+        initial = None if new else {'content': self.vobject.descendant.content} 
         return EditPageForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.content=utils.sanitize_html(form.cleaned_data['content'])
+        vobject.descendant.content = utils.sanitize_html(
+                                                form.cleaned_data['content'])
 
 
 entry_types.append(PageEntry)
@@ -100,11 +101,11 @@ class FileEntry(Entry):
     typename = _(u"File")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'content': self.vobject.content} 
+        initial = None if new else {'content': self.vobject.descendant.content} 
         return EditFileForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.content = form.cleaned_data['content']
+        vobject.descendant.content = form.cleaned_data['content']
 
 
 entry_types.append(FileEntry)
@@ -154,11 +155,11 @@ class ImageEntry(Entry):
     typename = _(u"Image")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'content': self.vobject.content} 
+        initial = None if new else {'content': self.vobject.descendant.content} 
         return EditImageForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.content=form.cleaned_data['content']
+        vobject.descendant.content=form.cleaned_data['content']
 
 
 entry_types.append(ImageEntry)
@@ -193,11 +194,11 @@ class LinkEntry(Entry):
     typename = _(u"External link")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'target': self.vobject.target} 
+        initial = None if new else {'target': self.vobject.descendant.target} 
         return EditLinkForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.target = form.cleaned_data['target']
+        vobject.descendant.target = form.cleaned_data['target']
 
 
 entry_types.append(LinkEntry)
@@ -229,13 +230,13 @@ class NewsItemEntry(PageEntry):
     typename = _(u"News item")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'content': self.vobject.content,
-                     'news_date': self.vobject.news_date.isoformat(' ')[:16]} 
+        initial = None if new else {'content': self.vobject.descendant.content,
+            'news_date': self.vobject.descendant.news_date.isoformat(' ')[:16]} 
         return EditNewsItemForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
         super(NewsItemEntry, self).process_edit_subform(vobject, form)
-        vobject.news_date=form.cleaned_data['news_date']
+        vobject.descendant.news_date=form.cleaned_data['news_date']
 
 
 entry_types.append(NewsItemEntry)
@@ -276,15 +277,16 @@ class EventEntry(PageEntry):
     typename = _(u"Event")
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'content': self.vobject.content,
-                 'event_start': self.vobject.event_start.isoformat(' ')[:16],
-                 'event_end': self.vobject.event_end.isoformat(' ')[:16] } 
+        v = self.vobject.descendant
+        initial = None if new else {'content': v.content,
+                 'event_start': v.event_start.isoformat(' ')[:16],
+                 'event_end': v.event_end.isoformat(' ')[:16] } 
         return EditEventForm(data=data, files=files, initial=initial)
 
     def process_edit_subform(self, vobject, form):
         super(EventEntry, self).process_edit_subform(vobject, form)
-        vobject.event_start=form.cleaned_data['event_start']
-        vobject.event_end=form.cleaned_data['event_end']
+        vobject.descendant.event_start=form.cleaned_data['event_start']
+        vobject.descendant.event_end=form.cleaned_data['event_end']
 
 
 entry_types.append(EventEntry)
@@ -330,12 +332,13 @@ class InternalRedirectionEntry(Entry):
         return False
 
     def edit_subform(self, data=None, files=None, new=False):
-        initial = None if new else {'target': self.vobject.target} 
+        initial = None if new else {'target': self.vobject.descendant.target} 
         return EditInternalRedirectionForm(data=data, files=files,
                                                         initial=initial)
 
     def process_edit_subform(self, vobject, form):
-        vobject.target = Entry.objects.get(id=int(form.cleaned_data['target']))
+        vobject.descendant.target = Entry.objects.get(
+                                        id=int(form.cleaned_data['target']))
 
 
 entry_types.append(InternalRedirectionEntry)
