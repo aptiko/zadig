@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'Zadig'
-copyright = '2008-2010 Antonis Christofides'
+copyright = '2008-2011 Antonis Christofides and the National Technical University of Athens'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.
@@ -84,7 +84,7 @@ html_style = 'default.css'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "Zadig documentation"
 
 # The name of an image file (within the static path) to place at the top of
 # the sidebar.
