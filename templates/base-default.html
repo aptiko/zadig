@@ -65,7 +65,7 @@
           {% primary_buttons %}
           {% secondary_buttons %} 
         {% endblock %}
-        <div class="mainContent {% if vobject.rentry.touchable %}withButtons{% endif %}">
+        <div class="mainContent {% if vobject.entry.touchable %}withButtons{% endif %}">
           {% block message %}
             {% if vobject.request.message %}
               <p class="message">{{ vobject.request.message }}</p>
