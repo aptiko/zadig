@@ -5,7 +5,7 @@
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
   <div class="blogIndex">
-    {% for p in vobject.rentry.descendant.posts %}
+    {% for p in vobject.entry.descendant.posts %}
       <div class="blogPost">
         <p class="title">{{ p.vobject.metatags.default.title }}</p>
         <p class="author">{% trans "by" %} {{ p.ownername }}
