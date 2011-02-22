@@ -301,6 +301,11 @@ class Entry(models.Model):
     def absolute_uri(self):
         return utils.get_request().build_absolute_uri(self.spath)
 
+    @property
+    def permalink(self):
+        from urlparse import urljoin
+        return urljoin(settings.ZADIG_DEFAULT_ROOT_URL, self.spath)
+
     def can_contain(self, cls):
         return PERM_EDIT in self.permissions
 
@@ -369,10 +374,7 @@ class Entry(models.Model):
             result = getattr(result, a.__name__.lower())
         return result
 
-    @property
-    def permissions(self):
-        request = utils.get_request()
-        user = request.user if request else AnonymousUser()
+    def user_permissions(self, user):
         if user.is_authenticated() and (self.owner.pk == user.pk or
                                                         user.is_superuser):
             return set((PERM_VIEW, PERM_EDIT, PERM_ADMIN, PERM_DELETE,
@@ -387,6 +389,12 @@ class Entry(models.Model):
                                                               state=self.state):
                 result.add(perm.permission_id)
         return result
+
+    @property
+    def permissions(self):
+        request = utils.get_request()
+        user = request.user if request else AnonymousUser()
+        return self.user_permissions(user)
 
     @property
     def touchable(self):

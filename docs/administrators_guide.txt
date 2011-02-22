@@ -255,4 +255,13 @@ applicable.
    This is the id of the :class:`~zadig.core.models.Workflow` object
    that is used in the site.
 
+.. data:: ZADIG_DEFAULT_ROOT_URL
+
+   Sometimes a website is reachable through many URLs. This is
+   particularly the case when a site is accessible both through http
+   and https. In this case, only one of these should be the default.
+   Specifying the default URL is especially useful when creating
+   permalinks. This setting specifies the default root url, in the
+   form "http://mysite.com/".
+
 .. _Django settings: http://docs.djangoproject.com/en/dev/topics/settings/
