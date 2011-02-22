@@ -753,6 +753,17 @@ class Entry(models.Model):
                 result.append(transition.target_state)
         return result
         
+    def state_view(self, parms):
+        if parms.endswith('/'): parms = parms[:-1]
+        try: new_state_id = int(parms)
+        except: raise Http404
+        if new_state_id not in [x.id for x in self.possible_target_states]:
+            raise Http404
+        self.state = State.objects.get(pk=new_state_id)
+        self.save()
+        self.request.view_name = 'info'
+        return self.vobject.descendant.info_view()
+
     def __unicode__(self):
         result = self.name
         container = self.container
