@@ -46,3 +46,5 @@ SKIP_SOUTH_TESTS = True
 ZADIG_TINYMCE_BLOCKFORMATS = 'p,h1,h2'
 ZADIG_TINYMCE_STYLES = 'Float Left=floatLeft,Float Right=floatRight,Align Top=alignTop'
 ZADIG_TINYMCE_TABLE_STYLES = 'Plain=plain;Listing=listing;Vertical listing=vertical listing'
+
+ZBLOG_FROM_EMAIL = 'no-reply@localhost.localdomain'

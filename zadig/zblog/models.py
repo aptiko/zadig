@@ -46,21 +46,22 @@ class BlogEntry(Entry):
 
     class SubscribeForm(forms.Form):
         email = forms.EmailField()
-        comments = forms.BooleanField(required=False)
+        #comments = forms.BooleanField(required=False)
 
     def subscribe_view(self, parms=None):
         subscriber, form = None, None
         if parms:
             if parms.endswith('/'): parms = parms[:-1]
-            subscriber = BlogEmailSubscriber.activate(parms)
+            subscriber = BlogEmailSubscriber.confirm(parms)
+            print subscriber
         else:
             form = self.SubscribeForm(self.request.POST) \
                     if self.request.method=='POST' else self.SubscribeForm()
             if self.request.method=='POST' and form.is_valid():
-                subscriber = BlogEmailSubscriber.subscribe(
+                subscriber = BlogEmailSubscriber.subscribe_or_unsubscribe(
                                             form.cleaned_data['email'],
-                                            self, form.cleaned_data['comments'])
-                subscriber.email_activation_key(
+                                            self, False) #form.cleaned_data['comments'])
+                subscriber.email_confirmation_key(
                                     self.vobject.metatags.default.title, self)
         return render_to_response('blog_subscribe.html', {
             'vobject': self.vobject, 'form': form, 'subscriber': subscriber },
@@ -122,44 +123,60 @@ entry_types.append(BlogPostEntry)
 
 
 class EmailSubscriber(models.Model):
-    email = models.EmailField()
-    date_subscribed = models.DateTimeField()
-    activation_key = models.CharField(max_length=40, blank=True)
+    email = models.EmailField(unique=True)
+    date_requested = models.DateTimeField()
+    subscribed = models.BooleanField(default=False)
+    confirmation_key = models.CharField(max_length=40, blank=True)
 
     class Meta:
         abstract = True
 
     @classmethod
-    def activate(cls, key):
-        subscriber = get_object_or_404(cls, activation_key=key)
-        subscriber.activation_key = ''
-        subscriber.save()
+    def confirm(cls, key):
+        from datetime import datetime, timedelta
+        cls.objects.filter(date_requested__lt=datetime.now()-timedelta(1)
+                                                                    ).delete()
+        subscriber = get_object_or_404(cls, confirmation_key=key)
+        subscriber.confirmation_key = ''
+        if subscriber.subscribed:
+            subscriber.subscribed = False
+            subscriber.delete()
+        else:
+            subscriber.subscribed = True
+            subscriber.save()
         return subscriber
 
-    def create_activation_key(self):
+    def create_confirmation_key(self):
         from django.utils.hashcompat import sha_constructor
         import random
-        salt = sha_constructor(str(random.random())).hexdigest()[:5]
-        self.activation_key = sha_constructor(salt+self.email).hexdigest()
-        return self.activation_key
+        if not self.confirmation_key:
+            salt = sha_constructor(str(random.random())).hexdigest()[:5]
+            self.confirmation_key = sha_constructor(salt+self.email).hexdigest()
+        return self.confirmation_key
 
-    def email_activation_key(self, description, entry):
+    def email_confirmation_key(self, description, entry):
         email_subject = _(u'Blog subscription confirmation')
-        email_body = _(u'To confirm that you want to subscribe to %s, '
-            'follow the link below:\n%s__subscribe__/%s/') % (description,
-                    entry.absolute_uri, self.activation_key)
-        send_mail(email_subject, email_body, 'noreply@nowhere.no', [self.email])
+        if self.subscribed:
+            message = _(u'You are already subscribed to %s.\n\n'
+                u'Clicking on the link below will UNSUBSCRIBE you:\n')
+        else:
+            message = _(u'To confirm that you want to subscribe to %s, '
+            u'follow the link below:\n')
+        email_body = (message + '%s__subscribe__/%s/') % (description,
+                    entry.absolute_uri, self.confirmation_key)
+        send_mail(email_subject, email_body, settings.ZBLOG_FROM_EMAIL,
+                                                                [self.email])
                      
 class BlogEmailSubscriber(EmailSubscriber):
     blog = models.ForeignKey(BlogEntry)
     comments = models.BooleanField(default=False)
 
     @classmethod
-    def subscribe(cls, email, blog, comments=False):
+    def subscribe_or_unsubscribe(cls, email, blog, comments=False):
         from datetime import datetime
-        subscriber = cls(email=email, blog=blog, comments=comments,
-            date_subscribed=datetime.now())
-        subscriber.create_activation_key()
+        subscriber = cls.objects.get_or_create( email=email, blog=blog,
+            defaults={ 'comments': comments, 'date_requested': datetime.now()})[0]
+        subscriber.create_confirmation_key()
         subscriber.save()
         return subscriber
 
@@ -167,22 +184,13 @@ class BlogEmailSubscriber(EmailSubscriber):
     def notify_subscribers(cls, blogpost):
         blog_mt = blogpost.container.vobject.metatags.default
         post_mt = blogpost.vobject.metatags.default
-        e_subject = "%s: %s" % (blog_mt.get_short_title(), post_mt.title)
+        e_subject = "[%s] %s" % (blog_mt.get_short_title(), post_mt.title)
         e_body = _(u"A new article has been published in %s,\n"
                 u"of which you are a subscriber; you can read it at\n%s") % (
                 blog_mt.title, blogpost.permalink)
-        for s in cls.objects.filter(activation_key=""):
-            send_mail(e_subject, e_body, 'noreply@nowhere.no', [s.email])
+        for s in cls.objects.filter(confirmation_key=""):
+            send_mail(e_subject, e_body, settings.ZBLOG_FROM_EMAIL, [s.email])
 
 
 class BlogPostEmailSubscriber(EmailSubscriber):
     blogpost = models.ForeignKey(BlogPostEntry)
-
-    @classmethod
-    def subscribe(cls, email, blogpost, comments=False):
-        from datetime import datetime
-        subscriber = cls(email=email, blog=blogpost,
-                                        date_subscribed=datetime.now())
-        subscriber.create_activation_key()
-        subscriber.save()
-        return subscriber

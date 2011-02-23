@@ -2,19 +2,30 @@
 {% load i18n %}
 
 {% block mainContent %}
-  <h1 class="title">{% trans "Subscribe to blog" %}</h1>
-  {% if subscriber and subscriber.activation_key %}
+  <h1 class="title">{% trans "Subscribe or unsubscribe to blog" %}</h1>
+  {% if subscriber and subscriber.confirmation_key %}
     <p>
-    {% trans "An email has been set for confirmation to your email address" %}
+    {% trans "An email has been sent for confirmation to your email address" %}
     ({{ subscriber.email }}).
     </p>
   {% endif %}
-  {% if subscriber and not subscriber.activation_key %}
-    <p>
-    {% trans "You have successfully subscribed." %}
-    </p>
+  {% if subscriber and not subscriber.confirmation_key %}
+    {% if subscriber.subscribed %}
+      <p>
+      {% trans "You have successfully subscribed." %}
+      </p>
+    {% else %}
+      <p>
+      {% trans "You have successfully unsubscribed." %}
+      </p>
+    {% endif %}
   {% endif %}
   {% if not subscriber %}
+    <p>
+    {% blocktrans %}
+    Please enter your email address to receive notifications of new posts in
+    this blog, or to unsubscribe if you are already subscribed.
+    {% endblocktrans %}
     <form enctype="multipart/form-data" action="" method="POST">
       {{ form.errors }}
       <table>{{ form.as_table }}</table>
