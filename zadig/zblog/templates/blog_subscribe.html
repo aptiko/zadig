@@ -1,0 +1,24 @@
+{% extends vobject.entry.base_template %}
+{% load i18n %}
+
+{% block mainContent %}
+  <h1 class="title">{% trans "Subscribe to blog" %}</h1>
+  {% if subscriber and subscriber.activation_key %}
+    <p>
+    {% trans "An email has been set for confirmation to your email address" %}
+    ({{ subscriber.email }}).
+    </p>
+  {% endif %}
+  {% if subscriber and not subscriber.activation_key %}
+    <p>
+    {% trans "You have successfully subscribed." %}
+    </p>
+  {% endif %}
+  {% if not subscriber %}
+    <form enctype="multipart/form-data" action="" method="POST">
+      {{ form.errors }}
+      <table>{{ form.as_table }}</table>
+      <input type="submit" value="Submit" />
+    </form>
+  {% endif %}
+{% endblock %}
