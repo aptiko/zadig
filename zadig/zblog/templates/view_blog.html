@@ -4,6 +4,9 @@
 {% block mainContent %}
   <h1 class="title">{{vobject.metatags.default.title}}</h1>
   <p class="objectDescription">{{vobject.metatags.default.description}}</p>
+  <p style="text-align: right">
+    <a href="__subscribe__">{% trans "Subscribe or unsubscribe to this blog by email" %}</a>
+  </p>
   <div class="blogIndex">
     {% for p in vobject.entry.descendant.posts %}
       <div class="blogPost">
