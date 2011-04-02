@@ -66,7 +66,7 @@ def new_entry(request, parent_path, entry_type):
 
 def logout(request, path):
     django.contrib.auth.logout(request)
-    return end_view(request, path)
+    return general_view(request, path, 'info', '')
 
 class LoginForm(forms.Form):
     from django.contrib.auth.models import User
@@ -96,7 +96,7 @@ def login(request, path):
                 if user.is_active:
                     django.contrib.auth.login(request, user)
                     models.Lentity.objects.get_or_create(user=user)
-                    return end_view(request, path)
+                    return general_view(request, path, 'info', '')
                 else:
                     raise Exception(_(u"Account is disabled"))
             request.message = _(u"Login incorrect.")
