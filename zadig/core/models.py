@@ -630,6 +630,7 @@ class Entry(models.Model):
         nentry = InternalRedirectionEntry(container=self.container)
         nentry.__initialize()
         nentry.name = oldname
+        nentry.state = self.state
         nentry.save()
         nvobject = VInternalRedirection(entry=nentry,
             version_number=1,
