@@ -755,10 +755,10 @@ class Entry(models.Model):
     def possible_target_states(self):
         workflow = Workflow.objects.get(id=settings.WORKFLOW_ID)
         result = []
+        user = utils.get_request().user
         for transition in self.state.source_rules.all():
-            if workflow in transition.workflow_set.all() and \
-                    transition.lentity.includes(utils.get_request().user,
-                                                                   entry=self):
+            if workflow in transition.workflow_set.all() and (user.is_superuser
+                            or transition.lentity.includes(user, entry=self)):
                 result.append(transition.target_state)
         return result
         

@@ -6,11 +6,12 @@ from django.test.client import Client
 from zadig.core.models import Lentity, Entry, State, \
                     EVERYONE, LOGGED_ON_USER, OWNER, \
                     PERM_VIEW, PERM_EDIT, PERM_DELETE, PERM_ADMIN, PERM_SEARCH
+from zadig.core.utils import set_request
 
 
 class TestPermissions(unittest.TestCase):
 
-    def setUp(self):
+    def setUp(self, *args, **kwargs):
         # Create two users (user1, user2) and one group (group1) containing
         # user1
         self.adminuser = User.objects.create_user('admin', 'admin@nowhere.com',
@@ -52,13 +53,12 @@ class TestPermissions(unittest.TestCase):
         self.client.logout()
 
         from django.http import HttpRequest
-        from zadig.core.utils import set_request
         self.request = HttpRequest()
-        self.request.user = self.adminuser
-        set_request(self.request)
 
     def tearDown(self):
         self.request.user = self.adminuser
+        set_request(None)
+        set_request(self.request)
         for e in self.rootentry.subentries: e.delete()
         self.lentity0.delete()
         self.lentity1.delete()
@@ -68,12 +68,12 @@ class TestPermissions(unittest.TestCase):
         self.user2.delete()
         self.user1.delete()
         self.adminuser.delete()
-        from zadig.core.utils import set_request
         set_request(None)
         self.request = None
 
     def test_Lentity_includes(self):
         self.request.user = self.user1
+        set_request(self.request)
         everyone = Lentity.objects.get(special=EVERYONE)
         logged_on_user = Lentity.objects.get(special=LOGGED_ON_USER)
         owner = Lentity.objects.get(special=OWNER)
@@ -100,6 +100,7 @@ class TestPermissions(unittest.TestCase):
         self.assert_(perm_search.includes(self.user1, self.rootentry))
 
     def test_Entry_possible_target_states(self):
+        set_request(self.request)
         published = State.objects.get(descr="Published")
         private = State.objects.get(descr="Private")
         saved_owner = self.rootentry.owner
@@ -129,6 +130,7 @@ class TestPermissions(unittest.TestCase):
 
     def test_Entry_manager_filtering(self):
         self.request.user = self.user1
+        set_request(self.request)
         self.assertEqual(Entry.objects.count(), 6) # Five plus root entry
         self.assertEqual(set([e.spath for e in Entry.objects.all()]),
                                 set((u'/', u'/one/', u'/two/', u'/three/',
@@ -140,6 +142,7 @@ class TestPermissions(unittest.TestCase):
         
     def test_Entry_subentries_filtering(self):
         self.request.user = self.user1
+        set_request(self.request)
         self.assertEqual(self.rootentry.subentries.count(), 5)
         self.assertEqual(set([e.spath for e in self.rootentry.subentries]),
                                 set((u'/one/', u'/two/', u'/three/',
@@ -148,3 +151,32 @@ class TestPermissions(unittest.TestCase):
         self.assertEqual(self.rootentry.subentries.count(), 2)
         self.assertEqual(set([e.spath for e in self.rootentry.subentries]),
                                             set((u'/two/', u'/four/')))
+
+    def test_who_can_change_state(self):
+        # Change entry 'five' to be owned by user1
+        self.client.login(username='admin', password='secret0')
+        self.client.post('/five/__permissions__/', {'owner': 'user1',
+                         'recursive': 0 })
+        self.client.logout()
+
+        published = State.objects.get(descr="Published")
+        private = State.objects.get(descr="Private")
+        # User 1 should be able to change the state and back
+        self.client.login(username='user1', password='secret1')
+        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post('/five/__state__/%d/' % (private.id,))
+        self.assertEqual(response.status_code, 200)
+        self.client.logout()
+        # User 2 should not
+        self.client.login(username='user2', password='secret2')
+        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        self.assertEqual(response.status_code, 404)
+        self.client.logout()
+        # Administrator should
+        self.client.login(username='admin', password='secret0')
+        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.post('/five/__state__/%d/' % (private.id,))
+        self.assertEqual(response.status_code, 200)
+        self.client.logout()
