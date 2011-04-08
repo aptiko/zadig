@@ -1,0 +1,683 @@
+[
+    {
+        "pk": "en", 
+        "model": "core.language", 
+        "fields": {
+            "descr": "English"
+        }
+    }, 
+    {
+        "pk": "el", 
+        "model": "core.language", 
+        "fields": {
+            "descr": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.permission", 
+        "fields": {
+            "descr": "view"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.permission", 
+        "fields": {
+            "descr": "edit"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.permission", 
+        "fields": {
+            "descr": "admin"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.permission", 
+        "fields": {
+            "descr": "delete"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.permission", 
+        "fields": {
+            "descr": "search"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 100
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 200
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 300
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 1
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 2
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 3
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 4
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": null, 
+            "special": 5
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": 1, 
+            "special": null
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": 2, 
+            "special": null
+        }
+    }, 
+    {
+        "pk": 11, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": null, 
+            "user": 3, 
+            "special": null
+        }
+    }, 
+    {
+        "pk": 12, 
+        "model": "core.lentity", 
+        "fields": {
+            "group": 1, 
+            "user": null, 
+            "special": null
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.state", 
+        "fields": {
+            "descr": "Nonexistent"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.state", 
+        "fields": {
+            "descr": "Private"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.state", 
+        "fields": {
+            "descr": "Published"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.statepermission", 
+        "fields": {
+            "state": 2, 
+            "lentity": 2, 
+            "permission": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.statepermission", 
+        "fields": {
+            "state": 2, 
+            "lentity": 2, 
+            "permission": 5
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.statepermission", 
+        "fields": {
+            "state": 3, 
+            "lentity": 1, 
+            "permission": 1
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.statepermission", 
+        "fields": {
+            "state": 3, 
+            "lentity": 1, 
+            "permission": 5
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.statetransition", 
+        "fields": {
+            "target_state": 2, 
+            "lentity": 3, 
+            "source_state": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.statetransition", 
+        "fields": {
+            "target_state": 3, 
+            "lentity": 3, 
+            "source_state": 2
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.statetransition", 
+        "fields": {
+            "target_state": 2, 
+            "lentity": 3, 
+            "source_state": 3
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.workflow", 
+        "fields": {
+            "states": [
+                2, 
+                3
+            ], 
+            "name": "Simple publication workflow", 
+            "state_transitions": [
+                2, 
+                3, 
+                1
+            ]
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.entry", 
+        "fields": {
+            "container": null, 
+            "name": "", 
+            "seq": 1, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 3, 
+            "owner": 1, 
+            "vobject": 1, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.entry", 
+        "fields": {
+            "container": 1, 
+            "name": "one", 
+            "seq": 1, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 2, 
+            "owner": 1, 
+            "vobject": 2, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.entry", 
+        "fields": {
+            "container": 1, 
+            "name": "two", 
+            "seq": 2, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 3, 
+            "owner": 1, 
+            "vobject": 3, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.entry", 
+        "fields": {
+            "container": 1, 
+            "name": "three", 
+            "seq": 1, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 2, 
+            "owner": 1, 
+            "vobject": 4, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.entry", 
+        "fields": {
+            "container": 1, 
+            "name": "four", 
+            "seq": 4, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 3, 
+            "owner": 1, 
+            "vobject": 5, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "core.entry", 
+        "fields": {
+            "container": 1, 
+            "name": "five", 
+            "seq": 1, 
+            "multilingual_group": null, 
+            "btemplate": "", 
+            "state": 2, 
+            "owner": 2, 
+            "vobject": 6, 
+            "object_class": "PageEntry"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": "en", 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:34:27", 
+            "entry": 1, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": null, 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:41:52", 
+            "entry": 2, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": null, 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:41:53", 
+            "entry": 3, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": null, 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:41:53", 
+            "entry": 4, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": null, 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:41:53", 
+            "entry": 5, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "core.vobject", 
+        "fields": {
+            "version_number": 1, 
+            "language": null, 
+            "deletion_mark": false, 
+            "date": "2011-04-08 18:41:54", 
+            "entry": 6, 
+            "object_class": "VPage"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "Root page.", 
+            "vobject": 1, 
+            "short_title": "Home", 
+            "language": "en", 
+            "title": "Welcome"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "", 
+            "vobject": 2, 
+            "short_title": "", 
+            "language": "en", 
+            "title": "One"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "", 
+            "vobject": 3, 
+            "short_title": "", 
+            "language": "en", 
+            "title": "Two"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "", 
+            "vobject": 4, 
+            "short_title": "", 
+            "language": "en", 
+            "title": "Three"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "", 
+            "vobject": 5, 
+            "short_title": "", 
+            "language": "en", 
+            "title": "Four"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "core.vobjectmetatags", 
+        "fields": {
+            "description": "", 
+            "vobject": 6, 
+            "short_title": "", 
+            "language": "en", 
+            "title": "Five"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is the root page"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is page One."
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is page Two."
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is page Three."
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is page Four."
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "zstandard.vpage", 
+        "fields": {
+            "content": "This is page Five."
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 2, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 3, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 4, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 5, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 6, 
+        "model": "zstandard.pageentry", 
+        "fields": {}
+    }, 
+    {
+        "pk": 1, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "zstandard.entryoptionset", 
+        "fields": {
+            "show_author": false, 
+            "no_navigation": false, 
+            "no_breadcrumbs": false, 
+            "navigation_toplevel": false
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "auth.group", 
+        "fields": {
+            "name": "group1", 
+            "permissions": []
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "admin", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": true, 
+            "is_staff": false, 
+            "last_login": "2011-04-08 18:41:39", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$35797$fb9d1b63abea5b4ed208b822fc17e78f4e7295f7", 
+            "email": "admin@nowhere.com", 
+            "date_joined": "2011-04-08 18:38:20"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "user1", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": false, 
+            "last_login": "2011-04-08 18:39:49", 
+            "groups": [
+                1
+            ], 
+            "user_permissions": [], 
+            "password": "sha1$0eba6$7d19ec8bf3eb75a5276fd9ff6a1a053ab3de6da8", 
+            "email": "user1@nowhere.com", 
+            "date_joined": "2011-04-08 18:39:49"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "user2", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": false, 
+            "last_login": "2011-04-08 18:39:50", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$b80d9$513f0a8301ac9a5179788d35afb7b2665c8f610f", 
+            "email": "user2@nowhere.com", 
+            "date_joined": "2011-04-08 18:39:50"
+        }
+    }
+]

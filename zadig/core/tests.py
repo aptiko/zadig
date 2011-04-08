@@ -1,6 +1,5 @@
-import unittest
-
 from django.contrib.auth.models import User, Group, AnonymousUser
+from django.test import TestCase
 from django.test.client import Client
 
 from zadig.core.models import Lentity, Entry, State, \
@@ -9,65 +8,26 @@ from zadig.core.models import Lentity, Entry, State, \
 from zadig.core.utils import set_request
 
 
-class TestPermissions(unittest.TestCase):
+class TestPermissions(TestCase):
+    fixtures = ['test.json']
 
     def setUp(self, *args, **kwargs):
-        # Create two users (user1, user2) and one group (group1) containing
-        # user1
-        self.adminuser = User.objects.create_user('admin', 'admin@nowhere.com',
-                                                            password='secret0')
-        self.adminuser.is_superuser = True
-        self.adminuser.save()
-        self.user1 = User.objects.create_user('user1', 'user1@nowhere.com',
-                                                            password='secret1')
-        self.user2 = User.objects.create_user('user2', 'user2@nowhere.com',
-                                                            password='secret2')
-        self.group1 = Group(name='group1')
-        self.group1.save()
-        self.user1.groups.add(self.group1)
-        self.lentity0 = Lentity(user=self.adminuser)
-        self.lentity0.save()
-        self.lentity1 = Lentity(user=self.user1)
-        self.lentity1.save()
-        self.lentity2 = Lentity(user=self.user2)
-        self.lentity2.save()
-        self.lentityg1 = Lentity(group=self.group1)
-        self.lentityg1.save()
-
-        # Nick for root entry
-        self.rootentry = Entry.objects.get_by_path('/')
-
-        # Let's put in some subentries
-        self.client = Client()
-        self.client.login(username='admin', password='secret0')
-        for i in range(1, 6):
-            istr = ['One', 'Two', 'Three', 'Four', 'Five'][i-1]
-            self.client.post('/__new__/Page/', {'name': istr.lower(),
-                        'form-TOTAL_FORMS': 1, 'form-INITIAL_FORMS': 1,
-                        'form-0-language': 'en', 'form-0-title': istr,
-                        'content': 'This is page %s.' % (istr,)})
-        # Let's publish 2 and 4
-        published = State.objects.get(descr="Published")
-        self.client.post('/two/__state__/%d/' % (published.id,))
-        self.client.post('/four/__state__/%d/' % (published.id,))
-        self.client.logout()
-
         from django.http import HttpRequest
         self.request = HttpRequest()
+        self.client = Client()
+
+        # Some nicknames
+        self.rootentry = Entry.objects.get_by_path('/')
+        self.adminuser = User.objects.get(username='admin')
+        self.user1 = User.objects.get(username='user1')
+        self.user2 = User.objects.get(username='user2')
+        self.group1 = Group.objects.get(name='group1')
+        self.lentity0 = Lentity.objects.get(user=self.adminuser)
+        self.lentity1 = Lentity.objects.get(user=self.user1)
+        self.lentity2 = Lentity.objects.get(user=self.user2)
+        self.lentityg1 = Lentity.objects.get(group=self.group1)
 
     def tearDown(self):
-        self.request.user = self.adminuser
-        set_request(None)
-        set_request(self.request)
-        for e in self.rootentry.subentries: e.delete()
-        self.lentity0.delete()
-        self.lentity1.delete()
-        self.lentity2.delete()
-        self.lentityg1.delete()
-        self.group1.delete()
-        self.user2.delete()
-        self.user1.delete()
-        self.adminuser.delete()
         set_request(None)
         self.request = None
 
@@ -155,8 +115,6 @@ class TestPermissions(unittest.TestCase):
     def test_who_can_change_state(self):
         # Change entry 'five' to be owned by user1
         self.client.login(username='admin', password='secret0')
-        self.client.post('/five/__permissions__/', {'owner': 'user1',
-                         'recursive': 0 })
         self.client.logout()
 
         published = State.objects.get(descr="Published")
