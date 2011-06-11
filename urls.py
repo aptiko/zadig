@@ -2,10 +2,10 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 
 # Admin
-import django.contrib.admin
-django.contrib.admin.autodiscover()
+from django.contrib import admin
+admin.autodiscover()
 urlpatterns = patterns('',
-    (r'^__admin__/(.*)', django.contrib.admin.site.root)
+    (r'^__admin__/(.*)', admin.site.urls)
 )
 
 # Cms
