@@ -18,14 +18,12 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# Database engine must be one of 'postgresql_psycopg2', 'postgresql',
-# 'mysql','sqlite3' or 'oracle'.
-DATABASE_ENGINE = 'sqlite3'
-DATABASE_NAME = 'testdb'
-DATABASE_USER = ''
-DATABASE_PASSWORD = ''
-DATABASE_HOST = ''
-DATABASE_PORT = ''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'testdb',
+    }
+}
 
 #TEMPLATE_DIRS = TEMPLATE_DIRS + ('/etc/zadig/mycustomtemplates',)
 
