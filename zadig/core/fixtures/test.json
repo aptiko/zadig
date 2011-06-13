@@ -307,7 +307,7 @@
         "fields": {
             "container": 1, 
             "name": "three", 
-            "seq": 1, 
+            "seq": 3, 
             "multilingual_group": null, 
             "btemplate": "", 
             "state": 2, 
@@ -337,7 +337,7 @@
         "fields": {
             "container": 1, 
             "name": "five", 
-            "seq": 1, 
+            "seq": 5, 
             "multilingual_group": null, 
             "btemplate": "", 
             "state": 2, 
