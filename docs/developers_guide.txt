@@ -152,16 +152,17 @@ example if you are creating a command-line utility), and therefore
 you don't have a request object, low level code will sometimes
 fail and sometimes automatically consider that it is running with the
 permissions of the anonymous user. If this is insufficient, do
-something like the following:
+something like the following::
 
-  from django.http import HttpRequest
-  from django.contrib.auth.models import User
-  from zadig.core.utils import set_request
-  request = HttpRequest()
-  request.user = User.objects.get(username=MY_USERNAME)
-  set_request(request)
+   from django.http import HttpRequest
+   from django.contrib.auth.models import User
+   from zadig.core.utils import set_request
+   request = HttpRequest()
+   request.user = User.objects.get(username=MY_USERNAME)
+   set_request(request)
 
-  # Do what you need at this point
+   # Do what you need at this point
   
-  set_request(None) # This is for cleanup and it is important in case you
-                    # attempt to set it to a not None value again further below.
+   set_request(None) # This is for cleanup and it is important in case you
+                     # attempt to set it to a not None value again further
+                     # below.
