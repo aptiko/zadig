@@ -59,29 +59,30 @@ class PloneObject(object):
             if folder_contents_link == url + 'folder_contents':
                 # Yes, it's a folder
                 logging.debug("(It's a folder)")
-                return super(PloneObject, cls).__new__(PloneFolder)
+                return super(PloneObject, cls).__new__(PloneFolder, soup=soup)
             # Otherwise, we assume it is the default folder view
             logging.debug("(It's a default folder view)")
-            return super(PloneObject, cls).__new__(PloneDefaultFolderView)
+            return super(PloneObject, cls).__new__(PloneDefaultFolderView,
+                                                                    soup=soup)
         body_classes = soup.find('body')['class'].split()
         if 'template-document_view' in body_classes:
             logging.debug("(It's a page)")
-            return super(PloneObject, cls).__new__(PlonePage)
+            return super(PloneObject, cls).__new__(PlonePage, soup=soup)
         if 'template-image_view' in body_classes:
             logging.debug("(It's an image)")
-            return super(PloneObject, cls).__new__(PloneImage)
+            return super(PloneObject, cls).__new__(PloneImage, soup=soup)
         if 'template-link_view' in body_classes:
             logging.debug("(It's a link)")
-            return super(PloneObject, cls).__new__(PloneLink)
+            return super(PloneObject, cls).__new__(PloneLink, soup=soup)
         if 'template-file_view' in body_classes:
             logging.debug("(It's a file)")
-            return super(PloneObject, cls).__new__(PloneFile)
+            return super(PloneObject, cls).__new__(PloneFile, soup=soup)
         if 'template-newsitem_view' in body_classes:
             logging.debug("(It's a news item)")
-            return super(PloneObject, cls).__new__(PloneNewsItem)
+            return super(PloneObject, cls).__new__(PloneNewsItem, soup=soup)
         if 'template-event_view' in body_classes:
             logging.debug("(It's an event)")
-            return super(PloneObject, cls).__new__(PloneEvent)
+            return super(PloneObject, cls).__new__(PloneEvent, soup=soup)
         raise UnknownPloneObjectType("Unknown object type at "+url)
 
     def __find_alternative_lang(self, path):
@@ -96,7 +97,7 @@ class PloneObject(object):
             if altlang==self.language.id or split_path(apath)==split_path(path):
                 continue
             try:
-                e = Entry.objects.get_by_path(request, apath).descendant
+                e = Entry.objects.get_by_path(apath).descendant
             except Http404:
                 continue
             while isinstance(e, InternalRedirectionEntry):
@@ -183,10 +184,9 @@ class PloneObject(object):
         # will have already been removed and an Http404 exception will be raised
         # and handled below.
         try: 
-            self.entry = Entry.objects.get_by_path(request, path
-                                                                ).descendant
+            self.entry = Entry.objects.get_by_path(path).descendant
         except Http404:
-            self.entry = entry_type(request, path)
+            self.entry = entry_type(path)
         if not isinstance(self.entry, entry_type):
             raise Exception(('Error creating entry at %s: apparently it '
                 +'already existed and was type %s rather than %s') % (path,
@@ -579,8 +579,10 @@ PLONE_EXCLUDE = [urljoin(PLONE_URL, x) for x in PLONE_EXCLUDE]
 # Prepare a request.user object to have ready
 from django.http import HttpRequest
 from django.contrib.auth.models import User
+from zadig.core.utils import set_request
 request = HttpRequest()
 request.user = User.objects.get(username=OWNER)
+set_request(request)
 
 # Increase recursion limit - needed because of deepcopy
 sys.setrecursionlimit(1500)
@@ -589,12 +591,13 @@ try:
     plone_object = PloneObject(PLONE_URL)
     path = TARGET_PATH
     try:
-        entry = Entry.objects.get_by_path(request, path)
+        entry = Entry.objects.get_by_path(path)
         if ('REMOVE_TARGET' in globals()) and REMOVE_TARGET:
             entry.delete()
     except Http404:
         pass
     plone_object.migrate(request, path)
+    set_request(None)
 except:
     # Limit traceback to a few entries (otherwise deepcopy's
     # recursion makes it too long)
