@@ -152,7 +152,7 @@ example if you are creating a command-line utility), and therefore
 you don't have a request object, low level code will sometimes
 fail and sometimes automatically consider that it is running with the
 permissions of the anonymous user. If this is insufficient, do
-something like the following:
+something like the following::
 
   from django.http import HttpRequest
   from django.contrib.auth.models import User
