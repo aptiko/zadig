@@ -101,7 +101,7 @@ class PloneObject(object):
             except Http404:
                 continue
             while isinstance(e, InternalRedirectionEntry):
-                e = e.vobject.target
+                e = e.vobject.descendant.target
             if split_path(e.path)==split_path(path):
                 continue
             self.alternative_lang = e.path
