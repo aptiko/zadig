@@ -147,10 +147,7 @@ object.
    The *soup* argument must not be supplied, or it must be
    :const:`None`. It is used internally, because the constructor reads
    the URL, decides what type of object it is, and calls the
-   constructor of its appropriate subclass (I think my code has a bug
-   there: it does not seem to pass the *soup* to the constructor of
-   the subclass, which means the URL must be re-read. Probably trivial
-   to fix, but I'm not touching it in case I break the script.)
+   constructor of its appropriate subclass.
 
    :class:`PloneObject` instances have the following attributes:
 
