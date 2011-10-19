@@ -16,6 +16,7 @@ class PageCommentsNode(template.Node):
         result = ''
         vobject = context.get('vobject', None)
         request = context['request']
+        if vobject is None: return result
         entry = vobject.entry.descendant
         if not isinstance(entry, PageEntry): return result
         optionset, created = EntryOptionSet.objects.get_or_create(entry=entry)
