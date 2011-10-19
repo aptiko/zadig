@@ -222,6 +222,8 @@ register.tag('navigation', do_navigation)
 class NewsNode(template.Node):
 
     def render(self, context):
+        vobject = context.get('vobject', None)
+        if vobject is None: return ''
         request = context['request']
         news_items = models.NewsItemEntry.objects.exclude_language_duplicates(
                 request.effective_language).order_by(
@@ -257,6 +259,8 @@ class EventsNode(template.Node):
 
     def render(self, context):
         from datetime import datetime
+        vobject = context.get('vobject', None)
+        if vobject is None: return ''
         request = context['request']
         events = models.EventEntry.objects.exclude_language_duplicates(
             request.effective_language).filter(
