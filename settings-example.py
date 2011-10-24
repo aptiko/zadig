@@ -4,7 +4,6 @@
 ZADIG_PROGRAM_DIR = '.'
 
 # Leave following three lines as they are, to import several Django settings.
-import sys
 import os.path
 execfile(os.path.join(ZADIG_PROGRAM_DIR, 'settings-base.py'))
 
