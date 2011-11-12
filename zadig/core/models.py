@@ -869,7 +869,7 @@ class VObject(models.Model):
     def view_deleted(self, parms):
         assert(self.deletion_mark)
         request = utils.get_request()
-        if request.view_name=='info':
+        if request.view_name in ('info', 'view'):
             return render_to_response('view_deleted_entry.html',
                 { 'vobject': self, },
                 context_instance = RequestContext(request))
