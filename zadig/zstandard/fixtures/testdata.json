@@ -1,0 +1,310 @@
+[
+    {
+        "pk": 1,
+        "model": "auth.user",
+        "fields": {
+            "username": "admin",
+            "first_name": "",
+            "last_name": "",
+            "is_active": true,
+            "is_superuser": true,
+            "is_staff": true,
+            "last_login": "2011-11-12 13:21:50",
+            "groups": [],
+            "user_permissions": [],
+            "password": "sha1$0d316$3364398d201fd295a337920a75c2feaa9ad19c76",
+            "email": "admin@zadig.test",
+            "date_joined": "2011-11-12 13:21:50"
+        }
+    },
+    {
+        "pk": "en",
+        "model": "core.language",
+        "fields": {
+            "descr": "English"
+        }
+    },
+    {
+        "pk": "el",
+        "model": "core.language",
+        "fields": {
+            "descr": "Ελληνικά"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.permission",
+        "fields": {
+            "descr": "view"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "core.permission",
+        "fields": {
+            "descr": "edit"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "core.permission",
+        "fields": {
+            "descr": "admin"
+        }
+    },
+    {
+        "pk": 4,
+        "model": "core.permission",
+        "fields": {
+            "descr": "delete"
+        }
+    },
+    {
+        "pk": 5,
+        "model": "core.permission",
+        "fields": {
+            "descr": "search"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 100
+        }
+    },
+    {
+        "pk": 2,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 200
+        }
+    },
+    {
+        "pk": 3,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 300
+        }
+    },
+    {
+        "pk": 4,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": 1,
+            "special": null
+        }
+    },
+    {
+        "pk": 5,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 1
+        }
+    },
+    {
+        "pk": 6,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 2
+        }
+    },
+    {
+        "pk": 7,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 3
+        }
+    },
+    {
+        "pk": 8,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 4
+        }
+    },
+    {
+        "pk": 9,
+        "model": "core.lentity",
+        "fields": {
+            "group": null,
+            "user": null,
+            "special": 5
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.state",
+        "fields": {
+            "descr": "Nonexistent"
+        }
+    },
+    {
+        "pk": 2,
+        "model": "core.state",
+        "fields": {
+            "descr": "Private"
+        }
+    },
+    {
+        "pk": 3,
+        "model": "core.state",
+        "fields": {
+            "descr": "Published"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.statepermission",
+        "fields": {
+            "state": 2,
+            "lentity": 2,
+            "permission": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "core.statepermission",
+        "fields": {
+            "state": 2,
+            "lentity": 2,
+            "permission": 5
+        }
+    },
+    {
+        "pk": 3,
+        "model": "core.statepermission",
+        "fields": {
+            "state": 3,
+            "lentity": 1,
+            "permission": 1
+        }
+    },
+    {
+        "pk": 4,
+        "model": "core.statepermission",
+        "fields": {
+            "state": 3,
+            "lentity": 1,
+            "permission": 5
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.statetransition",
+        "fields": {
+            "target_state": 2,
+            "lentity": 3,
+            "source_state": 1
+        }
+    },
+    {
+        "pk": 2,
+        "model": "core.statetransition",
+        "fields": {
+            "target_state": 3,
+            "lentity": 3,
+            "source_state": 2
+        }
+    },
+    {
+        "pk": 3,
+        "model": "core.statetransition",
+        "fields": {
+            "target_state": 2,
+            "lentity": 3,
+            "source_state": 3
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.workflow",
+        "fields": {
+            "states": [
+                2,
+                3
+            ],
+            "name": "Simple publication workflow",
+            "state_transitions": [
+                1,
+                2,
+                3
+            ]
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.entry",
+        "fields": {
+            "container": null,
+            "name": "",
+            "seq": 1,
+            "multilingual_group": null,
+            "btemplate": "",
+            "state": 3,
+            "owner": 1,
+            "vobject": 1,
+            "object_class": "PageEntry"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.vobject",
+        "fields": {
+            "version_number": 1,
+            "language": "en",
+            "deletion_mark": false,
+            "date": "2011-11-12 11:14:56",
+            "entry": 1,
+            "object_class": "VPage"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "core.vobjectmetatags",
+        "fields": {
+            "description": "Root page.",
+            "vobject": 1,
+            "short_title": "Home",
+            "language": "en",
+            "title": "Welcome"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "zstandard.vpage",
+        "fields": {
+            "content": "This is the root page"
+        }
+    },
+    {
+        "pk": 1,
+        "model": "zstandard.pageentry",
+        "fields": {}
+    },
+    {
+        "pk": 1,
+        "model": "zstandard.entryoptionset",
+        "fields": {
+            "show_author": false,
+            "no_navigation": false,
+            "no_breadcrumbs": false,
+            "navigation_toplevel": false
+        }
+    }
+]
