@@ -23,9 +23,10 @@ def _set_languages(request, vobject):
 def end_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(path, version_number)\
                                                                 .descendant
-    if vobject.deletion_mark: raise Http404
     _set_languages(request, vobject)
     request.view_name = 'view'
+    if vobject.deletion_mark:
+        return vobject.view_deleted({})
     return vobject.end_view()
 
 def general_view(request, path, view_name, parms):

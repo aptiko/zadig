@@ -218,10 +218,14 @@ class EntryManager(models.Manager):
         return result
 
     def get_by_path(self, path):
+        queryset = super(EntryManager, self).get_query_set()
         entry = None
         for name in utils.split_path(path):
-            entry = get_object_or_404(self, name=name, container=entry)
+            entry = queryset.get(name=name, container=entry)
             if not PERM_VIEW in entry.permissions:
+                raise Http404
+            if entry.vobject.deletion_mark and \
+                                            not PERM_EDIT in entry.permissions:
                 raise Http404
         return entry
 
@@ -320,7 +324,7 @@ class Entry(models.Model):
         # this entry originally belonged. FIXME: This solution is a bit ugly;
         # check http://stackoverflow.com/questions/2029814/keeping-track-of-changes-since-the-last-save-in-django-models
         if self.id:
-            original_mg = Entry.objects.get(id=self.id).multilingual_group
+            original_mg = Entry.all_objects.get(id=self.id).multilingual_group
             if original_mg:
                 _check_multilingual_group(original_mg.id)
         return super(Entry, self).save(args, kwargs)
@@ -876,6 +880,66 @@ class VObject(models.Model):
         raise Http404
 
     def duplicate(self):
+        try:
+            from django.db.models.query import CollectedObjects
+        except ImportError:
+            return self.__duplicate_django_1_3()
+        else:
+            return self.__duplicate_django_1_2()
+
+    def __duplicate_django_1_3(self):
+        """Originally downloaded from http://djangosnippets.org/snippets/1282/
+        and then modified.
+        Copyright (C) 2009 by djangosnippets user johnboxall
+        Copyright (C) 2011 by djangosnippets user jkafader
+        Copyright (C) 2011 National Technical University of Athens"""
+        from django.db.models.deletion import Collector
+        from django.db.models.fields.related import ForeignKey
+        from datetime import datetime
+        ndate = datetime.now()
+        nversion_number = self.entry.vobject_set.order_by(
+                                    '-version_number')[0].version_number + 1
+        collector = Collector({})
+        collector.collect([self.descendant])
+        collector.sort()
+        related_models = collector.data.keys()
+        data_snapshot = {}
+        for key in collector.data.keys():
+            data_snapshot.update({
+                key: dict(zip([item.pk for item in collector.data[key]],
+                    [item for item in collector.data[key]])) })
+        root_obj = None
+        # Traverse the related models in reverse deletion order.    
+        for model in reversed(related_models):
+            # Find all FKs on `model` that point to a `related_model`.
+            fks = []
+            for f in model._meta.fields:
+                if isinstance(f, ForeignKey) and f.rel.to in related_models:
+                    fks.append(f)
+            # Replace each `sub_obj` with a duplicate.
+            if model not in collector.data:
+                continue
+            sub_objects = collector.data[model]
+            for obj in sub_objects:
+                for fk in fks:
+                    fk_value = getattr(obj, "%s_id" % fk.name)
+                    # If this FK has been duplicated then point to the
+                    # duplicate.
+                    fk_rel_to = data_snapshot[fk.rel.to]
+                    if fk_value in fk_rel_to:
+                        dupe_obj = fk_rel_to[fk_value]
+                        setattr(obj, fk.name, dupe_obj)
+                # Duplicate the object and save it.
+                obj.id = None
+                if isinstance(obj, VObject):
+                    obj.date = ndate
+                    obj.version_number = nversion_number
+                obj.save()
+                if root_obj is None:
+                    root_obj = obj
+        return root_obj
+
+    def __duplicate_django_1_2(self):
         """Originally downloaded from http://djangosnippets.org/snippets/1282/
         and then modified.
         Copyright (C) 2009 by djangosnippets user johnboxall
