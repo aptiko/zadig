@@ -28,9 +28,10 @@ class TestZstandard(TestCase):
                       'form-INITIAL_FORMS': 1, 'form-0-title': 'Test Page',
                       'form-0-language': 'en' })
         self.assertEquals(response.status_code, 302)
-        response = self.client.get('/testpage/__state__/3/') # publish
+        response = self.client.post('/testpage/__state__/3/') # publish
         self.assertEquals(response.status_code, 200)
-        response = self.client.get('/testpage/__delete__/')
+        response = self.client.post('/testpage/__delete__/')
+        self.assertEquals(response.status_code, 200)
 
         # Try to view deleted anonymously - should fail
         self.client.logout()
@@ -44,12 +45,12 @@ class TestZstandard(TestCase):
 
         # Try to undelete anonymously - should fail
         self.client.logout()
-        response = self.client.get('/testpage/__undelete__/')
+        response = self.client.post('/testpage/__undelete__/')
         self.assertEquals(response.status_code, 404)
 
         # Try to undelete as admin - should succeed
         self.client.login(username='admin', password='secret0')
-        response = self.client.get('/testpage/__undelete__/')
+        response = self.client.post('/testpage/__undelete__/')
         self.assertEquals(response.status_code, 200)
 
         # Try to view anonymously - should succeed

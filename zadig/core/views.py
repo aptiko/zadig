@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError, PermissionDenied
 from django.template import RequestContext
 import django.contrib.auth
+from django.views.decorators.http import require_POST
 
 from zadig.core import models
 from zadig.core.models import PERM_EDIT, entry_types, VObjectMetatags, Language
@@ -105,6 +106,7 @@ def login(request, path):
           { 'vobject': vobject, 'form': form, 'message': message },
                 context_instance = RequestContext(request))
 
+@require_POST
 def cut(request, path):
     entry = models.Entry.objects.get_by_path(path)
     if entry.vobject.deletion_mark: raise Http404
@@ -113,6 +115,7 @@ def cut(request, path):
                         "paste it.")
     return general_view(request, path, 'info', '')
 
+@require_POST
 def paste(request, path):
     target_entry = models.Entry.objects.get_by_path(path)
     for entry_id in request.session['cut_entries']:
@@ -121,6 +124,7 @@ def paste(request, path):
     request.session['cut_entries'] = []
     return general_view(request, path, 'contents', '')
 
+@require_POST
 def delete(request, path):
     vobject = models.VObject.objects.get_by_path(path).descendant
     if vobject.deletion_mark: raise Http404

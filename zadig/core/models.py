@@ -13,6 +13,7 @@ import settings
 
 from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
+from zadig.core.decorators import require_POST
 
 
 PERM_VIEW=1
@@ -746,6 +747,7 @@ class Entry(models.Model):
                 { 'vobject': vobject,'permissions_form': permissions_form },
                 context_instance = RequestContext(request))
 
+    @require_POST
     def undelete(self):
         ver = self.vobject.version_number
         assert(ver>1)
@@ -766,6 +768,7 @@ class Entry(models.Model):
                 result.append(transition.target_state)
         return result
         
+    @require_POST
     def state_view(self, parms):
         if parms.endswith('/'): parms = parms[:-1]
         try: new_state_id = int(parms)
