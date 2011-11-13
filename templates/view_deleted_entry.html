@@ -7,5 +7,8 @@
 
 {% block mainContent %}
   <h1>{% trans "This object has been deleted" %}</h1>
-  <p><a href="__undelete__/">{% trans "Undelete" %}</a></p>
+  <form method="POST" action="__undelete__/">
+  {% csrf_token %}
+  <input type="submit" value="{% trans "Undelete" %}">
+  </form>
 {% endblock %}

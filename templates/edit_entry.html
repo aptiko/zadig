@@ -4,6 +4,7 @@
 {% block mainContent %}
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" enctype="multipart/form-data" action="" method="POST">
+  {% csrf_token %}
   <table>
     <tr><td colspan="2">{{ mainform.non_field_errors }}</td></tr>
     <tr>

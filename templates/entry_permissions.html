@@ -5,6 +5,7 @@
   <h1>Permissions of {{vobject.metatags.default.get_short_title}}
   (/{{vobject.entry.name}}) </h1>
   <form action="" method="POST">
+    {% csrf_token %}
     <table>
     {{permissions_form.as_table}}
     </table>
