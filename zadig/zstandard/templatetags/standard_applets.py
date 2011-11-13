@@ -340,6 +340,7 @@ class SecondaryButtonsNode(template.Node):
     def render(self, context):
         if 'vobject' not in context: return ''
         vobject = context['vobject']
+        request = context['request']
         if not vobject: return ''
         spath = vobject.entry.spath
         if not vobject.entry.touchable: return ''
@@ -371,8 +372,12 @@ class SecondaryButtonsNode(template.Node):
                 u'"return toggleMenu(this.parentNode)">%s&#9660;' \
                 '</a></dt><dd>' % b['name']
             for i in b['items']:
-                result += u'<li><a href="%s">%s</a></li>' % (i['href'],
-                                                                    i['name'])
+                result += u'<li><form method="POST" action="%s">' \
+                    '<input type="hidden" name="csrfmiddlewaretoken" ' \
+                                                            'value="%s">' \
+                    '<input type="submit" value="%s"></form></li>' % (
+                    i['href'], request.COOKIES.get('csrftoken'), 
+                    i['name'])
             result += u'</dd></dl></li>'
         result += u'</ul>'
         return result
