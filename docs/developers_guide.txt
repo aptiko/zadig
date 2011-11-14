@@ -57,9 +57,10 @@ better.
 General views
 =============
 
-When the URL is of the form
-:samp:`/{path_to_entry}/__{viewname}__/{remainder}` and *viewname* is
-not known to the Zadig core code, then Zadig searches for such a view
+When the URL of a GET request is of the form
+:samp:`/{path_to_entry}/__{viewname}__/{remainder}`, or the *viewname*
+parameter of a POST request is set, and the view is not known to the
+Zadig core code, then Zadig searches for such a view
 in three places:
 
 1. It checks whether the :class:`~zadig.core.models.VObject` pointed
@@ -71,8 +72,8 @@ in three places:
    :samp:`zadig.{app}.views`.
 
 If no appropriate callable is found, :exc:`Http404` is raised. If it
-is found, it is called passing the URL *remainder* as the ``parms``
-argument.
+is found, it is called, and, in GET requests, the URL *remainder* is
+passed as the ``parms`` argument.
 
 An example of such a view is the "resized" view of an image. If you
 append ``/__resized__/400`` to the URL of an image, then you will see
@@ -80,8 +81,8 @@ the image resized so that its largest dimension is 400 pixels. This is
 accomplished because the :class:`zadig.zstandard.VImage` class has a
 :meth:`~zadig.zstandard.VImage.resized_view` method. Another example
 is page comment submission: the "add comment" submit button results in
-posting the "add comment" form to a URL that ends in
-``/__zpagecomments.add_comment__/``, which is processed by
+posting the "add comment" form, which contains
+"zpagecomments.add_comment" as the *viewname*, which is processed by
 :func:`zadig.zpagecomments.views.add_comment`.
 
 Creating applets

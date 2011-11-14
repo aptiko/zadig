@@ -199,28 +199,29 @@ entry, including the history, is permanently and irrevocably deleted.
 Views
 =====
 
-Things you can do with an entry or vobject include (but are not
-limited to) creating a new entry, viewing a vobject, viewing the entry
-history, editing an entry, moving an entry, marking an entry as
-deleted, and removing an entry.  The requested operation is specified
-by an item in the URL path which has a prefix and a suffix of two
-underscores; for example, http://localhost/mypage/__edit__/ is a
-request to edit *mypage*. If there is no such item in the URL, then
-the request is to view the entry.
+There are several things you can do with an entry or vobject: view it,
+edit it, view its contents or its history, delete it, change its
+state, and so on. We call these operations *views*: there is the "edit
+view", the "contents view", the "history view", the "change state
+view", and so on.
 
-There are two ways to view an entry. The **end view** is the normal
-mode of viewing an entry; for an image, for example, the end view is a
-"image/jpeg" or similar response that contains binary data. The **info
-view** is a page that includes information about the image, buttons
-for initiating editing, and so on, and is intended mainly for users
-who have permissions to modify the image. For some object types, such
-as pages, the end view and the info view may be identical.
-http://localhost/myobject/ provides the end view for *myobject*,
-whereas http://localhost/myobject/__view__/ provides the info view.
+The **end view** is the normal mode of viewing an entry; for an image,
+for example, the end view is a "image/jpeg" or similar response that
+contains binary data. The **info view** is a page that includes
+information about the image, buttons for initiating editing, and so
+on, and is intended mainly for users who have permissions to modify
+the image. For some object types, such as pages, the end view and the
+info view may be identical.  http://localhost/myobject/ provides the
+end view for *myobject*, whereas http://localhost/myobject/__view__/
+provides the info view.
 
-We also call the rest of the operations *views*. Specifically, there
-are the **edit view**, the **contents view**, and the **history
-view**.
+In GET requests, the view is specified by an item in the URL path
+which has a prefix and a suffix of two underscores; for example,
+http://localhost/mypage/__edit__/ is a request to edit *mypage*.  If
+there is no such item in the URL, then the request is to view the
+entry. In POST requests, the requested operation is specified by the
+*viewname* parameter.
+
 
 .. index::
    single: user
