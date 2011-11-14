@@ -21,16 +21,40 @@ def _set_languages(request, vobject):
     request.effective_language = vobject.language.id if vobject.language \
                                                 else request.preferred_language
 
-def end_view(request, path, version_number=None):
-    vobject = models.VObject.objects.get_by_path(path, version_number)\
-                                                                .descendant
-    _set_languages(request, vobject)
-    request.view_name = 'view'
-    if vobject.deletion_mark:
-        return vobject.view_deleted({})
-    return vobject.end_view()
+def general_view(request, path):
+    # Split the path to path, view_name, parms.
+    from zadig.core.utils import split_path, join_path
+    pathitems = split_path(path)
+    path, view_name, parms = '', '', ''
+    for i, p in enumerate(pathitems):
+        if p.startswith('__') and p.endswith('__'):
+            if len(p)<5:
+                raise Http404
+            view_name = p[2:-2]
+            parms = join_path(pathitems[i+1:])
+            break
+        path = join_path(path, p)
+    if request.method=='POST':
+        if view_name:
+            raise Http404
+        view_name = request.POST.get('view_name', '')
+        if not view_name:
+            raise Http404
 
-def general_view(request, path, view_name, parms):
+    # TODO: probably can _set_languages here and remove it from
+    # elsewhere
+
+    # Check if view is one of core views, and return it
+    core_views = { 'logout': logout, 'login': login, 'cut': cut, 'paste': paste,
+                   'delete': delete }
+    if not view_name:
+        return end_view(request, path)
+    elif view_name=='new':
+        return new_entry(request, path, parms)
+    elif view_name in core_views.keys():
+        return core_views[view_name](request, path)
+
+    # Otherwise search for a suitable view
     vobject = models.VObject.objects.get_by_path(path).descendant
     _set_languages(request, vobject)
     request.view_name = view_name
@@ -55,6 +79,14 @@ def general_view(request, path, view_name, parms):
         raise Http404
     return viewfunc(vobject, parms=parms)
 
+def end_view(request, path, version_number=None):
+    vobject = models.VObject.objects.get_by_path(path, version_number)\
+                                                                .descendant
+    _set_languages(request, vobject)
+    request.view_name = 'view'
+    if vobject.deletion_mark:
+        return vobject.view_deleted({})
+    return vobject.end_view()
 
 def new_entry(request, parent_path, entry_type):
     parent_vobject = models.VObject.objects.get_by_path(parent_path)
