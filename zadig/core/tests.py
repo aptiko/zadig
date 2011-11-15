@@ -121,20 +121,25 @@ class TestPermissions(TestCase):
         private = State.objects.get(descr="Private")
         # User 1 should be able to change the state and back
         self.client.login(username='user1', password='secret1')
-        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        response = self.client.post('/five/', { 'view_name': 'state',
+                                        'state': str(published.id) })
         self.assertEqual(response.status_code, 200)
-        response = self.client.post('/five/__state__/%d/' % (private.id,))
+        response = self.client.post('/five/', { 'view_name': 'state',
+                                        'state': str(private.id) })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
         # User 2 should not
         self.client.login(username='user2', password='secret2')
-        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        response = self.client.post('/five/', { 'view_name': 'state',
+                                        'state': str(published.id) })
         self.assertEqual(response.status_code, 404)
         self.client.logout()
         # Administrator should
         self.client.login(username='admin', password='secret0')
-        response = self.client.post('/five/__state__/%d/' % (published.id,))
+        response = self.client.post('/five/', { 'view_name': 'state',
+                                        'state': str(published.id) })
         self.assertEqual(response.status_code, 200)
-        response = self.client.post('/five/__state__/%d/' % (private.id,))
+        response = self.client.post('/five/', { 'view_name': 'state',
+                                        'state': str(private.id) })
         self.assertEqual(response.status_code, 200)
         self.client.logout()

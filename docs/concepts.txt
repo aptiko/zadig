@@ -220,7 +220,7 @@ which has a prefix and a suffix of two underscores; for example,
 http://localhost/mypage/__edit__/ is a request to edit *mypage*.  If
 there is no such item in the URL, then the request is to view the
 entry. In POST requests, the requested operation is specified by the
-*viewname* parameter.
+*view_name* parameter.
 
 
 .. index::
