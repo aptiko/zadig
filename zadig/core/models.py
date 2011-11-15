@@ -555,7 +555,7 @@ class Entry(models.Model):
 
     def process_edit_subform(self, vobject, form): pass
 
-    def edit_view(self, new=False, parms=None):
+    def edit_view(self, new=False):
         if (new and not self.container.touchable) or (
                                             not new and not self.touchable):
             raise Http404
@@ -684,7 +684,7 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
 
-    def contents_view(self, parms=None):
+    def contents_view(self):
         subentries = self.subentries
         vobject = self.vobject
         request = utils.get_request()
@@ -715,7 +715,7 @@ class Entry(models.Model):
                   'move_item_form': move_item_form},
                 context_instance = RequestContext(request))
 
-    def history_view(self, parms=None):
+    def history_view(self):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject },
                 context_instance = RequestContext(utils.get_request()))
@@ -731,7 +731,7 @@ class Entry(models.Model):
             for e in self.all_subentries:
                 e.__change_owner(new_owner, recursive)
 
-    def permissions_view(self, parms=None):
+    def permissions_view(self):
         vobject = self.vobject
         request = utils.get_request()
         if request.method != 'POST':
@@ -769,9 +769,8 @@ class Entry(models.Model):
         return result
         
     @require_POST
-    def state_view(self, parms):
-        if parms.endswith('/'): parms = parms[:-1]
-        try: new_state_id = int(parms)
+    def state_view(self):
+        try: new_state_id = int(self.request.POST['state'])
         except: raise Http404
         if new_state_id not in [x.id for x in self.possible_target_states]:
             raise Http404
@@ -869,16 +868,15 @@ class VObject(models.Model):
             result = getattr(result, a.__name__.lower())
         return result
 
-    def view_deleted(self, parms):
+    def view_deleted(self):
         assert(self.deletion_mark)
-        request = utils.get_request()
-        if request.view_name in ('info', 'view'):
+        if self.request.view_name in ('info', 'view'):
             return render_to_response('view_deleted_entry.html',
                 { 'vobject': self, },
-                context_instance = RequestContext(request))
-        if request.view_name=='history':
+                context_instance = RequestContext(self.request))
+        if self.request.view_name=='history':
             return self.entry.history_view()
-        if request.view_name=='undelete':
+        if self.request.view_name=='undelete':
             return self.entry.undelete()
         raise Http404
 

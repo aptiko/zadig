@@ -6,7 +6,7 @@ from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
 
 
-def add_comment(vobject, parms=None):
+def add_comment(vobject):
     request = vobject.request
     entry = vobject.entry.descendant
     if request.method != 'POST' or not isinstance(entry, PageEntry):
@@ -39,7 +39,7 @@ def add_comment(vobject, parms=None):
     return vobject.end_view()
 
 
-def moderate_comments(vobject, parms=None):
+def moderate_comments(vobject):
     request = vobject.request
     entry = vobject.entry.descendant
     if request.method != 'POST' or not isinstance(entry, PageEntry):

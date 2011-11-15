@@ -18,11 +18,8 @@ def join_path(*path_items):
         path_items = path_items[0]
     result = ''
     for p in path_items:
-        while p.startswith('/'): p = p[1:]
-        while p.endswith('/'): p = p[:-1]
-        if p:
-            if result: result += '/'
-            result += p
+        if result: result += '/'
+        result += p.strip('/')
     return result
 
 
