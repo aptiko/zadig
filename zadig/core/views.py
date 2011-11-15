@@ -97,7 +97,6 @@ def new_entry(request, parent_path):
     class_name = '%sEntry' % (entry_type,)
     new_entry_class = [u for u in entry_types if u.__name__==class_name][0]
     entry = new_entry_class(container=parent_entry)
-    request.view_name = 'edit'
     return entry.edit_view(new=True)
 
 def logout(request, path):
@@ -118,6 +117,7 @@ def login(request, path):
     if request.user.is_authenticated():
         request.message = _(
                 u"You are already logged on; logout to log in again.")
+        request.view_name = 'view'
         return end_view(request, path)
     elif request.method!='POST':
         form = LoginForm()

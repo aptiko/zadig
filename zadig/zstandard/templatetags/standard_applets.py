@@ -346,23 +346,23 @@ class SecondaryButtonsNode(template.Node):
         if not vobject.entry.touchable: return ''
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
-              'items': [ { 'href': '%s__state__/%d/' % (spath, x.id,),
-                           'name': x.descr,
+              'items': [ { 'name': x.descr,
+                           'post': {'view_name': 'state', 'state': x.id },
                          } for x in vobject.entry.possible_target_states
                         ]
             },
             { 'name': _(u'Add new…'),
               'items': [{ 'href': '%s__new__/%s/' % (spath, cls.__name__[:-5]),
-                  'name': cls.typename } for cls in entry_types
+                          'name': cls.typename } for cls in entry_types
                           if cls.can_be_contained(vobject.entry.descendant)]
             },
             { 'name': _(u'Actions'),
-              'items': [ { 'href': '%s__cut__/' % (spath,) ,
-                           'name': _(u'Cut') },
-                         { 'href': '%s__paste__/' % (spath,),
-                           'name': _(u'Paste')},
-                         { 'href': '%s__delete__/' % (spath,),
-                           'name': _(u'Delete')},
+              'items': [ { 'name': _(u'Cut'),
+                           'post': { 'view_name': 'cut' }},
+                         { 'name': _(u'Paste'),
+                           'post': { 'view_name': 'paste' }},
+                         { 'name': _(u'Delete'),
+                           'post': { 'view_name': 'delete' }}
                          ]
             },
             ]
@@ -372,12 +372,20 @@ class SecondaryButtonsNode(template.Node):
                 u'"return toggleMenu(this.parentNode)">%s&#9660;' \
                 '</a></dt><dd>' % b['name']
             for i in b['items']:
-                result += u'<li><form method="POST" action="%s">' \
-                    '<input type="hidden" name="csrfmiddlewaretoken" ' \
-                                                            'value="%s">' \
-                    '<input type="submit" value="%s"></form></li>' % (
-                    i['href'], request.COOKIES.get('csrftoken'), 
-                    i['name'])
+                if i.has_key('post'):
+                    result += u'<li><form method="POST" action="%s">' \
+                        '<input type="hidden" name="csrfmiddlewaretoken" ' \
+                                                                'value="%s">' \
+                        '<input type="submit" value="%s">' % (
+                        spath, request.COOKIES.get('csrftoken'), 
+                        i['name'])
+                    for k in i['post'].keys():
+                        result += '<input type="hidden" name="%s" value="%s">' \
+                                % (k, i['post'][k])
+                    result += '</form></li>'
+                else:
+                    result += u'<li><a href="%s">%s</a></li>' % (i['href'],
+                                                                 i['name'])
             result += u'</dd></dl></li>'
         result += u'</ul>'
         return result
