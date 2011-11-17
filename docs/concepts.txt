@@ -184,43 +184,39 @@ entry, including the history, is permanently and irrevocably deleted.
    Removing the entry is not yet implemented in the user interface.
 
 .. index::
-   single: view
-   single: end view
-   single: view; end
-   single: info view
-   single: view; info
-   single: edit view
-   single: view; edit
-   single: contents view
-   single: view; contents
-   single: history view
-   single: view; history
+   single: action
+   single: show
+   single: action; show
+   single: action; info
+   single: action; edit
+   single: action; contents
+   single: action; history
 
-Views
-=====
+Actions
+=======
 
 There are several things you can do with an entry or vobject: view it,
 edit it, view its contents or its history, delete it, change its
-state, and so on. We call these operations *views*: there is the "edit
-view", the "contents view", the "history view", the "change state
-view", and so on.
+state, and so on. We call these operations *actions*: there is the
+"show action", the "edit action", the "contents action", the "change
+state action", and so on.
 
-The **end view** is the normal mode of viewing an entry; for an image,
-for example, the end view is a "image/jpeg" or similar response that
-contains binary data. The **info view** is a page that includes
-information about the image, buttons for initiating editing, and so
-on, and is intended mainly for users who have permissions to modify
-the image. For some object types, such as pages, the end view and the
-info view may be identical.  http://localhost/myobject/ provides the
-end view for *myobject*, whereas http://localhost/myobject/__view__/
-provides the info view.
+The **show action** is the normal mode of viewing an entry; for an
+image, for example, the show action results in a "image/jpeg" or
+similar response that contains binary data. The **info action**
+results in a page that includes information about the image, buttons
+for initiating editing, and so on, and is intended mainly for users
+who have permissions to modify the image. For some object types, such
+as pages, the show action and the info action may be identical.
+http://localhost/myobject/ produces the show action for *myobject*,
+whereas http://localhost/myobject/__info__/ provides the info action.
 
-In GET requests, the view is specified by an item in the URL path
+In GET requests, the action is specified by an item in the URL path
 which has a prefix and a suffix of two underscores; for example,
 http://localhost/mypage/__edit__/ is a request to edit *mypage*.  If
 there is no such item in the URL, then the request is to view the
-entry. In POST requests, the requested operation is specified by the
-*view_name* parameter.
+entry, that is, for the show action. In POST requests, the action
+is specified by the *action* parameter.
 
 
 .. index::
