@@ -106,15 +106,15 @@ The Entry model
 
    .. attribute:: zadig.core.models.Entry.absolute_uri
 
-      This read-only property returns the absolute URI of the end view
-      of the entry.  See also
+      This read-only property returns the absolute URI for the show
+      action of the entry.  See also
       :attr:`~zadig.core.models.Entry.permalink` (and also
       :attr:`~zadig.core.models.Entry.path` and
       :attr:`~zadig.core.models.Entry.spath`).
 
    .. method:: zadig.core.models.Entry.add_details(vobject, form)
 
-      The :meth:`~zadig.core.models.Entry.edit_view` method is
+      The :meth:`~zadig.core.models.Entry.action_edit` method is
       implemented in :class:`~zadig.core.models.Entry` and not in
       its subclasses. When creating a new vobject as a result of edit
       form submission, it doesn't know how to process all attributes
@@ -187,10 +187,10 @@ The Entry model
       *entry*, or the parent of its parent, or any ancenstor, and
       :const:`False` otherwise.
 
-   .. method:: zadig.core.models.Entry.contents_view()
+   .. method:: zadig.core.models.Entry.action_contents()
 
       Return a :class:`django.http.HttpResponse` object with the
-      contents view of the entry.
+      contents of the entry.
 
    .. attribute:: zadig.core.models.Entry.creation_date
 
@@ -227,10 +227,10 @@ The Entry model
       The toplevel :meth:`~zadig.core.models.Entry.edit_subform`
       returns an empty form. Subclasses should redefine as needed.
 
-   .. method:: zadig.core.models.Entry.edit_view([new=False])
+   .. method:: zadig.core.models.Entry.action_edit([new=False])
 
-      Return a :class:`django.http.HttpResponse` object with the edit
-      view of the vobject. Depending on the contents of the
+      Return a :class:`django.http.HttpResponse` object.
+      Depending on the contents of the
       :ref:`request object <request-object>`, it
       either processes a submitted form (either modifying the entry or
       finding an error in the submitted form) and returns the
@@ -263,10 +263,10 @@ The Entry model
       The last modification date of the entry, i.e. the date of its
       latest vobject.
 
-   .. method:: zadig.core.models.Entry.history_view()
+   .. method:: zadig.core.models.Entry.action_history()
 
       Return a :class:`django.http.HttpResponse` object with the
-      history view of the entry.
+      history of the entry.
 
    .. method:: zadig.core.models.Entry.move(target_entry)
 
@@ -300,10 +300,10 @@ The Entry model
 
       Return the permissions the logged on user has on the entry.
 
-   .. method:: zadig.core.models.Entry.permissions_view()
+   .. method:: zadig.core.models.Entry.action_permissions()
 
       Return a :class:`django.http.HttpResponse` object with the
-      permissions view of the entry.
+      permissions of the entry.
 
    .. attribute:: zadig.core.models.Entry.possible_target_states
 
@@ -313,7 +313,7 @@ The Entry model
 
    .. method:: zadig.core.models.Entry.process_edit_subform(vobject, subform)
 
-      After the user submits the edit view, the subform returned by 
+      After the user submits the edit form, the subform returned by 
       :meth:`~zadig.core.models.Entry.edit_subform` must be processed.
       This method receives the newly created *vobject* and the
       submitted *subform* and processes as needed. The top level
@@ -514,22 +514,22 @@ The VObject model
 
       A copy of the :ref:`request object <request-object>`.
 
-   .. method:: zadig.core.models.VObject.end_view()
+   .. method:: zadig.core.models.VObject.action_show()
 
-      Return a :class:`django.http.HttpResponse` object with the end
-      view of the vobject.
+      Return a :class:`django.http.HttpResponse` object that shows the
+      vobject.
 
-   .. method:: zadig.core.models.VObject.info_view()
+   .. method:: zadig.core.models.VObject.action_info()
 
-      Returns a :class:`django.http.HttpResponse` object with the end
-      view of the vobject.
+      Returns a :class:`django.http.HttpResponse` object showing the
+      info for the vobject.
       
    .. method:: zadig.core.models.VObject.view_deleted()
 
       Used internally. When a vobject is deleted (i.e. has
       :attr:`~zadig.core.models.VObject.deletion_mark` set), then this
-      method is called to return the view, rather than its other
-      methods. This method decides if it should return a response or
+      method is called instead of its other actioninstead of its other
+      actions. This method decides if it should return a response or
       whether it should raise a :exc:`django.http.Http404`.
 
    .. method:: zadig.core.models.VObject.duplicate()
