@@ -16,12 +16,12 @@ from zadig.zstandard.models import PageEntry, VPage
 
 
 class VBlog(VObject):
-    def end_view(self):
+    def action_view(self):
         return render_to_response('view_blog.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def info_view(self):
-        return self.end_view()
+    def action_info(self):
+        return self.action_view()
 
 
 class BlogEntry(Entry):
@@ -48,7 +48,7 @@ class BlogEntry(Entry):
         email = forms.EmailField()
         #comments = forms.BooleanField(required=False)
 
-    def subscribe_view(self):
+    def action_subscribe(self):
         subscriber, form = None, None
         parms = request.parms
         if parms:
@@ -107,10 +107,10 @@ class BlogPostEntry(PageEntry):
         return super(BlogPostEntry, cls).can_create(parent) \
                                         and isinstance(parent, BlogEntry)
 
-    def state_view(self):
+    def action_change_state(self):
         anonuser = AnonymousUser()
         was_published = PERM_VIEW in self.user_permissions(anonuser)
-        result = super(BlogPostEntry, self).state_view(request.parms)
+        result = super(BlogPostEntry, self).action_change_state(request.parms)
         is_published = PERM_VIEW in self.user_permissions(anonuser)
         if is_published and not was_published:
             BlogEmailSubscriber.notify_subscribers(self)
