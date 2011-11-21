@@ -1049,6 +1049,12 @@ class EditEntryForm(forms.Form):
 
     def clean_name(self):
         n = self.cleaned_data['name']
+        this_is_the_root_page = not self.new and not self.entry.container
+        if n=='' and not this_is_the_root_page:
+            raise forms.ValidationError(_(u"Please specify a name."))
+        if this_is_the_root_page and n:
+            raise forms.ValidationError(_(u"The name of the root page cannot "
+                "be changed."))
         if (self.new and self.entry.all_subentries.filter(name=n).count()) or (
                 not self.new and self.entry.name!=n and
                 self.entry.container.all_subentries.filter(name=n).count()):

@@ -8,7 +8,7 @@ from zadig.core.models import Lentity, Entry, State, \
 from zadig.core.utils import set_request
 
 
-class TestPermissions(TestCase):
+class TestCore(TestCase):
     fixtures = ['test.json']
 
     def setUp(self, *args, **kwargs):
@@ -143,3 +143,30 @@ class TestPermissions(TestCase):
                                         'state': str(private.id) })
         self.assertEqual(response.status_code, 200)
         self.client.logout()
+
+    def test_page_name(self):
+        self.client.login(username='admin', password='secret0')
+
+        # Create a page without name - should fail
+        response = self.client.post('/',
+                    { 'action': 'new', 'entry_type': 'Page',
+                      'name': '', 'form-TOTAL_FORMS': 1,
+                      'form-INITIAL_FORMS': 1, 'form-0-title': 'Test Page',
+                      'form-0-language': 'en' })
+        self.assertEquals(response.status_code, 200)
+
+        # However, editing root page (with name blank) should succeed
+        response = self.client.post('/',
+                    { 'action': 'edit',
+                      'name': '', 'form-TOTAL_FORMS': 1,
+                      'form-INITIAL_FORMS': 1, 'form-0-title': 'Root Page',
+                      'form-0-language': 'en' })
+        self.assertEquals(response.status_code, 302)
+
+        # But, also, you can't edit root page name
+        response = self.client.post('/',
+                    { 'action': 'edit',
+                      'name': 'new name', 'form-TOTAL_FORMS': 1,
+                      'form-INITIAL_FORMS': 1, 'form-0-title': 'Root Page',
+                      'form-0-language': 'en' })
+        self.assertEquals(response.status_code, 200)
