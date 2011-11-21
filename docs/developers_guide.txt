@@ -1,8 +1,8 @@
 .. _developers_guide:
 
-=======================
-Zadig Developer's Guide
-=======================
+=================
+Developer's Guide
+=================
 
 There are two things a Zadig developer is expected to do: (1) create
 new object types; and (2) create applets. We explain those in separate

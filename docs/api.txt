@@ -1,8 +1,8 @@
 .. _api:
 
-=========
-Zadig API
-=========
+============
+Internal API
+============
 
 It is important to read the :ref:`concepts` document before studying
 the API, otherwise you will not understand what I'm talking about.

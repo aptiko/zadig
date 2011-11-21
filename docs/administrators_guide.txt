@@ -1,8 +1,8 @@
 .. _administrators_guide:
 
-===========================
-Zadig Administrator's Guide
-===========================
+=====================
+Administrator's Guide
+=====================
 
 Installation
 ============
