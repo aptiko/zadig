@@ -764,3 +764,11 @@ The functions below are in module zadig.core.utils.
    deleting all the rest, and it also sanitizes the content of *href*
    and *src* attributes, by allowing only specific (whitelisted) URL
    schemes. The whitelists are hardwired in this version.
+
+Decorators
+==========
+
+.. decorator:: require_POST
+
+   This is similar to the Django require_POST decorator, but it can be
+   used to decorate any function or method and not only the views.
