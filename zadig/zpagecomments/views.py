@@ -2,18 +2,21 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 
 from zadig.core.models import Entry, PERM_EDIT
+from zadig.core.decorators import require_POST
 from zadig.zstandard.models import PageEntry
-from zadig.zpagecomments.models import PageComment, CommentForm, STATE_PUBLISHED
+from zadig.zpagecomments.models import PageComment, CommentForm, \
+                                       EntryOptionSet, STATE_PUBLISHED
 
 
+@require_POST
 def add_comment(vobject):
     request = vobject.request
     entry = vobject.entry.descendant
-    if request.method != 'POST' or not isinstance(entry, PageEntry):
+    if not isinstance(entry, PageEntry):
         raise Http404
     try:
         if not entry.ZpagecommentsEntryOptions.allow_comments: raise Http404
-    except EntryOptions.DoesNotExist:
+    except EntryOptionSet.DoesNotExist:
         raise Http404
     form = CommentForm(request.POST)
     if form.is_valid():
@@ -39,10 +42,11 @@ def add_comment(vobject):
     return vobject.action_view()
 
 
+@require_POST
 def moderate_comments(vobject):
     request = vobject.request
     entry = vobject.entry.descendant
-    if request.method != 'POST' or not isinstance(entry, PageEntry):
+    if not isinstance(entry, PageEntry):
         raise Http404
     querydict = request.POST
     for k in querydict:
