@@ -24,8 +24,8 @@ also have a :file:`templates` directory (for example, the
 ``zadig.zstandard`` application, which contains the standard objects,
 has templates such as :file:`view_page.html` etc.). If they have
 applets, they should also have a :file:`templatetags` directory. If
-they have any additional general views, these should be in
-:file:`views.py` (general views will be examined below).
+they have any additional general actions, these should be in
+:file:`views.py` (general actions will be examined below).
 
 Creating new object types
 =========================
@@ -54,36 +54,37 @@ If you use the existing applications' object types implementation as
 an example, you should not have any problem understanding things
 better.
 
-General views
-=============
+The action dispatcher
+=====================
 
 When the URL of a GET request is of the form
-:samp:`/{path_to_entry}/__{viewname}__/{remainder}`, or the *viewname*
-parameter of a POST request is set, and the view is not known to the
-Zadig core code, then Zadig searches for such a view
-in three places:
+:samp:`/{path_to_entry}/__{actionname}__/{remainder}`, or the *action*
+parameter of a POST request is set, and the action is not known to the
+Zadig core code, then Zadig searches for such an action in three
+places:
 
 1. It checks whether the :class:`~zadig.core.models.VObject` pointed
-   by *path_to_entry* has a method called :samp:`{viewname}_view`.
+   by *path_to_entry* has a method called :samp:`action_{actionname}`.
 2. Failing that, it searches for such a method in the
    :class:`~zadig.core.models.Entry` class.
-3. Failing that, if *viewname* contains a dot, i.e. it is of the form
-   *app.func*, it searches for a callable *func* in
+3. Failing that, if *actionname* contains a dot, i.e. it is of the
+   form *app.func*, it searches for a callable *func* in
    :samp:`zadig.{app}.views`.
 
 If no appropriate callable is found, :exc:`Http404` is raised. If it
 is found, it is called, and, in GET requests, the URL *remainder* is
 passed as the ``parms`` argument.
 
-An example of such a view is the "resized" view of an image. If you
+An example of such a view is the "resized" action of an image. If you
 append ``/__resized__/400`` to the URL of an image, then you will see
 the image resized so that its largest dimension is 400 pixels. This is
 accomplished because the :class:`zadig.zstandard.VImage` class has a
-:meth:`~zadig.zstandard.VImage.resized_view` method. Another example
+:meth:`~zadig.zstandard.VImage.action_resized` method. Another example
 is page comment submission: the "add comment" submit button results in
-posting the "add comment" form, which contains
-"zpagecomments.add_comment" as the *viewname*, which is processed by
-:func:`zadig.zpagecomments.views.add_comment`.
+posting the "add comment" form, which includes a hidden field with the
+name "action" and the value "zpagecomments.add_comment"; the
+submission is then processed by
+:func:`zadig.zpagecomments.views.action_add_comment`.
 
 Creating applets
 ================

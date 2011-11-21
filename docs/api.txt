@@ -528,9 +528,9 @@ The VObject model
 
       Used internally. When a vobject is deleted (i.e. has
       :attr:`~zadig.core.models.VObject.deletion_mark` set), then this
-      method is called instead of its other actioninstead of its other
-      actions. This method decides if it should return a response or
-      whether it should raise a :exc:`django.http.Http404`.
+      method is called instead of its other actions This method
+      decides if it should return a response or whether it should
+      raise a :exc:`django.http.Http404`.
 
    .. method:: zadig.core.models.VObject.duplicate()
 
