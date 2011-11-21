@@ -22,7 +22,7 @@ class PageCommentsNode(template.Node):
         optionset, created = EntryOptionSet.objects.get_or_create(entry=entry)
         if created: optionset.save()
         if not optionset.allow_comments: return result
-        if request.view_name not in ('view', 'info'): return result
+        if request.action not in ('view', 'info'): return result
         comments = PageComment.objects.filter(page=entry).order_by('id')
         for c in comments:
             result += c.render(request)

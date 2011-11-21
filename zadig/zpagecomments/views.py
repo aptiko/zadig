@@ -35,8 +35,8 @@ def add_comment(vobject):
         request.pagecommentsform = form
         request.message = _(
                     u"There was an error in your comment; see below.")
-    request.view_name = 'view'
-    return vobject.end_view()
+    request.action = 'view'
+    return vobject.action_view()
 
 
 def moderate_comments(vobject):
@@ -56,5 +56,5 @@ def moderate_comments(vobject):
             continue
         comment.state = querydict[k]
         comment.save()
-    request.view_name = 'view'
-    return vobject.end_view()
+    request.action = 'view'
+    return vobject.action_view()
