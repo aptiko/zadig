@@ -43,12 +43,12 @@ class EditPageForm(forms.Form):
 class VPage(VObject):
     content = models.TextField(blank=True)
 
-    def end_view(self):
+    def action_view(self):
         return render_to_response('view_page.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def info_view(self):
-        return self.end_view()
+    def action_info(self):
+        return self.action_view()
 
 
 class PageEntry(Entry):
@@ -74,7 +74,7 @@ entry_types.append(PageEntry)
 class VFile(VObject):
     content = models.FileField(upload_to="files", blank=True, null=True)
 
-    def end_view(self):
+    def action_view(self):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -84,7 +84,7 @@ class VFile(VObject):
                                                             self.entry.name)
         return response
 
-    def info_view(self):
+    def action_info(self):
         return render_to_response('view_file.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
@@ -117,7 +117,7 @@ entry_types.append(FileEntry)
 class VImage(VObject):
     content = models.ImageField(upload_to="images", blank=True, null=True)
 
-    def end_view(self):
+    def action_view(self):
         from django.core.servers.basehttp import FileWrapper
         content_type = mimetypes.guess_type(self.content.path)[0]
         wrapper = FileWrapper(open(self.content.path))
@@ -125,11 +125,11 @@ class VImage(VObject):
         response['Content-length'] = self.content.size
         return response
 
-    def info_view(self):
+    def action_info(self):
         return render_to_response('view_image.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
-    def resized_view(self):
+    def action_resized(self):
         import Image
         im = Image.open(self.content.path)
         parms = self.request.parms
@@ -172,12 +172,12 @@ entry_types.append(ImageEntry)
 class VLink(VObject):
     target = models.URLField(blank=True)
 
-    def end_view(self):
+    def action_view(self):
         # FIXME: This should not work like this, should directly link outside
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target)
 
-    def info_view(self):
+    def action_info(self):
         return render_to_response('view_link.html', { 'vobject': self },
                 context_instance = RequestContext(self.request))
 
@@ -301,11 +301,11 @@ entry_types.append(EventEntry)
 class VInternalRedirection(VObject):
     target = models.ForeignKey(Entry)
 
-    def end_view(self):
+    def action_view(self):
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
 
-    def info_view(self):
+    def action_view(self):
         return render_to_response('view_internalredirection.html',
                 { 'vobject': self },
                 context_instance = RequestContext(self.request))

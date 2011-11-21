@@ -7,13 +7,13 @@ class TestZstandard(TestCase):
 
     def test_create_page(self):
         from zadig.core import models
-        response = self.client.post('/', { 'view_name': 'login',
+        response = self.client.post('/', { 'action': 'login',
                                 'username': 'admin', 'password': 'secret0' })
         self.assertEquals(response.status_code, 302)
         response = self.client.get('/')
         self.assertEquals(response.status_code, 200)
         response = self.client.post('/',
-                    { 'view_name': 'new', 'entry_type': 'Page',
+                    { 'action': 'new', 'entry_type': 'Page',
                       'name': 'testpage', 'form-TOTAL_FORMS': 1,
                       'form-INITIAL_FORMS': 1, 'form-0-title': 'Test Page',
                       'form-0-language': 'en' })
@@ -25,16 +25,16 @@ class TestZstandard(TestCase):
     def test_undelete(self):
         self.client.login(username='admin', password='secret0')
         response = self.client.post('/',
-                    { 'view_name': 'new', 'entry_type': 'Page',
+                    { 'action': 'new', 'entry_type': 'Page',
                       'name': 'testpage',
                       'form-TOTAL_FORMS': 1,
                       'form-INITIAL_FORMS': 1, 'form-0-title': 'Test Page',
                       'form-0-language': 'en' })
         self.assertEquals(response.status_code, 302)
         response = self.client.post('/testpage/',
-                            { 'view_name': 'state', 'state': '3' }) # publish
+                            { 'action': 'state', 'state': '3' }) # publish
         self.assertEquals(response.status_code, 200)
-        response = self.client.post('/testpage/', { 'view_name': 'delete' })
+        response = self.client.post('/testpage/', { 'action': 'delete' })
         self.assertEquals(response.status_code, 200)
 
         # Try to view deleted anonymously - should fail
@@ -49,12 +49,12 @@ class TestZstandard(TestCase):
 
         # Try to undelete anonymously - should fail
         self.client.logout()
-        response = self.client.post('/testpage/', { 'view_name': 'undelete' })
+        response = self.client.post('/testpage/', { 'action': 'undelete' })
         self.assertEquals(response.status_code, 404)
 
         # Try to undelete as admin - should succeed
         self.client.login(username='admin', password='secret0')
-        response = self.client.post('/testpage/', { 'view_name': 'undelete' })
+        response = self.client.post('/testpage/', { 'action': 'undelete' })
         self.assertEquals(response.status_code, 200)
 
         # Try to view anonymously - should succeed

@@ -296,7 +296,7 @@ register.tag('events', do_events)
 
 class PrimaryButtonsNode(template.Node):
 
-    views = ( ('contents', _(u'contents')), ('info', _(u'view')),
+    actions = ( ('contents', _(u'contents')), ('info', _(u'view')),
               ('edit', _(u'edit')), ('history', _(u'history')),
               ('permissions', _(u'permissions')) )
 
@@ -312,12 +312,12 @@ class PrimaryButtonsNode(template.Node):
                '<li class="selected"><a href="">%s</a></li></ul>' % _(u'new')
         if not vobject.entry.touchable: return ''
         result = '<ul class="primaryButtons">'
-        for viewname, viewstring in self.views:
-            href = '__' + viewname + '__/'
-            current_view = request.view_name
-            if current_view=='view': current_view='info'
+        for actionname, actionstring in self.actions:
+            href = '__' + actionname + '__/'
+            current_action = request.action
+            if current_action=='view': current_action='info'
             result += '<li %s><a href="%s">%s</a></li>' % ('class="selected"'
-                        if viewname==current_view else '', href, viewstring)
+                      if actionname==current_action else '', href, actionstring)
         result += '</ul>'
         return result
 
@@ -347,7 +347,7 @@ class SecondaryButtonsNode(template.Node):
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
               'items': [ { 'name': x.descr,
-                           'post': {'view_name': 'state', 'state': x.id },
+                           'post': {'action': 'state', 'change_state': x.id },
                          } for x in vobject.entry.possible_target_states
                         ]
             },
@@ -358,11 +358,11 @@ class SecondaryButtonsNode(template.Node):
             },
             { 'name': _(u'Actions'),
               'items': [ { 'name': _(u'Cut'),
-                           'post': { 'view_name': 'cut' }},
+                           'post': { 'action': 'cut' }},
                          { 'name': _(u'Paste'),
-                           'post': { 'view_name': 'paste' }},
+                           'post': { 'action': 'paste' }},
                          { 'name': _(u'Delete'),
-                           'post': { 'view_name': 'delete' }}
+                           'post': { 'action': 'delete' }}
                          ]
             },
             ]
