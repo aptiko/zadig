@@ -22,71 +22,71 @@ def _set_languages(request, vobject):
     request.effective_language = vobject.language.id if vobject.language \
                                                 else request.preferred_language
 
-def general_view(request, path):
+def action_dispatcher(request, path):
     # Split the path to path, view_name, parms.
     pathitems = split_path(path)
-    path, view_name, parms = '', '', ''
+    path, action_name, parms = '', '', ''
     for i, p in enumerate(pathitems):
         if p.startswith('__') and p.endswith('__'):
             if len(p)<5:
                 raise Http404
-            view_name = p[2:-2]
+            action_name = p[2:-2]
             parms = join_path(pathitems[i+1:])
             break
         path = join_path(path, p)
     if request.method=='POST':
-        if view_name:
+        if action_name:
             raise Http404
-        view_name = request.POST.get('view_name', '')
-        if not view_name:
+        action_name = request.POST.get('action_name', '')
+        if not action_name:
             raise Http404
-    if not view_name: view_name = 'view'
-    request.view_name = view_name
+    if not action_name: action_name = 'view'
+    request.action = action_name
     request.parms = parms
 
     # TODO: probably can _set_languages here and remove it from
     # elsewhere
 
-    # Check if view is one of core views, and return it
-    core_views = { 'logout': logout, 'login': login, 'cut': cut, 'paste': paste,
-                   'delete': delete }
-    if view_name=='view':
-        return end_view(request, path)
-    elif view_name=='new':
+    # Check if action is one of core actions, and return it
+    core_actions = { 'logout': logout, 'login': login, 'cut': cut,
+                     'paste': paste, 'delete': delete }
+    if action_name=='view':
+        return action_view(request, path)
+    elif action_name=='new':
         return new_entry(request, path)
-    elif view_name in core_views.keys():
-        return core_views[view_name](request, path)
+    elif action_name in core_actions.keys():
+        return core_actions[action_name](request, path)
 
-    # Otherwise search for a suitable view
+    # Otherwise search for a suitable action
     vobject = models.VObject.objects.get_by_path(path).descendant
     _set_languages(request, vobject)
     if vobject.deletion_mark:
         return vobject.view_deleted()
-    method_name = view_name + '_view'
+    method_name = 'action_' + action_name
     if hasattr(vobject, method_name):
-        return eval('vobject.%s_view()' % (view_name,))
+        return eval('vobject.action_%s()' % (action_name,))
     elif hasattr(vobject.entry.descendant, method_name):
-        return eval('vobject.entry.descendant.%s_view()' % (view_name,))
-    # Assume view name is in 'app.viewfuncname' format
-    (app, sep, viewfuncname) = view_name.partition('.')
-    if not viewfuncname: raise Http404
+        return eval('vobject.entry.descendant.action_%s()' % (view_name,))
+    # Assume action name is in 'app.viewfuncname' format
+    (app, sep, actionfuncname) = action_name.partition('.')
+    if not actionfuncname: raise Http404
     try:
         temp = __import__('zadig.%s.views' % (app,), globals(), locals(),
-                                                                [viewfuncname])
-        viewfunc = temp.__dict__.get(viewfuncname, None)
+                                                            [actionfuncname])
+        actionfunc = temp.__dict__.get(actionfuncname, None)
     except ImportError:
         raise Http404
-    if not viewfunc:
+    if not actionfunc:
         raise Http404
-    return viewfunc(vobject)
+    return actionfunc(vobject)
 
-def end_view(request, path, version_number=None):
+def action_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(path, version_number)\
                                                                 .descendant
     _set_languages(request, vobject)
     if vobject.deletion_mark:
         return vobject.view_deleted()
-    return vobject.end_view()
+    return vobject.action_view()
 
 def new_entry(request, parent_path):
     parent_vobject = models.VObject.objects.get_by_path(parent_path)
@@ -118,7 +118,7 @@ def login(request, path):
         request.message = _(
                 u"You are already logged on; logout to log in again.")
         request.view_name = 'view'
-        return end_view(request, path)
+        return action_view(request, path)
     elif request.method!='POST':
         form = LoginForm()
     else:

@@ -493,7 +493,7 @@ class Entry(models.Model):
 
     def __create_metatags_formset(self, new):
         """Return a formset of metatags forms, as many as existing metatag sets
-        plus one if there is another available language. Called by edit_view()
+        plus one if there is another available language. Called by action_edit()
         method. """
         initial = []
         if new:
@@ -555,7 +555,7 @@ class Entry(models.Model):
 
     def process_edit_subform(self, vobject, form): pass
 
-    def edit_view(self, new=False):
+    def action_edit(self, new=False):
         if (new and not self.container.touchable) or (
                                             not new and not self.touchable):
             raise Http404
@@ -684,7 +684,7 @@ class Entry(models.Model):
             title=_("Redirection"))
         nmetatags.save()
 
-    def contents_view(self):
+    def action_contents(self):
         subentries = self.subentries
         vobject = self.vobject
         request = utils.get_request()
@@ -715,7 +715,7 @@ class Entry(models.Model):
                   'move_item_form': move_item_form},
                 context_instance = RequestContext(request))
 
-    def history_view(self):
+    def action_history(self):
         vobject = self.vobject
         return render_to_response('entry_history.html', { 'vobject': vobject },
                 context_instance = RequestContext(utils.get_request()))
@@ -731,7 +731,7 @@ class Entry(models.Model):
             for e in self.all_subentries:
                 e.__change_owner(new_owner, recursive)
 
-    def permissions_view(self):
+    def action_permissions(self):
         vobject = self.vobject
         request = utils.get_request()
         if request.method != 'POST':
@@ -754,8 +754,8 @@ class Entry(models.Model):
         old_vobject = self.get_vobject(ver-1).descendant
         assert(not old_vobject.deletion_mark)
         nvobject = old_vobject.duplicate()
-        utils.get_request().view_name = 'info'
-        return nvobject.descendant.info_view()
+        utils.get_request().action = 'info'
+        return nvobject.descendant.action_info()
 
     @property
     def possible_target_states(self):
@@ -769,15 +769,15 @@ class Entry(models.Model):
         return result
         
     @require_POST
-    def state_view(self):
+    def action_change_state(self):
         try: new_state_id = int(self.request.POST['state'])
         except: raise Http404
         if new_state_id not in [x.id for x in self.possible_target_states]:
             raise Http404
         self.state = State.objects.get(pk=new_state_id)
         self.save()
-        self.request.view_name = 'info'
-        return self.vobject.descendant.info_view()
+        self.request.action = 'info'
+        return self.vobject.descendant.action_info()
 
     def __unicode__(self):
         result = self.name
@@ -870,13 +870,13 @@ class VObject(models.Model):
 
     def view_deleted(self):
         assert(self.deletion_mark)
-        if self.request.view_name in ('info', 'view'):
+        if self.request.action in ('info', 'view'):
             return render_to_response('view_deleted_entry.html',
                 { 'vobject': self, },
                 context_instance = RequestContext(self.request))
-        if self.request.view_name=='history':
-            return self.entry.history_view()
-        if self.request.view_name=='undelete':
+        if self.request.action=='history':
+            return self.entry.action_history()
+        if self.request.action=='undelete':
             return self.entry.undelete()
         raise Http404
 
