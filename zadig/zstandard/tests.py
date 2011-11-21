@@ -32,7 +32,7 @@ class TestZstandard(TestCase):
                       'form-0-language': 'en' })
         self.assertEquals(response.status_code, 302)
         response = self.client.post('/testpage/',
-                            { 'action': 'state', 'state': '3' }) # publish
+                        { 'action': 'change_state', 'state': '3' }) # publish
         self.assertEquals(response.status_code, 200)
         response = self.client.post('/testpage/', { 'action': 'delete' })
         self.assertEquals(response.status_code, 200)

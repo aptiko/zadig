@@ -23,7 +23,7 @@ def _set_languages(request, vobject):
                                                 else request.preferred_language
 
 def action_dispatcher(request, path):
-    # Split the path to path, view_name, parms.
+    # Split the path to path, action_name, parms.
     pathitems = split_path(path)
     path, action_name, parms = '', '', ''
     for i, p in enumerate(pathitems):
@@ -37,7 +37,7 @@ def action_dispatcher(request, path):
     if request.method=='POST':
         if action_name:
             raise Http404
-        action_name = request.POST.get('action_name', '')
+        action_name = request.POST.get('action', '')
         if not action_name:
             raise Http404
     if not action_name: action_name = 'view'
@@ -66,8 +66,8 @@ def action_dispatcher(request, path):
     if hasattr(vobject, method_name):
         return eval('vobject.action_%s()' % (action_name,))
     elif hasattr(vobject.entry.descendant, method_name):
-        return eval('vobject.entry.descendant.action_%s()' % (view_name,))
-    # Assume action name is in 'app.viewfuncname' format
+        return eval('vobject.entry.descendant.action_%s()' % (action_name,))
+    # Assume action name is in 'app.actionfuncname' format
     (app, sep, actionfuncname) = action_name.partition('.')
     if not actionfuncname: raise Http404
     try:
@@ -97,11 +97,11 @@ def new_entry(request, parent_path):
     class_name = '%sEntry' % (entry_type,)
     new_entry_class = [u for u in entry_types if u.__name__==class_name][0]
     entry = new_entry_class(container=parent_entry)
-    return entry.edit_view(new=True)
+    return entry.action_edit(new=True)
 
 def logout(request, path):
     django.contrib.auth.logout(request)
-    return general_view(request, join_path(path, '__info__'))
+    return action_dispatcher(request, join_path(path, '__info__'))
 
 class LoginForm(forms.Form):
     from django.contrib.auth.models import User
@@ -117,7 +117,7 @@ def login(request, path):
     if request.user.is_authenticated():
         request.message = _(
                 u"You are already logged on; logout to log in again.")
-        request.view_name = 'view'
+        request.action_name = 'view'
         return action_view(request, path)
     elif request.method!='POST':
         form = LoginForm()
@@ -147,7 +147,7 @@ def cut(request, path):
     request.message = _(u"Object has been cut. Will be moved when you "
                         "paste it.")
     request.method = 'GET'
-    return general_view(request, join_path(path, '__info__'))
+    return action_dispatcher(request, join_path(path, '__info__'))
 
 @require_POST
 def paste(request, path):
@@ -157,7 +157,7 @@ def paste(request, path):
         e.move(target_entry)
     request.session['cut_entries'] = []
     request.method = 'GET'
-    return general_view(request, join_path(path, '__contents__'))
+    return action_dispatcher(request, join_path(path, '__contents__'))
 
 @require_POST
 def delete(request, path):
@@ -175,5 +175,5 @@ def delete(request, path):
     nmetatags = VObjectMetatags(vobject=nvobject,
         language=Language.get_default(), title=_(u"Deleted"))
     nmetatags.save()
-    request.view_name = 'info'
+    request.action = 'info'
     return nvobject.view_deleted()

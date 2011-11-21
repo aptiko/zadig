@@ -9,7 +9,7 @@
   <h1>{% trans "This object has been deleted" %}</h1>
   <form method="POST" action="{{vobject.entry.spath}}">
   {% csrf_token %}
-  <input type="hidden" name="view_name" value="undelete"/>
+  <input type="hidden" name="action" value="undelete"/>
   <input type="submit" value="{% trans "Undelete" %}"/>
   </form>
 {% endblock %}

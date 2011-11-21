@@ -5,7 +5,7 @@
   <h1>Edit {{vobject.entry.name}}</h1>
   <form class="editObject" enctype="multipart/form-data" action="{{ vobject.entry.spath }}" method="POST">
   {% csrf_token %}
-  <input type="hidden" name="view_name" value="{{ request.view_name }}" />
+  <input type="hidden" name="action" value="{{ request.action }}" />
   <input type="hidden" name="entry_type" value="{{ vobject.entry.descendant.typename }}" />
   <table>
     <tr><td colspan="2">{{ mainform.non_field_errors }}</td></tr>
