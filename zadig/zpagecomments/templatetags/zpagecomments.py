@@ -1,5 +1,6 @@
 from django import template
 from django.utils.translation import ugettext as _
+from django.template.loader import get_template
 
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet
@@ -38,27 +39,8 @@ class PageCommentsNode(template.Node):
             form = request.pagecommentsform
         else:
             form = CommentForm()
-        result += '''<div class="addComment">
-           %s
-           <p class="heading">%s</p>
-           <p class="notice">%s</p>
-           <form method="POST" action="%s__zpagecomments.add_comment__/">
-           <table>
-           %s
-           <tr><th></th><td><p class="notice">%s</p></td></tr>
-           <tr><th></th><td><input type="submit" value="%s" /></td></tr>
-           </table>
-           </form>
-           </div>''' % (form.media, _(u"Add comment"),
-                _(u"Your email address will not be published"),
-                entry.spath, form.as_table(),
-                _(u'Separate paragraphs with blank line; URLs will be '
-                  u'automatically converted to links; use **bold**, '
-                  u'*italics*; indent paragraphs for block quoting; other '
-                  u'<a href="http://docutils.sourceforge.net/docs/user/rst/'
-                  u'quickstart.html">reStructuredText</a> markup is also '
-                  u'possible.'),
-                _(u"Add comment"))
+        result += get_template('add_comment.html').render(template.Context({
+            'vobject': vobject, 'form': form }))
         return result
 
 
