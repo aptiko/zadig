@@ -1,10 +1,8 @@
-from django.core import urlresolvers
-from django.core.urlresolvers import reverse
 from django.db import models, IntegrityError
 from django.db.models import Q, F
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django import forms
@@ -14,7 +12,6 @@ import settings
 from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
 from zadig.core.decorators import require_POST
-
 
 PERM_VIEW=1
 PERM_EDIT=2
