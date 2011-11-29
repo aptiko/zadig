@@ -20,10 +20,10 @@ class TestZpagecomments(TestCase):
                                 'username': 'admin', 'password': 'secret0' })
         self.assertEquals(response.status_code, 302)
         response = self.client.post('/', { 'action': 'edit',
-                      'name': 'testpage', 'form-TOTAL_FORMS': 1,
-                      'form-INITIAL_FORMS': 1, 'form-0-title': 'Test Page',
+                      'name': '', 'form-TOTAL_FORMS': 1,
+                      'form-INITIAL_FORMS': 1, 'form-0-title': 'Home',
                       'form-0-language': 'en', 'allow_comments': 'on' })
-        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.status_code, 302)
 
         # This time we should succeed
         response = self.client.post('/', postdata)
