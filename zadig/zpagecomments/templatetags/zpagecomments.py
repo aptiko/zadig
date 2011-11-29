@@ -39,8 +39,8 @@ class PageCommentsNode(template.Node):
             form = request.pagecommentsform
         else:
             form = CommentForm()
-        result += get_template('add_comment.html').render(template.Context({
-            'vobject': vobject, 'form': form }))
+        context['form'] = form
+        result += get_template('add_comment.html').render(context)
         return result
 
 
