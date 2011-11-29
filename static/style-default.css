@@ -62,6 +62,8 @@ ul.secondaryButtons >li>dl { position: relative; }
 ul.secondaryButtons >li>dl>dt, ul.secondaryButtons >li>p  { margin: 0; padding: 0; border-left: 1px solid #74ae0b; }
 ul.secondaryButtons > li > dl > dd { margin: 0; padding: 0; position: absolute; right: -1px; background-color: #cde2a7; border: 1px #74ae0b solid; border-top: none; visibility: hidden; }
 ul.secondaryButtons > li > dl > dd > ul { display: block; margin: 0; padding: 0; list-style-type: none; }
+ul.secondaryButtons form { padding-top: 1px; padding-bottom: 1px; }
+ul.secondaryButtons input[type="submit"] { background: none !important; border: none; padding: 0 0.5em !important; color: #578308; white-space: nowrap; font-size: 100%; font-family: "Lucida Grande",Verdana,Lucida,Helvetica,Arial,sans-serif; cursor: pointer; }
 
 .statePrivate { color: red; }
 .editObject tr { vertical-align: top; }
