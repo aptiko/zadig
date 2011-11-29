@@ -1,7 +1,7 @@
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from zadig.core.models import Entry, PERM_EDIT
+from zadig.core.models import PERM_EDIT
 from zadig.core.decorators import require_POST
 from zadig.zstandard.models import PageEntry
 from zadig.zpagecomments.models import PageComment, CommentForm, \
