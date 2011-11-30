@@ -1,11 +1,9 @@
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from zadig.core.models import PERM_EDIT
 from zadig.core.decorators import require_POST
 from zadig.zstandard.models import PageEntry
-from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet, \
-                                        STATE_PUBLISHED, STATE_DELETED, STATE_UNAPPROVED
+from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet
 
 
 @require_POST
@@ -48,27 +46,5 @@ def change_comment_state(vobject):
     comment = PageComment.objects.get(id=int(request.POST['comment_id']))
     comment.state = request.POST['new_state']
     comment.save()
-    request.action = 'view'
-    return vobject.action_view()
-
-
-@require_POST
-def moderate_comments(vobject):
-    request = vobject.request
-    entry = vobject.entry.descendant
-    if not isinstance(entry, PageEntry):
-        raise Http404
-    querydict = request.POST
-    for k in querydict:
-        import re
-        m = re.match(r'comment_(\d+)_state', k)
-        if not m: continue
-        comment = PageComment.objects.get(id=int(m.group(1)))
-        e = comment.page
-        if not PERM_EDIT in e.permissions:
-            # FIXME: Should add a user message here
-            continue
-        comment.state = querydict[k]
-        comment.save()
     request.action = 'view'
     return vobject.action_view()
