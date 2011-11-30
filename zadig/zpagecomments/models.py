@@ -38,10 +38,6 @@ class PageComment(models.Model):
         return u'Comment id=%s on page id=%s' % (self.id, self.page.id)
 
     @property
-    def truncated_commenter_name(self):
-        return self.commenter_name[:4] + ('...' if len(self.commenter_name)>4 else '')
-
-    @property
     def linked_commenter_name(self):
         name = escape(self.commenter_name)
         return mark_safe('<a href="%s">%s</a>' % (escape(self.commenter_website),
@@ -52,8 +48,7 @@ class PageComment(models.Model):
         entry.request = request
         p = entry.permissions
         if PERM_VIEW not in p: return ''
-        if self.state not in (STATE_PUBLISHED, STATE_DELETED) and \
-                                                            PERM_EDIT not in p:
+        if self.state != STATE_PUBLISHED and PERM_EDIT not in p:
             return ''
         self.visible_commenter_email = mark_safe('' if PERM_EDIT not in p else ('&lt;' +
                                                 escape(self.commenter_email) + '&gt;'))
