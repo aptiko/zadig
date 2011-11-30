@@ -11,7 +11,7 @@
     <label for="id_comment_state">{% trans "State:" %}</label>
     <select name="comment_{{ comment.id }}_state">
       <option value="DELETED" {% if comment.state == "DELETED" %} selected="selected" {% endif %}>{% trans "Deleted" %}</option>
-      <option value="MODERATED" {% if comment.state == "MODERATED" %} selected="selected" {% endif %}>{% trans "Moderated" %}</option>
+      <option value="UNAPPROVED" {% if comment.state == "UNAPPROVED" %} selected="selected" {% endif %}>{% trans "Unapproved" %}</option>
       <option value="PUBLISHED" {% if comment.state == "PUBLISHED" %} selected="selected" {% endif %}>{% trans "Published" %}</option>
     </select>
   {% endif %}
