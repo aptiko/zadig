@@ -10,7 +10,7 @@ from zadig.core import entry_option_sets
 from zadig.core.models import Entry, PERM_VIEW, PERM_EDIT
 from zadig.zstandard.models import PageEntry
 
-STATE_MODERATED = u'MODERATED'
+STATE_UNAPPROVED = u'UNAPPROVED'
 STATE_PUBLISHED = u'PUBLISHED'
 STATE_DELETED = u'DELETED'
 
