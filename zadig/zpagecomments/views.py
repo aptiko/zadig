@@ -4,8 +4,8 @@ from django.utils.translation import ugettext as _
 from zadig.core.models import PERM_EDIT
 from zadig.core.decorators import require_POST
 from zadig.zstandard.models import PageEntry
-from zadig.zpagecomments.models import PageComment, CommentForm, \
-                                       EntryOptionSet, STATE_PUBLISHED
+from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet, \
+                                        STATE_PUBLISHED, STATE_DELETED, STATE_UNAPPROVED
 
 
 @require_POST
@@ -38,6 +38,16 @@ def add_comment(vobject):
         request.pagecommentsform = form
         request.message = _(
                     u"There was an error in your comment; see below.")
+    request.action = 'view'
+    return vobject.action_view()
+
+
+@require_POST
+def change_comment_state(vobject):
+    request = vobject.request
+    comment = PageComment.objects.get(id=int(request.POST['comment_id']))
+    comment.state = request.POST['new_state']
+    comment.save()
     request.action = 'view'
     return vobject.action_view()
 

@@ -14,15 +14,16 @@
       {% endblocktrans %}
     </p>
     {% if comment.state == "DELETED" %}
-      <form method="post" action="{{ request.spath }}">
+      <form method="post" action="{{ comment.page.spath }}">
         {% csrf_token %}
-        <input type="hidden" name="action" value="zpagecomments.undelete_comment">
+        <input type="hidden" name="action" value="zpagecomments.change_comment_state">
+        <input type="hidden" name="new_state" value="UNAPPROVED">
         <input type="hidden" name="comment_id" value="{{ comment.id }}">
         <input type="submit" value='{% trans "Undelete" %}'>
       </form>
     {% endif %}
     {% if comment.state == "PUBLISHED" or comment.state == "UNAPPROVED" %}
-      <form method="post" action="{{ request.spath }}">
+      <form method="post" action="{{ comment.page.spath }}">
         {% csrf_token %}
         <input type="hidden" name="action" value="zpagecomments.edit_comment">
         <input type="hidden" name="comment_id" value="{{ comment.id }}">
@@ -30,19 +31,30 @@
       </form>
     {% endif %}
     {% if comment.state == "PUBLISHED" %}
-      <form method="post" action="{{ request.spath }}">
+      <form method="post" action="{{ comment.page.spath }}">
         {% csrf_token %}
-        <input type="hidden" name="action" value="zpagecomments.unapprove_comment">
+        <input type="hidden" name="action" value="zpagecomments.change_comment_state">
+        <input type="hidden" name="new_state" value="UNAPPROVED">
         <input type="hidden" name="comment_id" value="{{ comment.id }}">
         <input type="submit" value='{% trans "Unapprove" %}'>
       </form>
     {% endif %}
     {% if comment.state == "UNAPPROVED" %}
-      <form method="post" action="{{ request.spath }}">
+      <form method="post" action="{{ comment.page.spath }}">
         {% csrf_token %}
-        <input type="hidden" name="action" value="zpagecomments.approve_comment">
+        <input type="hidden" name="action" value="zpagecomments.change_comment_state">
+        <input type="hidden" name="new_state" value="PUBLISHED">
         <input type="hidden" name="comment_id" value="{{ comment.id }}">
         <input type="submit" value='{% trans "Approve" %}'>
+      </form>
+    {% endif %}
+    {% if comment.state == "PUBLISHED" or comment.state == "UNAPPROVED" %}
+      <form method="post" action="{{ comment.page.spath }}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="zpagecomments.change_comment_state">
+        <input type="hidden" name="new_state" value="DELETED">
+        <input type="hidden" name="comment_id" value="{{ comment.id }}">
+        <input type="submit" value='{% trans "Delete" %}'>
       </form>
     {% endif %}
   {% endif %}
