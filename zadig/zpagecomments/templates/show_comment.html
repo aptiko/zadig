@@ -1,0 +1,27 @@
+{% load i18n %}
+<div class="pageComment {{ comment.state }}">
+  {% if comment.state == "DELETED" and not perm_edit %}
+    <p class="notice">
+    {% blocktrans %}
+      Comment submitted on {{ comment.date|date:'Y-m-d H:i' }} by
+      {{ comment.truncated_commenter_name }} has been deleted by an administrator.
+    {% endblocktrans %}
+    </p>
+  {% else %}
+    <p class="authorLine">
+      {% blocktrans with comment.linked_commenter_name as lcn and comment.visible_commenter_email as vce %}
+        <span class="author">{{ lcn }}</span> {{ vce }} says:
+      {% endblocktrans %}
+    </p>
+    <p class="date">{{ comment.date|date:'Y-m-d H:i' }}</p>
+    <p class="comment">{{ comment.comment|safe }}</p>
+    {% if perm_edit %}
+      <label for="id_comment_state">{% trans "State:" %}</label>
+      <select name="comment_{{ comment.id }}_state">
+        <option value="DELETED" {% if comment.state == "DELETED" %} selected="selected" {% endif %}>{% trans "Deleted" %}</option>
+        <option value="MODERATED" {% if comment.state == "MODERATED" %} selected="selected" {% endif %}>{% trans "Moderated" %}</option>
+        <option value="PUBLISHED" {% if comment.state == "PUBLISHED" %} selected="selected" {% endif %}>{% trans "Published" %}</option>
+      </select>
+    {% endif %}
+  {% endif %}
+</div>

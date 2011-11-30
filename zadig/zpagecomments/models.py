@@ -1,8 +1,10 @@
 from django.db import models
 from django import forms
 from django.utils.translation import ugettext as _
+from django.utils.safestring import mark_safe
 from django.utils.html import escape
-import settings
+from django.template import RequestContext
+from django.template.loader import render_to_string
 
 from zadig.core import entry_option_sets
 from zadig.core.models import Entry, PERM_VIEW, PERM_EDIT
@@ -35,22 +37,15 @@ class PageComment(models.Model):
     def __unicode__(self):
         return u'Comment id=%s on page id=%s' % (self.id, self.page.id)
 
-    def __get_state_modification_form(self):
-        return '''<label for="id_comment_state">%s</label>
-            <select name="comment_%d_state" id="id_comment_state">
-            <option value="%s" %s>%s</option>
-            <option value="%s" %s>%s</option>
-            <option value="%s" %s>%s</option>
-            </select>''' % (_(u"State:"), self.id,
-            STATE_DELETED,
-            'selected="selected"' if self.state==STATE_DELETED else '',
-            _(u'Deleted'),
-            STATE_MODERATED, 
-            'selected="selected"' if self.state==STATE_MODERATED else '',
-            _(u'Moderated'),
-            STATE_PUBLISHED, 
-            'selected="selected"' if self.state==STATE_PUBLISHED else '',
-            _(u'Published'))
+    @property
+    def truncated_commenter_name(self):
+        return self.commenter_name[:4] + ('...' if len(self.commenter_name)>4 else '')
+
+    @property
+    def linked_commenter_name(self):
+        name = escape(self.commenter_name)
+        return mark_safe('<a href="%s">%s</a>' % (escape(self.commenter_website),
+            name) if self.commenter_website else name)
 
     def render(self, request):
         entry = self.page
@@ -60,32 +55,10 @@ class PageComment(models.Model):
         if self.state not in (STATE_PUBLISHED, STATE_DELETED) and \
                                                             PERM_EDIT not in p:
             return ''
-        authorname = escape(self.commenter_name)
-        if self.state==STATE_DELETED and PERM_EDIT not in p:
-            msg = _(u"Comment submitted on %s by %s has been deleted by an "
-                "administrator.") % (self.date.strftime('%Y-%m-%d %H:%M %Z'),
-                authorname[:4] + ('...' if len(authorname)>4 else ''))
-            return '''<div class="pageComment DELETED">
-               <p class="notice">%s</p>
-               </div>''' % (msg,)
-        if self.commenter_website:
-            authorname = '<a href="%s">%s</a>' % (self.commenter_website,
-                                                        authorname)
-        authoremail = ('(%s)' % (self.commenter_email,)
-                              ) if PERM_EDIT in p else ''
-        authorline = _(u'<span class="author">%s</span> %s says:') % (
-                                            authorname, authoremail)
-        state_modification_form = ''
-        if PERM_EDIT in p:
-            state_modification_form = self.__get_state_modification_form()
-        return '''<div class="pageComment %s">
-            <p class="authorLine">%s</p>
-            <p class="date">%s</p>
-            <p class="comment">%s</p>
-            %s
-            </div>''' % (self.state, authorline,
-                         self.date.strftime('%Y-%m-%d %H:%M %Z'), self.comment,
-                         state_modification_form)
+        self.visible_commenter_email = mark_safe('' if PERM_EDIT not in p else ('&lt;' +
+                                                escape(self.commenter_email) + '&gt;'))
+        return render_to_string("show_comment.html", context_instance=RequestContext(
+                            request, { "comment": self, "perm_edit": PERM_EDIT in p }))
 
 
 class CommentForm(forms.Form):
