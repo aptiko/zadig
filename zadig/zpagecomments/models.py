@@ -38,6 +38,11 @@ class PageComment(models.Model):
         return u'Comment id=%s on page id=%s' % (self.id, self.page.id)
 
     @property
+    def state_name(self):
+        return { STATE_DELETED: _(u"deleted"), STATE_PUBLISHED: _(u"published"),
+                 STATE_UNAPPROVED: _(u"unapproved") }[self.state]
+
+    @property
     def linked_commenter_name(self):
         name = escape(self.commenter_name)
         return mark_safe('<a href="%s">%s</a>' % (escape(self.commenter_website),
