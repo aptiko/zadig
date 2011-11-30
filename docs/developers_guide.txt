@@ -72,8 +72,9 @@ places:
    :samp:`zadig.{app}.views`.
 
 If no appropriate callable is found, :exc:`Http404` is raised. If it
-is found, it is called, and, in GET requests, the URL *remainder* is
-passed as the ``parms`` argument.
+is found, it is called, passing the vobject as the first argument. 
+In GET requests, ``vobject.request.parms`` is set to the URL
+*remainder*.
 
 An example of such a view is the "resized" action of an image. If you
 append ``/__resized__/400`` to the URL of an image, then you will see
@@ -84,7 +85,7 @@ is page comment submission: the "add comment" submit button results in
 posting the "add comment" form, which includes a hidden field with the
 name "action" and the value "zpagecomments.add_comment"; the
 submission is then processed by
-:func:`zadig.zpagecomments.views.action_add_comment`.
+:func:`zadig.zpagecomments.views.add_comment`.
 
 Creating applets
 ================
