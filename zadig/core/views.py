@@ -1,11 +1,9 @@
 # -*- encoding: utf-8 -*-
-import re
-
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404
 from django import forms
 from django.utils.translation import ugettext as _
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied
 from django.template import RequestContext
 import django.contrib.auth
 from django.views.decorators.http import require_POST
