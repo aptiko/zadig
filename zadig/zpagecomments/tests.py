@@ -4,11 +4,13 @@ from zadig.zpagecomments.models import PageComment
 
 class TestZpagecomments(TestCase):
     fixtures = ['testdata.json']
-    test_comment_postdata = {'action': 'zpagecomments.add_comment',
+    test_comment_postdata = {'action': 'zpagecomments.edit_comment',
+            'comment_id': '',
             'commenter_name': 'John Commenter',
             'commenter_email': 'john@commenter.example.com',
-            'commenter_website': 'http://commenter.example/john',
-            'comment': '<p>Hello, world!</p>'}
+            'commenter_website': 'http://commenter.example.com/john',
+            'comment': 'Hello, world!',
+            'comment_state': 'PUBLISHED',}
 
 
     def test_submit_comment(self):
