@@ -658,7 +658,7 @@ class Entry(models.Model):
             raise PermissionDenied(_("Permission denied"))
         oldcontainer = self.container
         oldseq = self.seq
-        self.seq = target_entry.all_subentries.count() + 1
+        self.seq = Entry.all_objects.filter(container=target_entry).count() + 1
         self.container = target_entry
         self.save()
         # I'm not particularly happy about importing something from
