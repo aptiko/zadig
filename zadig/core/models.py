@@ -450,7 +450,8 @@ class Entry(models.Model):
     def reorder(self, source_seq, target_seq):
         if PERM_EDIT not in self.permissions:
             raise PermissionDenied(_(u"Permission denied"))
-        subentries = self.all_subentries.order_by('seq').all()
+        subentries = list(Entry.all_objects.filter(container=self
+                                                        ).order_by('seq'))
         s = source_seq
         t = target_seq
         n = len(subentries)
@@ -459,7 +460,7 @@ class Entry(models.Model):
         subentries[s-1].seq = 32767
         subentries[s-1].save()
         if t>s:
-            for i in range(source_seq+1, t):
+            for i in range(s+1, t):
                 subentries[i-1].seq = i-1
                 subentries[i-1].save()
             subentries[s-1].seq = t-1
@@ -703,7 +704,8 @@ class Entry(models.Model):
               'select_object': x.id in request.session.get('cut_entries', [])
             } for x in subentries ])
         move_item_form = MoveItemForm(initial=
-                {'num_of_objects': subentries.count()})
+                {'num_of_objects': Entry.all_objects.filter(container=self
+                                                                ).count()})
         return render_to_response('entry_contents.html',
                 { 'vobject': vobject, 'subentries': subentries,
                   'formset': items_formset,
