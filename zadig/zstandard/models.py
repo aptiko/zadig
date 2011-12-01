@@ -305,7 +305,7 @@ class VInternalRedirection(VObject):
         from django.http import HttpResponsePermanentRedirect
         return HttpResponsePermanentRedirect(self.target.spath)
 
-    def action_view(self):
+    def action_info(self):
         return render_to_response('view_internalredirection.html',
                 { 'vobject': self },
                 context_instance = RequestContext(self.request))
