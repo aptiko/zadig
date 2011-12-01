@@ -54,7 +54,7 @@ def edit_comment(vobject, parms=None):
                 'comment': comment.comment_source,
                 'comment_state': comment.state })
         return render_to_response('edit_comment.html', RequestContext(request,
-                { 'form': form, 'vobject': vobject }))
+                { 'form': form, 'vobject': vobject, 'comment': comment, }))
 
     # We have a POST
     form = CommentForm(request.POST)

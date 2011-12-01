@@ -4,7 +4,11 @@
 {% block mainContent %}
     <div class="commentForm">
       <p class="heading">{% trans "Edit comment" %}</p>
-      <p class="notice"></p>
+      <p class="notice">
+        {% blocktrans with comment.state_name as state_name %}
+        This comment is {{ state_name }}.
+        {% endblocktrans %}
+      </p>
       {% include "comment_form.html" %}
     </div>
 {% endblock %}
