@@ -40,10 +40,8 @@ class BlogEntry(Entry):
 
     @property
     def posts(self):
-        result = [x.descendant for x in self.subentries]
-        for x in result:
-            if x.object_class != u'BlogPostEntry':
-                result.remove(x)
+        result = [x.descendant for x in self.subentries
+                                        if x.object_class==u'BlogPostEntry']
         result.reverse()
         return result
 
