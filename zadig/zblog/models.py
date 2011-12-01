@@ -28,6 +28,9 @@ class BlogEntry(Entry):
     vobject_class = VBlog
     typename = _(u"Blog")
 
+    def can_contain(self, child):
+        return super(BlogEntry, self).can_contain(child) and (
+                                    issubclass(child, BlogPostEntry))
     @classmethod
     def can_create(cls, parent):
         # Quick hack: only if the user is an admin, and not inside another blog
@@ -97,10 +100,14 @@ class BlogPostEntry(PageEntry):
     vobject_class = VBlogPost
     typename = _(u"Blog post")
 
-    def can_contain(self, cls):
+    def can_contain(self, child):
         from zadig.zstandard.models import ImageEntry, FileEntry
-        return super(BlogPostEntry, self).can_contain(cls) and (
-            issubclass(cls, ImageEntry) or issubclass(cls, FileEntry))
+        return super(BlogPostEntry, self).can_contain(child) and (
+            issubclass(child, ImageEntry) or issubclass(child, FileEntry))
+
+    @classmethod
+    def can_be_contained(cls, parent):
+        return parent.can_contain(cls) and isinstance(parent, BlogEntry)
         
     @classmethod
     def can_create(cls, parent):

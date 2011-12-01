@@ -308,7 +308,7 @@ class Entry(models.Model):
         from urlparse import urljoin
         return urljoin(settings.ZADIG_DEFAULT_ROOT_URL, self.spath)
 
-    def can_contain(self, cls):
+    def can_contain(self, child):
         return PERM_EDIT in self.permissions
 
     @classmethod

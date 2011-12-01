@@ -139,13 +139,14 @@ The Entry model
       top level entry's ``btemplate`` attribute is also empty, then
       ``base.html`` is returned.
 
-   .. method:: zadig.core.models.Entry.can_contain(cls)
+   .. method:: zadig.core.models.Entry.can_contain(child)
+   .. classmethod:: zadig.core.models.Entry.can_be_contained(parent)
 
       Not all kinds of objects can contain all kinds of objects; for
       example, only blog objects can contain blog post objects; and
       blog post objects cannot contain other pages.  Each
       :class:`~zadig.core.models.Entry.Entry` subclass has the
-      :meth:`~zadig.core.models.Entry.can_contain` and the
+      :meth:`~zadig.core.models.Entry.can_contain` method and the
       :meth:`~zadig.core.models.Entry.can_be_contained` class method
       that indicate what kind of objects can be added as subobjects. 
 
@@ -155,10 +156,10 @@ The Entry model
          that is, an object can contain subobjects. We use "subclass"
          in the usual hierarchical sense.
 
-      :class:`~zadig.core.models.Entry` subclass has the The
+      The
       :meth:`~zadig.core.models.Entry.can_contain` method
-      indicates whether the object is willing to contain a *cls*
-      subobject, where *cls* is an :class:`~zadig.core.models.Entry`
+      indicates whether the object is willing to contain a *child*
+      subobject, where *child* is an :class:`~zadig.core.models.Entry`
       subclass; and the
       :meth:`~zadig.core.models.Entry.can_be_contained` class
       method indicates whether the class is willing to create a new
@@ -176,9 +177,6 @@ The Entry model
       :class:`zadig.zblog.BlogPostEntry` implementation for an
       example of reimplementing these methods in a subclass.
 
-   .. classmethod:: zadig.core.models.Entry.can_be_contained(parent)
-
-      See the :meth:`~zadig.core.models.Entry.can_contain` method.
 
    .. method:: zadig.core.models.Entry.contains(entry)
 
