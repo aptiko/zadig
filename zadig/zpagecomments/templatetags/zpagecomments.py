@@ -1,5 +1,4 @@
 from django import template
-from django.utils.translation import ugettext as _
 from django.template.loader import get_template
 
 from zadig.zstandard.models import PageEntry
@@ -27,20 +26,12 @@ class PageCommentsNode(template.Node):
         comments = PageComment.objects.filter(page=entry).order_by('id')
         for c in comments:
             result += c.render(request)
-        if result.find('</select>')>=0:
-            result = '''<form method="POST"
-                            action="__zpagecomments.moderate_comments__/">
-                        <input type="submit" value="%s" />
-                        %s
-                        <input type="submit" value="%s" />
-                        </form>''' % (_(u"Submit all state changes"), result,
-                                    _(u"Submit all state changes"))
         if 'pagecommentsform' in request.__dict__:
             form = request.pagecommentsform
         else:
             form = CommentForm()
         context['form'] = form
-        result += get_template('add_comment.html').render(context)
+        result += get_template('add_comment_form.html').render(context)
         return result
 
 

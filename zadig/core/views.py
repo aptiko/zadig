@@ -76,7 +76,7 @@ def action_dispatcher(request, path):
         raise Http404
     if not actionfunc:
         raise Http404
-    return actionfunc(vobject)
+    return actionfunc(vobject, parms=parms) if parms else actionfunc(vobject)
 
 def action_view(request, path, version_number=None):
     vobject = models.VObject.objects.get_by_path(path, version_number)\

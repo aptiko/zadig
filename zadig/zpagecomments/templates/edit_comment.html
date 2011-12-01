@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block mainContent %}
+    <div class="commentForm">
+      <p class="heading">{% trans "Edit comment" %}</p>
+      <p class="notice"></p>
+      {% include "comment_form.html" %}
+    </div>
+{% endblock %}

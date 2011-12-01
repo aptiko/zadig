@@ -6,7 +6,7 @@
     {% endblocktrans %}
   </p>
   <p class="date">{{ comment.date|date:'Y-m-d H:i' }}</p>
-  <p class="comment">{{ comment.comment|safe }}</p>
+  <p class="comment">{{ comment.comment_html|safe }}</p>
   {% if perm_edit %}
     <p class="notice">
       {% blocktrans with comment.state_name as state_name %}
@@ -23,10 +23,7 @@
       </form>
     {% endif %}
     {% if comment.state == "PUBLISHED" or comment.state == "UNAPPROVED" %}
-      <form method="post" action="{{ comment.page.spath }}">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="zpagecomments.edit_comment">
-        <input type="hidden" name="comment_id" value="{{ comment.id }}">
+      <form method="get" action="{{ comment.page.spath }}__zpagecomments.edit_comment__/{{ comment.id }}/">
         <input type="submit" value='{% trans "Edit" %}'>
       </form>
     {% endif %}

@@ -30,7 +30,8 @@ class PageComment(models.Model):
     commenter_name = models.CharField(max_length=100)
     commenter_email = models.EmailField()
     commenter_website = models.URLField(blank=True)
-    comment = models.TextField()
+    comment_source = models.TextField()
+    comment_html = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
     state = CommentStateField()
 
@@ -62,11 +63,14 @@ class PageComment(models.Model):
 
 
 class CommentForm(forms.Form):
+    comment_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     commenter_name = forms.CharField(max_length=100, required=True,
                                 label=_(u'Name'))
     commenter_email = forms.EmailField(required=True, label=_(u'Email'))
     commenter_website = forms.URLField(required=False, label=_(u'Website'))
     comment = forms.CharField(label='', required=True, widget=forms.Textarea)
+    comment_state = forms.CharField(widget=forms.HiddenInput(),
+                                                initial=STATE_PUBLISHED)
 
 
 class EntryOptionsForm(forms.Form):
