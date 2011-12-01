@@ -104,7 +104,7 @@ def logout(request, path):
 class LoginForm(forms.Form):
     from django.contrib.auth.models import User
     username = forms.CharField(max_length=
-        django.contrib.auth.models.User._meta.get_field('username').max_length)
+                                   User._meta.get_field('username').max_length)
     password = forms.CharField(max_length=63, widget=forms.PasswordInput)
 
 def login(request, path):
@@ -129,7 +129,7 @@ def login(request, path):
                 if user.is_active:
                     django.contrib.auth.login(request, user)
                     models.Lentity.objects.get_or_create(user=user)
-                    return HttpResponseRedirect(join_path(path, '__info__'))
+                    return HttpResponseRedirect(vobject.entry.spath+'__info__/')
                 else:
                     raise Exception(_(u"Account is disabled"))
             request.message = _(u"Login incorrect.")

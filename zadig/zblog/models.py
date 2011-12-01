@@ -117,7 +117,7 @@ class BlogPostEntry(PageEntry):
     def action_change_state(self):
         anonuser = AnonymousUser()
         was_published = PERM_VIEW in self.user_permissions(anonuser)
-        result = super(BlogPostEntry, self).action_change_state(request.parms)
+        result = super(BlogPostEntry, self).action_change_state()
         is_published = PERM_VIEW in self.user_permissions(anonuser)
         if is_published and not was_published:
             BlogEmailSubscriber.notify_subscribers(self)

@@ -347,7 +347,7 @@ class SecondaryButtonsNode(template.Node):
         p =[{ 'name': _(u'State: <span class="state%s">%s</span>') %
                     (vobject.entry.state.descr, vobject.entry.state.descr),
               'items': [ { 'name': x.descr,
-                           'post': {'action': 'state', 'change_state': x.id },
+                           'post': {'action': 'change_state', 'state': x.id },
                          } for x in vobject.entry.possible_target_states
                         ]
             },

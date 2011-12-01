@@ -12,7 +12,7 @@ def require_POST(f):
             r = HttpResponseNotAllowed(['POST'])
             r.write(u'<html><head><title>Not allowed</title></head>'
                     '<body><h1>Not allowed</h1><p>Method not allowed. The most '
-                    'common cause for his is that you sent a GET request '
+                    'common cause for this is that you sent a GET request '
                     'when only a POST is allowed.</p></body></html>')
             return r
         return f(*args, **kargs)
