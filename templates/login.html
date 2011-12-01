@@ -2,7 +2,7 @@
 
 {% block mainContent %}
   <h1>Login</h1>
-  <form class="login" action="../" method="POST">
+  <form class="login" action="{{ vobject.entry.spath }}" method="POST">
   {% csrf_token %}
   <input type="hidden" name="action" value="login" />
   <table>
