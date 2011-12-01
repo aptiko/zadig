@@ -1,9 +1,12 @@
 from django.http import Http404
 from django.utils.translation import ugettext as _
+from django.http import HttpResponseRedirect
 
 from zadig.core.decorators import require_POST
-from zadig.zstandard.models import PageEntry, PERM_EDIT
-from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet
+from zadig.zstandard.models import PageEntry
+from zadig.core.models import PERM_EDIT
+from zadig.zpagecomments.models import PageComment, CommentForm, \
+                            EntryOptionSet, STATE_PUBLISHED
 
 
 @require_POST
@@ -32,13 +35,13 @@ def add_comment(vobject):
             state=STATE_PUBLISHED)
         comment.save()
         request.message = _(u"Your comment has been added.")
+        return HttpResponseRedirect(entry.spath)
     else:
         request.pagecommentsform = form
         request.message = _(
                     u"There was an error in your comment; see below.")
     request.action = 'view'
     return vobject.action_view()
-
 
 @require_POST
 def change_comment_state(vobject):
@@ -49,5 +52,4 @@ def change_comment_state(vobject):
     comment = PageComment.objects.get(id=int(request.POST['comment_id']))
     comment.state = request.POST['new_state']
     comment.save()
-    request.action = 'view'
-    return vobject.action_view()
+    return HttpResponseRedirect(entry.spath)
