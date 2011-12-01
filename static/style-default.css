@@ -115,6 +115,9 @@ div.commentForm p.heading { border-bottom: 1px solid #76797C; font-size: 125%; m
 div.commentForm p.notice { color: #76797C; font-size: 90%; margin-bottom: 0.5em; }
 div.commentForm input[type=submit] { background: #DEE7EC; border: 1px solid #8CACBB; font-size: 90%; padding: 1px 1px 1px 1px;}
 div.commentForm th { text-align: left; }
+div.pageComment form { display: inline; }
+div.pageComment input[type="submit"] { background: none !important; border: none; padding: 0 0.5em !important; color: #436976; white-space: nowrap; font-size: 100%; font-family: "Lucida Grande",Verdana,Lucida,Helvetica,Arial,sans-serif; cursor: pointer; }
+div.pageComment input[type="submit"]:hover { text-decoration: underline; }
 
 div.blogIndex div.blogPost { background: #EEF3F5; border: 1px solid #8CACBB; margin-bottom: 1em; padding: 0.25em 1em 0.5em; }
 div.blogIndex div.blogPost p.title { border-bottom: 1px solid #76797C; font-size: 125%; margin: 0.75em 0 0.25em; }
