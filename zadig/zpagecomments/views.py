@@ -2,7 +2,7 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 
 from zadig.core.decorators import require_POST
-from zadig.zstandard.models import PageEntry
+from zadig.zstandard.models import PageEntry, PERM_EDIT
 from zadig.zpagecomments.models import PageComment, CommentForm, EntryOptionSet
 
 
@@ -43,6 +43,9 @@ def add_comment(vobject):
 @require_POST
 def change_comment_state(vobject):
     request = vobject.request
+    entry = vobject.entry.descendant
+    if PERM_EDIT not in entry.permissions:
+        raise Http404
     comment = PageComment.objects.get(id=int(request.POST['comment_id']))
     comment.state = request.POST['new_state']
     comment.save()
