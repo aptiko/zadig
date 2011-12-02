@@ -15,17 +15,15 @@ Creating Zadig applications
 A Zadig application is a Django application, and, as such, is added in
 the :data:`INSTALLED_APPS` setting. The application can reside
 anywhere in the Python path. The Zadig applications (e.g.
-``zadig.zstandard`` included in the Zadig distribution are under the
+``zadig.zstandard``) included in the Zadig distribution are under the
 :file:`zadig` directory.
 
 Such applications should have an :file:`__init__.py` file and a
 :file:`__models__.py`. If they have any extra templates, they should
-also have a :file:`templates` directory (for example, the
-``zadig.zstandard`` application, which contains the standard objects,
-has templates such as :file:`view_page.html` etc.). If they have
-applets, they should also have a :file:`templatetags` directory. If
-they have any additional general actions, these should be in
-:file:`views.py` (general actions will be examined below).
+also have a :file:`templates` directory. If they have applets, they
+should also have a :file:`templatetags` directory. If they have any
+additional general actions, these should be in :file:`views.py`
+(general actions will be examined below).
 
 Creating new object types
 =========================
@@ -47,8 +45,8 @@ should also override
 
 The :class:`~zadig.core.models.VObject` subclass should have Django
 fields for storing the vobject content, and it should also define the 
-:meth:`~zadig.core.models.VObject.end_view` and
-:meth:`~zadig.core.models.VObject.info_view` methods.
+:meth:`~zadig.core.models.VObject.action_view` and
+:meth:`~zadig.core.models.VObject.action_info` methods.
 
 If you use the existing applications' object types implementation as
 an example, you should not have any problem understanding things
