@@ -80,6 +80,7 @@ class VBlogPost(VPage):
     def top(self):
         from BeautifulSoup import BeautifulSoup
         soup = BeautifulSoup(self.content)
+        if not soup.contents: return ""
         i = 0
         result = str(soup.contents[i])
         length = len(result)
