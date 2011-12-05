@@ -613,7 +613,8 @@ class Entry(models.Model):
         return render_to_response(self.edit_template_name,
               { 'vobject': vobject,
                 'mainform': mainform, 'metatagsformset': metatagsformset,
-                'subform': subform, 'optionsforms': optionsforms },
+                'subform': subform, 'optionsforms': optionsforms,
+                'object_type': self.descendant.__class__.__name__[:-5] },
                 context_instance = RequestContext(self.request))
 
     def rename(self, newname):
