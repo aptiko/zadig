@@ -291,7 +291,7 @@ class Entry(models.Model):
         if not PERM_EDIT in self.container.permissions:
             raise PermissionDenied(_(u"Permission denied"))
         self.seq = 1
-        siblings = Entry.objects.filter(container=self.container)
+        siblings = Entry.all_objects.filter(container=self.container)
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
         self.owner = utils.get_request().user
