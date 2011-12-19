@@ -20,7 +20,7 @@ def _set_languages(request, vobject):
     request.effective_language = vobject.language.id if vobject.language \
                                                 else request.preferred_language
 
-def action_dispatcher(request, path):
+def action_dispatcher(request, path=""):
     # Split the path to path, action_name, parms.
     pathitems = split_path(path)
     path, action_name, parms = '', '', ''
