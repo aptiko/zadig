@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
+import settings
 
 from zadig.core.decorators import require_POST
 from zadig.zstandard.models import PageEntry
@@ -36,7 +39,9 @@ def edit_comment(vobject, parms=None):
                                             else request.POST['comment_id']
     if not comment_id_str:
         # New comment being POSTed
-        if request.method != 'POST': raise Http404
+        if request.method != 'POST' or entry.creation_date + \
+                        settings.ZPAGECOMMENTS_CLOSE_AFTER > datetime.now():
+            raise Http404
         comment = None
     else:
         # Starting to edit existing comment (GET), or posting changes (POST)

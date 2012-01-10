@@ -48,4 +48,7 @@ ZADIG_TINYMCE_BLOCKFORMATS = 'p,h1,h2'
 ZADIG_TINYMCE_STYLES = 'Float Left=floatLeft,Float Right=floatRight,Align Top=alignTop'
 ZADIG_TINYMCE_TABLE_STYLES = 'Plain=plain;Listing=listing;Vertical listing=vertical listing'
 
+from datetime import timedelta
+ZPAGECOMMENTS_CLOSE_AFTER = timedelta(days=14)
+
 ZBLOG_FROM_EMAIL = 'no-reply@localhost.localdomain'

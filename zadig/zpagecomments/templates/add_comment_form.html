@@ -1,6 +1,10 @@
 {% load i18n %}
 <div class="commentForm">
+{% if comments_closed %}
+  <p class="notice">{% trans "No more comments can be added to this page." %}</p>
+{% else %}
   <p class="heading">{% trans "Add comment" %}</p>
   <p class="notice">{% trans "Your email address will not be published" %}</p>
   {% include "comment_form.html" %}
+{% endif %}
 </div>
