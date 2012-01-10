@@ -35,7 +35,7 @@ class PageCommentsNode(template.Node):
             form = CommentForm()
         context['form'] = form
         context['comments_closed'] = entry.creation_date + \
-                        settings.ZPAGECOMMENTS_CLOSE_AFTER > datetime.now()
+                        settings.ZPAGECOMMENTS_CLOSE_AFTER < datetime.now()
         result += get_template('add_comment_form.html').render(context)
         return result
 

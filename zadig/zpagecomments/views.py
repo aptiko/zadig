@@ -39,8 +39,8 @@ def edit_comment(vobject, parms=None):
                                             else request.POST['comment_id']
     if not comment_id_str:
         # New comment being POSTed
-        if request.method != 'POST' or entry.creation_date + \
-                        settings.ZPAGECOMMENTS_CLOSE_AFTER > datetime.now():
+        if request.method != 'POST' or (entry.creation_date + 
+                        settings.ZPAGECOMMENTS_CLOSE_AFTER < datetime.now()):
             raise Http404
         comment = None
     else:
