@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404
 from django import forms
 from django.utils.translation import ugettext as _
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ObjectDoesNotExist
 from django.template import RequestContext
 import django.contrib.auth
 from django.views.decorators.http import require_POST
@@ -20,6 +20,21 @@ def _set_languages(request, vobject):
     request.effective_language = vobject.language.id if vobject.language \
                                                 else request.preferred_language
 
+
+# Decorator to convert DoesNotExist to Http404
+# (http://djangosnippets.org/snippets/1743/)
+def _raise_404(method):
+
+    def wrap(*args, **kwargs):
+        try:
+            return method(*args, **kwargs)
+        except ObjectDoesNotExist, ex:
+            raise Http404(ex.message)
+
+    return wrap
+
+
+@_raise_404
 def action_dispatcher(request, path=""):
     # Split the path to path, action_name, parms.
     pathitems = split_path(path)
