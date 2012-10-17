@@ -30,16 +30,13 @@ TIME_ZONE = 'UTC'
 
 LANGUAGE_CODE = 'en-us'
 
-# Absolute path to the directory that stores binary data.
-# See also ZADIG_MEDIA_ROOT below.
-MEDIA_ROOT = 'storage/'
+STATIC_ROOT = 'static/'         # Directory for JS, CSS, etc.
+MEDIA_ROOT = 'storage/'         # User-uploaded files
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = '8$e%+dm&uzb##l-^aa-&t#dlez_i#tsnbttw07cny7go3=ra=y'
 
 # Zadig settings
-ZADIG_MEDIA_ROOT = 'static/'         # Directory for JS, CSS, etc.
-ZADIG_MEDIA_URL = '/__static__/'
 ZADIG_DEFAULT_ROOT_URL = 'http://localhost:8000/'
 ZADIG_LANGUAGES = (
     ('en', 'English'),
@@ -47,5 +44,5 @@ ZADIG_LANGUAGES = (
 )
 WORKFLOW_ID = 1
 
-TINYMCE_JS_URL = ZADIG_MEDIA_URL + 'tinymce/tiny_mce.js'
-TINYMCE_JS_ROOT = os.path.join(ZADIG_MEDIA_ROOT, 'tinymce')
+TINYMCE_JS_URL = STATIC_URL + 'tinymce/tiny_mce.js'
+TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, 'tinymce')

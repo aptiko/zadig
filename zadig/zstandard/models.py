@@ -20,7 +20,7 @@ class EditPageForm(forms.Form):
     from tinymce.widgets import TinyMCE
     content = forms.CharField(widget=TinyMCE(attrs={'cols':80, 'rows':30},
         mce_attrs={
-            'content_css': settings.ZADIG_MEDIA_URL + '/style.css',
+            'content_css': settings.STATIC_URL + '/style.css',
             'convert_urls': False,
             'entity_encoding': 'raw',
             'theme': 'advanced',
@@ -33,7 +33,7 @@ class EditPageForm(forms.Form):
             'theme_advanced_buttons1': 'bold,italic,sup,sub,|,numlist,bullist,outdent,indent,|,image,link,unlink,|,removeformat,code,formatselect,styleselect',
             'theme_advanced_buttons2': 'tablecontrols',
             'theme_advanced_buttons3': '',
-            'popup_css': settings.ZADIG_MEDIA_URL + '/tinymce_popup.css',
+            'popup_css': settings.STATIC_URL + '/tinymce_popup.css',
         }), required=False)
 
     def render(self):

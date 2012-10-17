@@ -12,15 +12,15 @@
       {% endblock %}
     </title>
     {% block css %}
-      <link rel="stylesheet" type="text/css" href="{{ZADIG_MEDIA_URL}}style.css"
+      <link rel="stylesheet" type="text/css" href="{{STATIC_URL}}style.css"
           title="style" />
     {% endblock %}
     {% block favicon %}
       <link rel="shortcut icon" href="/__static__/zadig-icon.ico" />
     {% endblock %}
     {% block js %}
-      <script src="{{ZADIG_MEDIA_URL}}utils.js"></script>
-      <script src="{{ZADIG_MEDIA_URL}}zadig.js"></script>
+      <script src="{{STATIC_URL}}utils.js"></script>
+      <script src="{{STATIC_URL}}zadig.js"></script>
     {% endblock %}
     {% block base %}
       <base href="{{vobject.entry.absolute_uri}}" />

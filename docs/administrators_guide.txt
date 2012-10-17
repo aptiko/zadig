@@ -233,18 +233,6 @@ applicable.
           ('el', 'Ελληνικά'),
       )
 
-.. data:: ZADIG_MEDIA_ROOT
-.. data:: ZADIG_MEDIA_URL
-
-   ``ZADIG_MEDIA_ROOT`` is the pathname of the directory that holds
-   the CSS, Javascript and other static files of the web site;
-   ``ZADIG_MEDIA_URL`` is the absolute or relative URL from which this
-   directory is accessed. Note that the Django setting ``MEDIA_ROOT``
-   points instead to the directory where Zadig user content such as
-   images and files is stored; this is not accessible directly from
-   the web (because Zadig needs to check for access permissions), and
-   therefore the Django ``MEDIA_URL`` setting is not used.
-
 .. data:: ZADIG_PROGRAM_DIR
 
    The directory where the Zadig program files are installed, such as
