@@ -22,6 +22,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.debug",
     "django.core.context_processors.i18n",
     "django.core.context_processors.request",
+    "django.core.context_processors.static",
 )
 
 TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates',)
@@ -33,6 +34,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.markup',
+    'django.contrib.staticfiles',
     'south',
     'zadig.core',
     'zadig.zstandard',
