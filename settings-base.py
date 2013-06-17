@@ -12,6 +12,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'zadig.core.middleware.GeneralMiddleware',
 )
 
@@ -23,6 +24,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.i18n",
     "django.core.context_processors.request",
     "django.core.context_processors.static",
+    "django.contrib.messages.context_processors.messages",
 )
 
 TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates',)
@@ -30,6 +32,7 @@ TEMPLATE_DIRS = (ZADIG_PROGRAM_DIR + '/templates',)
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.messages',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',

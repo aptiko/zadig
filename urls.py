@@ -4,7 +4,7 @@ from django.conf.urls.defaults import patterns, include
 from django.contrib import admin
 admin.autodiscover()
 urlpatterns = patterns('',
-    (r'^__admin__/(.*)', admin.site.urls)
+    (r'^__admin__/', admin.site.urls)
 )
 
 # Static files
