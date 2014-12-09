@@ -173,10 +173,7 @@ The Entry model
       returns :const:`True`, provided that the user has appropriate
       permissions. The toplevel
       :meth:`~zadig.core.models.Entry.can_be_contained` returns
-      :samp:`{parent}.can_contain({cls})`. See the
-      :class:`zadig.zblog.BlogPostEntry` implementation for an
-      example of reimplementing these methods in a subclass.
-
+      :samp:`{parent}.can_contain({cls})`.
 
    .. method:: zadig.core.models.Entry.contains(entry)
 

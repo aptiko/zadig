@@ -78,12 +78,7 @@ An example of such a view is the "resized" action of an image. If you
 append ``/__resized__/400`` to the URL of an image, then you will see
 the image resized so that its largest dimension is 400 pixels. This is
 accomplished because the :class:`zadig.zstandard.VImage` class has a
-:meth:`~zadig.zstandard.VImage.action_resized` method. Another example
-is page comment submission: the "add comment" submit button results in
-posting the "add comment" form, which includes a hidden field with the
-name "action" and the value "zpagecomments.add_comment"; the
-submission is then processed by
-:func:`zadig.zpagecomments.views.add_comment`.
+:meth:`~zadig.zstandard.VImage.action_resized` method.
 
 Creating applets
 ================
