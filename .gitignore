@@ -1,0 +1,4 @@
+*.pyc
+*.egg-info
+zadig/settings/local.py
+doc/_build
