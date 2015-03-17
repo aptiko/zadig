@@ -36,7 +36,7 @@ master_doc = 'index'
 
 # General substitutions.
 project = 'Zadig'
-copyright = '2008-2011 Antonis Christofides and the National Technical University of Athens'
+copyright = '2008-2015 Antonis Christofides and the National Technical University of Athens'
 
 # The default replacements for |version| and |release|, also used in various
 # other places throughout the built documents.

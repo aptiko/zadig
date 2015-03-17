@@ -5,7 +5,7 @@ The copyright applies to all Zadig files, except those where
 something else is mentioned.
 
 | Copyright (C) 2009-2011 Antonis Christofides
-| Copyright (C) 2010 National Technical University of Athens
+| Copyright (C) 2010-2015 National Technical University of Athens
 
 Permission is granted to redistribute and/or modify Zadig under
 the terms of the GNU Affero General Public License (AGPL) as published
