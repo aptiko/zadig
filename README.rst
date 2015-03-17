@@ -17,7 +17,7 @@ for a few web sites.
 
 .. _django: http://www.djangoproject.com/
 .. _misnomer: http://www.gnu.org/philosophy/words-to-avoid.html#Content
-.. _here is the documentation: http://zadig.readthedocs.org/
+.. _here is the documentation: http://zadig-cms.readthedocs.org/
 
 Written by Antonis Christofides <anthony@itia.ntua.gr>
 
