@@ -2,8 +2,8 @@
 
 import re
 
+from django.conf import settings
 from django.utils.translation import ugettext as _
-import settings
 
 
 def split_path(path):

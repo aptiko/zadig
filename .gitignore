@@ -1,4 +1,7 @@
+testdb
 *.pyc
 *.egg-info
 zadig/settings/local.py
+zadig/core/static/style.css
+zadig/core/templates/base.html
 doc/_build

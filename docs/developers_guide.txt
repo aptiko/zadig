@@ -46,7 +46,10 @@ should also override
 The :class:`~zadig.core.models.VObject` subclass should have Django
 fields for storing the vobject content, and it should also define the 
 :meth:`~zadig.core.models.VObject.action_view` and
-:meth:`~zadig.core.models.VObject.action_info` methods.
+:meth:`~zadig.core.models.VObject.action_info` methods. If the
+subclass has related models (e.g. other models that have foreign keys
+to the subclass), you may also need to override the
+:meth:`~zadig.core.models.VObject.duplicate` method.
 
 If you use the existing applications' object types implementation as
 an example, you should not have any problem understanding things

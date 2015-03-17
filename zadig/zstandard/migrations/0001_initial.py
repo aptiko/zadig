@@ -1,251 +1,162 @@
-# encoding: utf-8
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
-class Migration(SchemaMigration):
-
-    def forwards(self, orm):
-        
-        # Adding model 'VPage'
-        db.create_table('zstandard_vpage', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.TextField')(blank=True)),
-        ))
-        db.send_create_signal('zstandard', ['VPage'])
-
-        # Adding model 'PageEntry'
-        db.create_table('zstandard_pageentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('zstandard', ['PageEntry'])
-
-        # Adding model 'VFile'
-        db.create_table('zstandard_vfile', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal('zstandard', ['VFile'])
-
-        # Adding model 'FileEntry'
-        db.create_table('zstandard_fileentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('zstandard', ['FileEntry'])
-
-        # Adding model 'VImage'
-        db.create_table('zstandard_vimage', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('content', self.gf('django.db.models.fields.files.ImageField')(max_length=100, null=True, blank=True)),
-        ))
-        db.send_create_signal('zstandard', ['VImage'])
-
-        # Adding model 'ImageEntry'
-        db.create_table('zstandard_imageentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('zstandard', ['ImageEntry'])
-
-        # Adding model 'VLink'
-        db.create_table('zstandard_vlink', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('target', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
-        ))
-        db.send_create_signal('zstandard', ['VLink'])
-
-        # Adding model 'LinkEntry'
-        db.create_table('zstandard_linkentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('zstandard', ['LinkEntry'])
-
-        # Adding model 'VInternalRedirection'
-        db.create_table('zstandard_vinternalredirection', (
-            ('vobject_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.VObject'], unique=True, primary_key=True)),
-            ('target', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['core.Entry'])),
-        ))
-        db.send_create_signal('zstandard', ['VInternalRedirection'])
-
-        # Adding model 'InternalRedirectionEntry'
-        db.create_table('zstandard_internalredirectionentry', (
-            ('entry_ptr', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['core.Entry'], unique=True, primary_key=True)),
-        ))
-        db.send_create_signal('zstandard', ['InternalRedirectionEntry'])
-
-        # Adding model 'EntryOptionSet'
-        db.create_table('zstandard_entryoptions', (
-            ('entry', self.gf('django.db.models.fields.related.OneToOneField')(related_name='ZstandardEntryOptions', unique=True, primary_key=True, to=orm['core.Entry'])),
-            ('no_navigation', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('no_breadcrumbs', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('navigation_toplevel', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('show_author', self.gf('django.db.models.fields.BooleanField')(default=False)),
-        ))
-        db.send_create_signal('zstandard', ['EntryOptionSet'])
+from django.db import models, migrations
 
 
-    def backwards(self, orm):
-        
-        # Deleting model 'VPage'
-        db.delete_table('zstandard_vpage')
+class Migration(migrations.Migration):
 
-        # Deleting model 'PageEntry'
-        db.delete_table('zstandard_pageentry')
+    dependencies = [
+        ('core', '0001_initial'),
+    ]
 
-        # Deleting model 'VFile'
-        db.delete_table('zstandard_vfile')
-
-        # Deleting model 'FileEntry'
-        db.delete_table('zstandard_fileentry')
-
-        # Deleting model 'VImage'
-        db.delete_table('zstandard_vimage')
-
-        # Deleting model 'ImageEntry'
-        db.delete_table('zstandard_imageentry')
-
-        # Deleting model 'VLink'
-        db.delete_table('zstandard_vlink')
-
-        # Deleting model 'LinkEntry'
-        db.delete_table('zstandard_linkentry')
-
-        # Deleting model 'VInternalRedirection'
-        db.delete_table('zstandard_vinternalredirection')
-
-        # Deleting model 'InternalRedirectionEntry'
-        db.delete_table('zstandard_internalredirectionentry')
-
-        # Deleting model 'EntryOptionSet'
-        db.delete_table('zstandard_entryoptions')
-
-
-    models = {
-        'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        'auth.permission': {
-            'Meta': {'ordering': "('content_type__app_label', 'content_type__model', 'codename')", 'unique_together': "(('content_type', 'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['contenttypes.ContentType']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        'core.entry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'unique_together': "(('container', 'name'), ('container', 'seq'))", 'object_name': 'Entry', 'db_table': "'zadig_entry'"},
-            'btemplate': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'container': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'all_subentries'", 'null': 'True', 'to': "orm['core.Entry']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'multilingual_group': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.MultilingualGroup']", 'null': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.SlugField', [], {'db_index': 'True', 'max_length': '100', 'blank': 'True'}),
-            'object_class': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'owner': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
-            'seq': ('django.db.models.fields.PositiveIntegerField', [], {}),
-            'state': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.State']"})
-        },
-        'core.language': {
-            'Meta': {'object_name': 'Language', 'db_table': "'zadig_language'"},
-            'descr': ('django.db.models.fields.CharField', [], {'max_length': '63'}),
-            'id': ('django.db.models.fields.CharField', [], {'max_length': '5', 'primary_key': 'True'})
-        },
-        'core.multilingualgroup': {
-            'Meta': {'object_name': 'MultilingualGroup', 'db_table': "'zadig_multilingualgroup'"},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        'core.state': {
-            'Meta': {'object_name': 'State', 'db_table': "'zadig_state'"},
-            'descr': ('django.db.models.fields.CharField', [], {'max_length': '31'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        'core.vobject': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'unique_together': "(('entry', 'version_number'),)", 'object_name': 'VObject', 'db_table': "'zadig_vobject'"},
-            'date': ('django.db.models.fields.DateTimeField', [], {}),
-            'deletion_mark': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'entry': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'vobject_set'", 'to': "orm['core.Entry']"}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'language': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Language']", 'null': 'True', 'blank': 'True'}),
-            'object_class': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'version_number': ('django.db.models.fields.PositiveIntegerField', [], {})
-        },
-        'zstandard.entryoptionset': {
-            'Meta': {'object_name': 'EntryOptionSet', 'db_table': "'zstandard_entryoptions'"},
-            'entry': ('django.db.models.fields.related.OneToOneField', [], {'related_name': "'ZstandardEntryOptions'", 'unique': 'True', 'primary_key': 'True', 'to': "orm['core.Entry']"}),
-            'navigation_toplevel': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'no_breadcrumbs': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'no_navigation': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'show_author': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
-        },
-        'zstandard.fileentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'FileEntry', '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.imageentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'ImageEntry', '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.internalredirectionentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'InternalRedirectionEntry', '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.linkentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'LinkEntry', '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.pageentry': {
-            'Meta': {'ordering': "('container__id', 'seq')", 'object_name': 'PageEntry', '_ormbases': ['core.Entry']},
-            'entry_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.Entry']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.vfile': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VFile', '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.vimage': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VImage', '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.files.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.vinternalredirection': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VInternalRedirection', '_ormbases': ['core.VObject']},
-            'target': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['core.Entry']"}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.vlink': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VLink', '_ormbases': ['core.VObject']},
-            'target': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        },
-        'zstandard.vpage': {
-            'Meta': {'ordering': "('entry', 'version_number')", 'object_name': 'VPage', '_ormbases': ['core.VObject']},
-            'content': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'vobject_ptr': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['core.VObject']", 'unique': 'True', 'primary_key': 'True'})
-        }
-    }
-
-    complete_apps = ['zstandard']
+    operations = [
+        migrations.CreateModel(
+            name='EntryOptionSet',
+            fields=[
+                ('entry', models.OneToOneField(related_name='ZstandardEntryOptions', primary_key=True, serialize=False, to='core.Entry')),
+                ('no_navigation', models.BooleanField(default=False)),
+                ('no_breadcrumbs', models.BooleanField(default=False)),
+                ('navigation_toplevel', models.BooleanField(default=False)),
+                ('show_author', models.BooleanField(default=False)),
+            ],
+            options={
+                'db_table': 'zstandard_entryoptions',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='FileEntry',
+            fields=[
+                ('entry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.entry',),
+        ),
+        migrations.CreateModel(
+            name='ImageEntry',
+            fields=[
+                ('entry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.entry',),
+        ),
+        migrations.CreateModel(
+            name='InternalRedirectionEntry',
+            fields=[
+                ('entry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.entry',),
+        ),
+        migrations.CreateModel(
+            name='LinkEntry',
+            fields=[
+                ('entry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.entry',),
+        ),
+        migrations.CreateModel(
+            name='PageEntry',
+            fields=[
+                ('entry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.entry',),
+        ),
+        migrations.CreateModel(
+            name='NewsItemEntry',
+            fields=[
+                ('pageentry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='zstandard.PageEntry')),
+            ],
+            options={
+            },
+            bases=('zstandard.pageentry',),
+        ),
+        migrations.CreateModel(
+            name='EventEntry',
+            fields=[
+                ('pageentry_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='zstandard.PageEntry')),
+            ],
+            options={
+            },
+            bases=('zstandard.pageentry',),
+        ),
+        migrations.CreateModel(
+            name='VFile',
+            fields=[
+                ('vobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.VObject')),
+                ('content', models.FileField(null=True, upload_to=b'files', blank=True)),
+            ],
+            options={
+            },
+            bases=('core.vobject',),
+        ),
+        migrations.CreateModel(
+            name='VImage',
+            fields=[
+                ('vobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.VObject')),
+                ('content', models.ImageField(null=True, upload_to=b'images', blank=True)),
+            ],
+            options={
+            },
+            bases=('core.vobject',),
+        ),
+        migrations.CreateModel(
+            name='VInternalRedirection',
+            fields=[
+                ('vobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.VObject')),
+                ('target', models.ForeignKey(to='core.Entry')),
+            ],
+            options={
+            },
+            bases=('core.vobject',),
+        ),
+        migrations.CreateModel(
+            name='VLink',
+            fields=[
+                ('vobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.VObject')),
+                ('target', models.URLField(blank=True)),
+            ],
+            options={
+            },
+            bases=('core.vobject',),
+        ),
+        migrations.CreateModel(
+            name='VPage',
+            fields=[
+                ('vobject_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='core.VObject')),
+                ('content', models.TextField(blank=True)),
+            ],
+            options={
+            },
+            bases=('core.vobject',),
+        ),
+        migrations.CreateModel(
+            name='VNewsItem',
+            fields=[
+                ('vpage_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='zstandard.VPage')),
+                ('news_date', models.DateTimeField(db_index=True)),
+            ],
+            options={
+            },
+            bases=('zstandard.vpage',),
+        ),
+        migrations.CreateModel(
+            name='VEvent',
+            fields=[
+                ('vpage_ptr', models.OneToOneField(parent_link=True, auto_created=True, primary_key=True, serialize=False, to='zstandard.VPage')),
+                ('event_start', models.DateTimeField(db_index=True)),
+                ('event_end', models.DateTimeField(db_index=True)),
+            ],
+            options={
+            },
+            bases=('zstandard.vpage',),
+        ),
+    ]

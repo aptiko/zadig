@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+from django.conf import settings
 from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, Http404
 from django import forms
@@ -14,7 +15,6 @@ from zadig.core.utils import split_path, join_path
 
 def _set_languages(request, vobject):
     """Set preferred and effective language."""
-    import settings
     request.preferred_language = request.session['language'] \
         if 'language' in request.session else settings.ZADIG_LANGUAGES[0][0]
     request.effective_language = vobject.language.id if vobject.language \

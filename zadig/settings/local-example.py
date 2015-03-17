@@ -1,11 +1,9 @@
 # Configuration file template for Zadig.
 # coding=utf-8
 
-ZADIG_PROGRAM_DIR = '.'
+import os
 
-# Leave following three lines as they are, to import several Django settings.
-import os.path
-execfile(os.path.join(ZADIG_PROGRAM_DIR, 'settings-base.py'))
+from zadig.settings.base import *
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

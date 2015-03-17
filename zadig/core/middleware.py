@@ -1,4 +1,4 @@
-import settings
+from django.conf import settings
 
 from zadig.core.utils import set_request
 
@@ -17,6 +17,6 @@ class GeneralMiddleware(object):
         from zadig.core.models import MultilingualGroup
         if hasattr(request.__dict__, 'multilingual_groups_to_check'):
             for mgid in request.multilingual_groups_to_check:
-                MultilingualGroup.objects.get(id=mgid).check()
+                MultilingualGroup.objects.get(id=mgid).check_integrity()
         set_request(None)
         return response

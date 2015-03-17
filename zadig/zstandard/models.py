@@ -1,12 +1,12 @@
 import mimetypes
 
+from django.conf import settings
 from django.db import models
 from django.template import RequestContext
 from django import forms
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.utils.translation import ugettext as _
-import settings
 
 from zadig.core.models import Entry, VObject
 from zadig.core import entry_types, entry_option_sets
@@ -360,10 +360,10 @@ class EntryOptionsForm(forms.Form):
 class EntryOptionSet(models.Model):
     entry = models.OneToOneField(Entry, primary_key=True,
                                     related_name='ZstandardEntryOptions')
-    no_navigation = models.BooleanField()
-    no_breadcrumbs = models.BooleanField()
-    navigation_toplevel = models.BooleanField()
-    show_author = models.BooleanField()
+    no_navigation = models.BooleanField(default=False)
+    no_breadcrumbs = models.BooleanField(default=False)
+    navigation_toplevel = models.BooleanField(default=False)
+    show_author = models.BooleanField(default=False)
 
     form = EntryOptionsForm
 

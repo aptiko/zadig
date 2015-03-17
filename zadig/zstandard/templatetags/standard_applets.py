@@ -1,7 +1,7 @@
 # coding: UTF-8
 from django import template
 from django.utils.translation import ugettext as _
-import settings
+from django.conf import settings
 
 from zadig.core.models import Entry, Language, entry_types
 from zadig.core.utils import get_current_path

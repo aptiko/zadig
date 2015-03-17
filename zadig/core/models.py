@@ -1,5 +1,9 @@
+from datetime import datetime
+
 from django.db import models, IntegrityError
 from django.db.models import Q, F
+from django.db.models.fields.related import ForeignKey
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
 from django.shortcuts import render_to_response
@@ -7,7 +11,6 @@ from django.http import HttpResponseRedirect, Http404
 from django.contrib.auth.models import User, Group, AnonymousUser
 from django import forms
 from django.template import RequestContext
-import settings
 
 from zadig.core import utils
 from zadig.core import entry_types, entry_option_sets
@@ -122,8 +125,7 @@ class StatePermission(models.Model):
 class StateTransition(models.Model):
     source_state = models.ForeignKey(State, related_name='source_rules')
     target_state = models.ForeignKey(State, related_name='target_rules')
-    lentity = models.ForeignKey(Lentity,
-                            default=lambda:Lentity.objects.get(special=OWNER))
+    lentity = models.ForeignKey(Lentity)
 
     def __unicode__(self):
         return "%s => %s (%s)" % (self.source_state, self.target_state,
@@ -147,7 +149,7 @@ class Workflow(models.Model):
 
 class MultilingualGroup(models.Model):
 
-    def check(self):
+    def check_integrity(self):
         entries = list(self.entry_set.all())
         if len(entries)<2:
             self.delete()
@@ -192,8 +194,8 @@ def _check_multilingual_group(mgid):
 
 class EntryManager(models.Manager):
 
-    def get_query_set(self):
-        result = super(EntryManager, self).get_query_set().exclude(
+    def get_queryset(self):
+        result = super(EntryManager, self).get_queryset().exclude(
                 vobject__deletion_mark=True)
         request = utils.get_request()
         user = request.user if request else AnonymousUser()
@@ -216,7 +218,7 @@ class EntryManager(models.Manager):
         return result
 
     def get_by_path(self, path):
-        queryset = super(EntryManager, self).get_query_set()
+        queryset = super(EntryManager, self).get_queryset()
         entry = None
         for name in utils.split_path(path):
             entry = queryset.get(name=name, container=entry)
@@ -750,8 +752,8 @@ class Entry(models.Model):
     @require_POST
     def undelete(self):
         ver = self.vobject.version_number
-        assert(ver>1)
-        old_vobject = self.get_vobject(ver-1).descendant
+        assert(ver > 1)
+        old_vobject = self.get_vobject(ver - 1).descendant
         assert(not old_vobject.deletion_mark)
         nvobject = old_vobject.duplicate()
         utils.get_request().action = 'info'
@@ -858,7 +860,7 @@ class VObject(models.Model):
         if self._meta.object_name == self.object_class:
             return self
         cls = [x.vobject_class for x in entry_types
-                            if x.vobject_class.__name__==self.object_class][0]
+               if x.vobject_class.__name__ == self.object_class][0]
         hierarchy = []
         while cls!=type(self):
             hierarchy.insert(0, cls)
@@ -881,106 +883,29 @@ class VObject(models.Model):
         raise Http404
 
     def duplicate(self):
-        try:
-            from django.db.models.query import CollectedObjects
-        except ImportError:
-            return self.__duplicate_django_1_3()
-        else:
-            return self.__duplicate_django_1_2()
-
-    def __duplicate_django_1_3(self):
-        """Originally downloaded from http://djangosnippets.org/snippets/1282/
-        and then modified.
-        Copyright (C) 2009 by djangosnippets user johnboxall
-        Copyright (C) 2011 by djangosnippets user jkafader
-        Copyright (C) 2011 National Technical University of Athens"""
-        from django.db.models.deletion import Collector
-        from django.db.models.fields.related import ForeignKey
-        from datetime import datetime
         ndate = datetime.now()
         nversion_number = self.entry.vobject_set.order_by(
-                                    '-version_number')[0].version_number + 1
-        collector = Collector({})
-        collector.collect([self.descendant])
-        collector.sort()
-        related_models = collector.data.keys()
-        data_snapshot = {}
-        for key in collector.data.keys():
-            data_snapshot.update({
-                key: dict(zip([item.pk for item in collector.data[key]],
-                    [item for item in collector.data[key]])) })
-        root_obj = None
-        # Traverse the related models in reverse deletion order.    
-        for model in reversed(related_models):
-            # Find all FKs on `model` that point to a `related_model`.
-            fks = []
-            for f in model._meta.fields:
-                if isinstance(f, ForeignKey) and f.rel.to in related_models:
-                    fks.append(f)
-            # Replace each `sub_obj` with a duplicate.
-            if model not in collector.data:
+            '-version_number')[0].version_number + 1
+        new_vobject = self.__class__()
+        new_vobject.date = ndate
+        new_vobject.version_number = nversion_number
+        for field in new_vobject._meta.fields:
+            if field.name in ('id', 'object_class', 'vobject_ptr',
+                              'version_number', 'date'):
                 continue
-            sub_objects = collector.data[model]
-            for obj in sub_objects:
-                for fk in fks:
-                    fk_value = getattr(obj, "%s_id" % fk.name)
-                    # If this FK has been duplicated then point to the
-                    # duplicate.
-                    fk_rel_to = data_snapshot[fk.rel.to]
-                    if fk_value in fk_rel_to:
-                        dupe_obj = fk_rel_to[fk_value]
-                        setattr(obj, fk.name, dupe_obj)
-                # Duplicate the object and save it.
-                obj.id = None
-                if isinstance(obj, VObject):
-                    obj.date = ndate
-                    obj.version_number = nversion_number
-                obj.save()
-                if root_obj is None:
-                    root_obj = obj
-        return root_obj
+            setattr(new_vobject, field.name, getattr(self, field.name))
+        new_vobject.save()
 
-    def __duplicate_django_1_2(self):
-        """Originally downloaded from http://djangosnippets.org/snippets/1282/
-        and then modified.
-        Copyright (C) 2009 by djangosnippets user johnboxall
-        Copyright (C) 2010 National Technical University of Athens"""
-        from django.db.models.query import CollectedObjects
-        from django.db.models.fields.related import ForeignKey
-        from datetime import datetime
-        ndate = datetime.now()
-        nversion_number = self.entry.vobject_set.order_by(
-                                    '-version_number')[0].version_number + 1
-        collected_objs = CollectedObjects()
-        self.descendant._collect_sub_objects(collected_objs)
-        related_models = collected_objs.keys()
-        root_obj = None
-        # Traverse the related models in reverse deletion order.    
-        for model in reversed(related_models):
-            # Find all FKs on `model` that point to a `related_model`.
-            fks = []
-            for f in model._meta.fields:
-                if isinstance(f, ForeignKey) and f.rel.to in related_models:
-                    fks.append(f)
-            # Replace each `sub_obj` with a duplicate.
-            sub_obj = collected_objs[model]
-            for pk_val, obj in sub_obj.iteritems():
-                for fk in fks:
-                    fk_value = getattr(obj, "%s_id" % fk.name)
-                    # If this FK has been duplicated then point to the
-                    # duplicate.
-                    if fk_value in collected_objs[fk.rel.to]:
-                        dupe_obj = collected_objs[fk.rel.to][fk_value]
-                        setattr(obj, fk.name, dupe_obj)
-                # Duplicate the object and save it.
-                obj.id = None
-                if isinstance(obj, VObject):
-                    obj.date = ndate
-                    obj.version_number = nversion_number
-                if root_obj is None:
-                    root_obj = obj
-                obj.save()
-        return root_obj
+        for metatags in self.metatags.all():
+            nmetatags = VObjectMetatags(
+                vobject=new_vobject,
+                language=metatags.language,
+                title=metatags.title,
+                short_title=metatags.short_title,
+                description=metatags.description)
+            nmetatags.save()
+
+        return new_vobject
 
     def __unicode__(self):
         return '%s v. %d, id=%d' % (self.entry.__unicode__(),

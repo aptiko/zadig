@@ -531,8 +531,7 @@ The VObject model
 
       Create and save an exact copy of the vobject; the only thing
       that is different in the newly created vobject is its id and
-      date. Related models are also copied and saved. Used for
-      reverting an entry to an old vobject.
+      date. Used for reverting an entry to an old vobject.
 
    :class:`~zadig.core.models.VObject` has a custom manager:
 
