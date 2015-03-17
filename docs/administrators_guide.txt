@@ -10,37 +10,14 @@ Installation
 Prerequisites
 -------------
 
-You need to install Python_ (v2.5 or later, but not 3), Django_,
-TinyMCE_, django-tinymce_, south_, BeautifulSoup_, and the `Python
-Imaging Library`_. You also need an RDBMS.  Any RDBMS supported by
-Django should be OK; however, so far I've only used SQLite_ (for
-development and testing) and PostgreSQL_ (for production), so you
-might run into more bugs if you try other RDBMS's.  Finally, since we
-don't yet offer releases, you need the Mercurial_ revision control
-system in order to download Zadig.
+You need Python 2.7.
 
-How to install prerequisites in Debian 6/Ubuntu 10.04::
+This is the usual way to install the prerequisites (but it may be
+better to install Pillow and TinyMCE through your operating system's
+packages first)::
 
-   aptitude install python-django-tinymce python-beautifulsoup \
-           python-imaging python-django-south sqlite3 mercurial
-     
-In Debian 5::
-
-   aptitude install python-django tinymce python-beautifulsoup \
-                               python-imaging sqlite3 mercurial
-   easy_install django-tinymce
-   easy_install South
-
-.. _Python: http://python.org/
-.. _Django: http://www.djangoproject.com/
-.. _TinyMCE: http://tinymce.moxiecode.com/
-.. _django-tinymce: http://code.google.com/p/django-tinymce/
-.. _south: http://south.aeracode.org/
-.. _BeautifulSoup: http://www.crummy.com/software/BeautifulSoup/
-.. _Python Imaging Library: http://www.pythonware.com/products/pil/
-.. _SQLite: http://sqlite.org/
-.. _PostgreSQL: http://www.postgresql.org/
-.. _Mercurial: http://mercurial.selenic.com/
+    mkvirtualenv [--system-site-packages] zadig
+    pip install -r requirements.txt
 
 
 Installing a development/testing instance
@@ -48,36 +25,20 @@ Installing a development/testing instance
 
 You need to:
 
-1. Download Zadig from http://bitbucket.org/aptiko/zadig (but don't
-   name the directory :file:`zadig`; name it :file:`Zadig` instead, otherwise
-   Python gets confused; if your file system is case insensitive, name
-   it :file:`zadig-dev` or something).
-2. Make copies of three files: :file:`settings-example.py`,
-   :file:`templates/base-example.html`, and :file:`static/style-example.css`;
-   the copies should be in the same location as the originals and have
-   the same name but without the ``-example`` part.
-3. Symlink the tinymce www directory (the one containing the
+1. Make copies of three files: :file:`zadig/settings/local-example.py`,
+   :file:`zadig/core/templates/base-example.html`, and
+   :file:`zadig/core/static/style-example.css`; the copies should be
+   in the same location as the originals and have the same name but
+   without the ``-example`` part.
+2. Symlink the tinymce www directory (the one containing the
    :file:`tiny_mce.js` file) to :file:`static/tinymce`.
-4. If needed, edit your copied :file:`settings.py` (although it will
-   work as it is, using SQLite to create a database called
-   :file:`testdb`).
-5. Create the empty database, depending on the RDBMS you are using
+3. If needed, edit your copied :file:`zadig/settings/local.py`
+   (although it will work as it is, using SQLite to create a database
+   called :file:`testdb`).
+4. Create the empty database, depending on the RDBMS you are using
    (you can skip this step for SQLite).
-6. Run :command:`python manage.py syncdb` and then :command:`python
-   manage.py migrate`.
-7. Run :command:`python manage.py runserver`.
-
-In Debian/Ubuntu the commands are::
-
-    hg clone http://bitbucket.org/aptiko/zadig Zadig
-    cd Zadig
-    cp settings-example.py settings.py
-    cp templates/base-example.html templates/base.html
-    cp static/style-example.css static/style.css
-    ln -s /usr/share/tinymce/www static/tinymce
-    ./manage.py syncdb
-    ./manage.py migrate
-    ./manage.py runserver
+5. Run :command:`python manage.py migrate`.
+6. Run :command:`python manage.py runserver`.
 
 After doing all that, point your browser to http://localhost:8000/.
 
@@ -99,122 +60,16 @@ development/testing instance:
    configured by default to do.
 2. You should precompile the Zadig distribution Python files, since
    your web server (or your Django WSGI process, or whatever it is)
-   should not have permission to write the ``.pyc`` files in the Zadig
-   distribution directory.
+   should not have permission to write the ``.pyc`` or ``.pyo`` files
+   in the Zadig distribution directory.
 3. You should use a RDBMS that is suitable for a production server. I
    use PostgreSQL_.
 4. You should deploy Django as described in `Deploying Django`_, and
-   configure your web server to serve the static files properly, i.e.
-   the :file:`/__static__/` URI should be aliased to the Zadig
-   distribution's :file:`static` directory.
+   configure your web server to serve the static files properly.
 
-The details depend on your setup. Here is what I do: I use Debian_,
-Apache_ and mod_wsgi_; I have the Zadig distribution files in
-:file:`/usr/local/Zadig`; the configuration files in
-:file:`/etc/zadig/{sitename}`, where :samp:`{sitename}` is the name of
-the site (I serve many sites, using
-many Zadig instances, from the same machine); and the binary files in 
-:file:`/var/local/Zadig/storage-{sitename}`, which has two subdirectories,
-:file:`images` and :file:`files`. The directories :file:`/usr/local/Zadig` and
-:file:`/etc/zadig/` are writeable by my user account (because I make
-frequent  updates with :command:`hg pull -u` and frequent configuration
-changes); alternatively they can be owned by ``root``. I have created
-a ``django`` system user, and :file:`/var/local/Zadig` (and anything it
-contains) is writable by it; you may also use ``www-data``, which is
-easier; in my setup the WSGI process runs as user ``django``, because
-I have the following directive in Apache's general configuration::
-
-    WSGIDaemonProcess django user=django group=django
-
-and the following in every Apache virtual host configuration::
-
-    WSGIProcessGroup django
-
-Since the server process does not have permissions to write where the
-Python files are, I run the following whenever I need to precompile
-the Python files::
-
-    python -m compileall /usr/local/Zadig /etc/zadig
-
-Apache's virtual host configuration also contains::
-
-    Alias /__static__/style.css /etc/zadig/sitename/style.css
-    Alias /__static__/ /usr/local/Zadig/static
-    WSGIScriptAlias / /etc/zadig/sitename/zadig.wsgi
-
-Now the configuration directory, :file:`/etc/zadig/sitename`, contains
-the following files:
-
-.. describe:: zadig.wsgi
-
-   It has the following contents::
-
-      import os
-      import sys
-      import django.core.handlers.wsgi
-
-      sys.path.append('/usr/local/Zadig')
-      sys.path.append('/etc/zadig/sitename')
-      os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-      application = django.core.handlers.wsgi.WSGIHandler()
-
-.. describe:: __init__.py
-
-   I have an empty :file:`__init__.py` file, otherwise Python cannot
-   read :file:`settings.py`.
-
-.. describe:: style.css
-
-   This is a copy of the distributed :file:`static/style-example.css`,
-   but you can use it to customize the style.
-
-.. describe:: templates
-
-   This is a directory which contains :file:`base.html`, a copy of the
-   distributed :file:`templates/base-example.html`, which can be
-   customized. (Other template files can also be used here, which can
-   be assigned to specific subpaths.)
-
-.. describe:: settings.py
-
-   The settings that are of particular important interest in this
-   setup are (don't write them together, as below;
-   :data:`ZADIG_PROGRAM_DIR` must be at the top of the file)::
-
-      ZADIG_PROGRAM_DIR = '/usr/local/Zadig'
-      # --Snip--
-      TEMPLATE_DIRS = ('/etc/zadig/sitename/templates',) + TEMPLATE_DIRS
-      MEDIA_ROOT = '/var/local/Zadig/storage-sitename/'
-
-.. describe:: zadig-ssl.wsgi and settings-ssl.py
-
-   I have setup Apache so that it redirects login requests to SSL, and
-   use a slightly different setup for SSL, so that it uses secure
-   session cookies; so Apache, for SSL, instead of :data:`zadig.wsgi`,
-   is setup to run :file:`zadig-ssl.wsgi`, which is the following::
-
-      # Essentially use zadig.wsgi
-      import os.path
-      dirname = os.path.dirname(__file__)
-      execfile(os.path.join(dirname, 'zadig.wsgi'))
-
-      # except that we want to change the following setting
-      os.environ['DJANGO_SETTINGS_MODULE'] = 'settings-ssl'
-
-   whereas :file:`settings-ssl` is the following::
-
-      # Essentially use settings.py
-      import os.path
-      dirname = os.path.dirname(__file__)
-      execfile(os.path.join(dirname, 'settings.py'))
-
-      # except that we want to change the following setting
-      SESSION_COOKIE_SECURE = True
+The details depend on your setup.
 
 .. _deploying Django: http://docs.djangoproject.com/en/dev/howto/deployment/
-.. _Debian: http://www.debian.org/
-.. _Apache: http://httpd.apache.org/
-.. _mod_wsgi: http://code.google.com/p/modwsgi/
 
 Settings reference
 ==================
@@ -233,23 +88,9 @@ applicable.
           ('el', 'Ελληνικά'),
       )
 
-.. data:: ZADIG_PROGRAM_DIR
-
-   The directory where the Zadig program files are installed, such as
-   :file:`/usr/local/Zadig`.
-
 .. data:: ZADIG_WORKFLOW_ID
 
    This is the id of the :class:`~zadig.core.models.Workflow` object
    that is used in the site.
 
-.. data:: ZADIG_DEFAULT_ROOT_URL
-
-   Sometimes a website is reachable through many URLs. This is
-   particularly the case when a site is accessible both through http
-   and https. In this case, only one of these should be the default.
-   Specifying the default URL is especially useful when creating
-   permalinks. This setting specifies the default root url, in the
-   form "http://mysite.com/".
-
-.. _Django settings: http://docs.djangoproject.com/en/dev/topics/settings/
+.. _Django settings: http://docs.djangoproject.com/en/1.7/topics/settings/
