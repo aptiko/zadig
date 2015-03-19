@@ -1,6 +1,3 @@
-# Configuration file template for Zadig.
-# coding=utf-8
-
 import os
 
 from zadig.settings.base import *
@@ -35,7 +32,6 @@ MEDIA_ROOT = 'storage/'         # User-uploaded files
 SECRET_KEY = '8$e%+dm&uzb##l-^aa-&t#dlez_i#tsnbttw07cny7go3=ra=y'
 
 # Zadig settings
-ZADIG_DEFAULT_ROOT_URL = 'http://localhost:8000/'
 ZADIG_LANGUAGES = (
     ('en', 'English'),
     ('el', 'Ελληνικά'),

@@ -305,11 +305,6 @@ class Entry(models.Model):
     def absolute_uri(self):
         return utils.get_request().build_absolute_uri(self.spath)
 
-    @property
-    def permalink(self):
-        from urlparse import urljoin
-        return urljoin(settings.ZADIG_DEFAULT_ROOT_URL, self.spath)
-
     def can_contain(self, child):
         return PERM_EDIT in self.permissions
 

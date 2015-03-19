@@ -107,10 +107,7 @@ The Entry model
    .. attribute:: zadig.core.models.Entry.absolute_uri
 
       This read-only property returns the absolute URI for the show
-      action of the entry.  See also
-      :attr:`~zadig.core.models.Entry.permalink` (and also
-      :attr:`~zadig.core.models.Entry.path` and
-      :attr:`~zadig.core.models.Entry.spath`).
+      action of the entry.
 
    .. method:: zadig.core.models.Entry.add_details(vobject, form)
 
@@ -280,16 +277,6 @@ The Entry model
       including a leading or trailing slash. See also
       :attr:`~zadig.core.models.Entry.spath` and
       :attr:`~zadig.core.models.Entry.absolute_uri`.
-
-   .. attribute:: zadig.core.models.Entry.permalink
-
-      This is similar to
-      :attr:`~zadig.core.models.Entry.absolute_uri`; but whereas
-      :attr:`~zadig.core.models.Entry.absolute_uri` indicates how the
-      entry was reached in the current request, 
-      :attr:`~zadig.core.models.Entry.permalink` indicates how the
-      entry should be reached by default (i.e. it uses the
-      :data:`ZADIG_DEFAULT_ROOT_URL` setting).
 
    .. attribute:: zadig.core.models.Entry.permissions
 
