@@ -36,7 +36,7 @@ ZADIG_LANGUAGES = (
     ('en', 'English'),
     ('el', 'Ελληνικά'),
 )
-WORKFLOW_ID = 1
+ZADIG_WORKFLOW_ID = 1
 
 TINYMCE_JS_URL = STATIC_URL + 'tinymce/tiny_mce.js'
 TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, 'tinymce')

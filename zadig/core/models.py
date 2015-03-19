@@ -297,7 +297,7 @@ class Entry(models.Model):
         if siblings.count():
             self.seq = siblings.order_by('-seq')[0].seq + 1
         self.owner = utils.get_request().user
-        self.state = Workflow.objects.get(id=settings.WORKFLOW_ID) \
+        self.state = Workflow.objects.get(id=settings.ZADIG_WORKFLOW_ID) \
             .state_transitions \
             .get(source_state__descr="Nonexistent").target_state
 
@@ -756,7 +756,7 @@ class Entry(models.Model):
 
     @property
     def possible_target_states(self):
-        workflow = Workflow.objects.get(id=settings.WORKFLOW_ID)
+        workflow = Workflow.objects.get(id=settings.ZADIG_WORKFLOW_ID)
         result = []
         user = utils.get_request().user
         for transition in self.state.source_rules.all():
