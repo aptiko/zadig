@@ -38,7 +38,8 @@ You need to:
 4. Create the empty database, depending on the RDBMS you are using
    (you can skip this step for SQLite).
 5. Run :command:`python manage.py migrate`.
-6. Run :command:`python manage.py runserver`.
+6. Run :command:`python manage.py createrootpage`.
+7. Run :command:`python manage.py runserver`.
 
 After doing all that, point your browser to http://localhost:8000/.
 
