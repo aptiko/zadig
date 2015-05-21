@@ -13,7 +13,7 @@ from zadig.core import entry_types, entry_option_sets
 from zadig.core import utils
 
 
-### Page ###
+# Page
 
 
 class EditPageForm(forms.Form):
@@ -68,7 +68,7 @@ class PageEntry(Entry):
 entry_types.append(PageEntry)
 
 
-### File ###
+# File
 
 
 class VFile(VObject):
@@ -111,7 +111,7 @@ class FileEntry(Entry):
 entry_types.append(FileEntry)
 
 
-### Image ###
+# Image
 
 
 class VImage(VObject):
@@ -126,8 +126,9 @@ class VImage(VObject):
         return response
 
     def action_info(self):
-        return render_to_response('view_image.html', { 'vobject': self },
-                context_instance = RequestContext(self.request))
+        return render_to_response(
+            'view_image.html', {'vobject': self},
+            context_instance=RequestContext(self.request))
 
     def action_resized(self):
         import Image
@@ -135,8 +136,8 @@ class VImage(VObject):
         parms = self.request.parms
         target_size = 400 if not parms else int(parms.strip('/'))
         factor = float(target_size)/max(im.size)
-        if factor<1.0:
-            newsize = [factor*x for x in im.size]
+        if factor < 1.0:
+            newsize = [int(factor * x + 0.5) for x in im.size]
             im = im.resize(newsize, Image.BILINEAR)
         content_type = mimetypes.guess_type(self.content.path)[0]
         response = HttpResponse(content_type=content_type)
@@ -166,7 +167,7 @@ class ImageEntry(Entry):
 entry_types.append(ImageEntry)
 
 
-### Link ###
+# Link
 
 
 class VLink(VObject):
@@ -205,7 +206,7 @@ class LinkEntry(Entry):
 entry_types.append(LinkEntry)
 
 
-### News item ###
+# News item
 
 
 class EditNewsItemForm(EditPageForm):
@@ -243,7 +244,7 @@ class NewsItemEntry(PageEntry):
 entry_types.append(NewsItemEntry)
 
 
-### Event ###
+# Event
 
 
 class EditEventForm(EditPageForm):
@@ -293,7 +294,7 @@ class EventEntry(PageEntry):
 entry_types.append(EventEntry)
 
 
-### InternalRedirection ###
+# InternalRedirection
 
 # FIXME: Should subclass link or something
 
@@ -345,7 +346,7 @@ class InternalRedirectionEntry(Entry):
 entry_types.append(InternalRedirectionEntry)
 
 
-### Other ###
+# Other
 
 class EntryOptionsForm(forms.Form):
     no_breadcrumbs = forms.BooleanField(label=_(u"Don't show in Breadcrumbs"),
