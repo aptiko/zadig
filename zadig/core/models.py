@@ -725,7 +725,7 @@ class Entry(models.Model):
             self.owner = new_owner
             self.save()
         if recursive:
-            for e in self.all_subentries:
+            for e in self.all_subentries.all():
                 e.__change_owner(new_owner, recursive)
 
     def action_permissions(self):
